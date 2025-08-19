@@ -11,6 +11,12 @@ interface User {
   avatar: string;
 }
 
+// For our mock auth, we'll store user with password in a different object
+interface StoredUser extends User {
+    password_insecure: string;
+}
+
+
 interface AuthContextType {
   user: User | null;
   loading: boolean;
@@ -21,13 +27,7 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Mock user data
-const MOCK_USER: User = {
-  id: '1',
-  name: 'Demo User',
-  email: 'user@example.com',
-  avatar: 'https://placehold.co/100x100.png',
-};
+const MOCK_AVATAR = 'https://placehold.co/100x100.png';
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
@@ -36,6 +36,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     // Check if user is logged in from a previous session
+    setLoading(true);
     try {
       const storedUser = localStorage.getItem('user');
       if (storedUser) {
@@ -52,15 +53,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setLoading(true);
     return new Promise((resolve, reject) => {
       setTimeout(() => {
-        if (password === 'password') {
-          const loggedInUser = { ...MOCK_USER, email };
-          setUser(loggedInUser);
-          localStorage.setItem('user', JSON.stringify(loggedInUser));
-          setLoading(false);
-          resolve();
-        } else {
-          setLoading(false);
-          reject(new Error('Invalid email or password'));
+        try {
+            const storedUsersJSON = localStorage.getItem('users_db');
+            const storedUsers: StoredUser[] = storedUsersJSON ? JSON.parse(storedUsersJSON) : [];
+            const foundUser = storedUsers.find(u => u.email === email);
+
+            if (foundUser && foundUser.password_insecure === password) {
+                const { password_insecure, ...userToLogin } = foundUser;
+                setUser(userToLogin);
+                localStorage.setItem('user', JSON.stringify(userToLogin));
+                setLoading(false);
+                resolve();
+            } else {
+                 setLoading(false);
+                 reject(new Error('Invalid email or password'));
+            }
+        } catch(e) {
+            console.error("Login failed", e);
+            setLoading(false);
+            reject(new Error('An unexpected error occurred during login.'));
         }
       }, 1000);
     });
@@ -68,13 +79,38 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signup = async (name: string, email: string, password: string): Promise<void> => {
     setLoading(true);
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       setTimeout(() => {
-        const newUser = { ...MOCK_USER, id: Date.now().toString(), name, email };
-        setUser(newUser);
-        localStorage.setItem('user', JSON.stringify(newUser));
-        setLoading(false);
-        resolve();
+        try {
+            const storedUsersJSON = localStorage.getItem('users_db');
+            const storedUsers: StoredUser[] = storedUsersJSON ? JSON.parse(storedUsersJSON) : [];
+            
+            if (storedUsers.some(u => u.email === email)) {
+                setLoading(false);
+                return reject(new Error('A user with this email already exists.'));
+            }
+
+            const newUser: StoredUser = { 
+                id: Date.now().toString(), 
+                name, 
+                email, 
+                avatar: MOCK_AVATAR,
+                password_insecure: password // In a real app, NEVER store plain text passwords
+            };
+
+            storedUsers.push(newUser);
+            localStorage.setItem('users_db', JSON.stringify(storedUsers));
+            
+            const { password_insecure, ...userToLogin } = newUser;
+            setUser(userToLogin);
+            localStorage.setItem('user', JSON.stringify(userToLogin));
+            setLoading(false);
+            resolve();
+        } catch(e) {
+             console.error("Signup failed", e);
+            setLoading(false);
+            reject(new Error('An unexpected error occurred during signup.'));
+        }
       }, 1000);
     });
   };

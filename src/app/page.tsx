@@ -5,7 +5,6 @@ import { AppSidebar } from '@/components/layout/app-sidebar';
 import {
   SidebarProvider,
   SidebarInset,
-  useSidebar,
 } from '@/components/ui/sidebar';
 import { Dashboard } from '@/components/dashboard';
 import { useAuth } from '@/hooks/use-auth';
@@ -14,17 +13,20 @@ import { useEffect } from 'react';
 import { Loader2 } from 'lucide-react';
 
 function AuthenticatedApp() {
-  const { isMobile } = useSidebar();
   return (
-    <div className="flex">
-      {!isMobile && <AppSidebar />}
-      <div className="flex flex-1 flex-col">
-        <AppHeader />
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
-          <Dashboard />
-        </main>
-      </div>
-    </div>
+    <SidebarProvider>
+        <div className="flex min-h-screen">
+            <AppSidebar />
+            <SidebarInset>
+                <div className="flex flex-1 flex-col min-w-0">
+                    <AppHeader />
+                    <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
+                        <Dashboard />
+                    </main>
+                </div>
+            </SidebarInset>
+        </div>
+    </SidebarProvider>
   );
 }
 
@@ -46,9 +48,5 @@ export default function Home() {
     );
   }
 
-  return (
-    <SidebarProvider>
-      <AuthenticatedApp />
-    </SidebarProvider>
-  );
+  return <AuthenticatedApp />;
 }

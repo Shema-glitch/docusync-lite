@@ -1,3 +1,4 @@
+
 import {
   Sidebar,
   SidebarHeader,
@@ -8,18 +9,13 @@ import {
   SidebarGroupLabel,
   SidebarGroupContent,
   SidebarFooter,
-  SidebarMenuSub,
-  SidebarMenuSubItem,
-  SidebarMenuSubButton,
   SidebarContent,
 } from '@/components/ui/sidebar';
 import {
   Home,
   FileClock,
   Files,
-  FolderKanban,
   Star,
-  Users,
   Settings,
   CircleHelp,
   Briefcase,
@@ -29,11 +25,15 @@ import {
   Scale,
   Sparkles,
   Zap,
+  LogOut,
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '../ui/button';
+import { useAuth } from '@/hooks/use-auth';
 
 export function AppSidebar() {
+  const { user, logout } = useAuth();
+
   return (
     <Sidebar>
       <SidebarHeader>
@@ -49,7 +49,7 @@ export function AppSidebar() {
       <SidebarContent>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton href="#" isActive>
+            <SidebarMenuButton href="/" isActive>
               <Home />
               Dashboard
             </SidebarMenuButton>
@@ -144,15 +144,21 @@ export function AppSidebar() {
               Help & Support
             </SidebarMenuButton>
           </SidebarMenuItem>
+           <SidebarMenuItem>
+            <SidebarMenuButton onClick={logout}>
+              <LogOut />
+              Logout
+            </SidebarMenuButton>
+          </SidebarMenuItem>
           <SidebarMenuItem>
             <div className="flex items-center gap-3 px-2 py-1">
               <Avatar className="h-9 w-9">
-                <AvatarImage src="https://placehold.co/100x100.png" alt="User" data-ai-hint="profile picture" />
-                <AvatarFallback>U</AvatarFallback>
+                <AvatarImage src={user?.avatar} alt={user?.name} data-ai-hint="profile picture" />
+                <AvatarFallback>{user?.name?.charAt(0)}</AvatarFallback>
               </Avatar>
               <div className="flex flex-col">
-                <span className="font-medium text-sm">User</span>
-                <span className="text-xs text-muted-foreground">user@example.com</span>
+                <span className="font-medium text-sm">{user?.name}</span>
+                <span className="text-xs text-muted-foreground">{user?.email}</span>
               </div>
             </div>
           </SidebarMenuItem>

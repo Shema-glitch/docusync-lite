@@ -35,42 +35,34 @@ export function AppSidebar() {
   const { user, logout } = useAuth();
 
   return (
-    <Sidebar>
-      <SidebarHeader>
-        <div className="flex items-center gap-2">
-           <Button variant="ghost" size="icon" className="h-9 w-9 bg-primary/10 text-primary">
-            <Zap className="h-5 w-5" />
-          </Button>
-          <div className="flex flex-col">
-            <h2 className="text-lg font-semibold tracking-tight">DocuSync Lite</h2>
-          </div>
-        </div>
-        <SidebarTrigger className="ml-auto" />
-      </SidebarHeader>
+    <Sidebar collapsible="icon" variant="sidebar" className="shrink-0">
       <SidebarContent>
+        <SidebarHeader className='justify-center'>
+            <Zap className="h-8 w-8 text-primary" />
+        </SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton href="/" isActive>
+            <SidebarMenuButton href="/" isActive tooltip="Dashboard">
               <Home />
-              Dashboard
+              <span className='group-data-[collapsible=icon]:hidden'>Dashboard</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
           <SidebarMenuItem>
-            <SidebarMenuButton href="#">
+            <SidebarMenuButton href="#" tooltip="Timeline">
               <FileClock />
-              Timeline
+               <span className='group-data-[collapsible=icon]:hidden'>Timeline</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
           <SidebarMenuItem>
-            <SidebarMenuButton href="#">
+            <SidebarMenuButton href="#" tooltip="All Files">
               <Files />
-              All Files
+               <span className='group-data-[collapsible=icon]:hidden'>All Files</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
           <SidebarMenuItem>
-            <SidebarMenuButton href="#">
+            <SidebarMenuButton href="#" tooltip="Favorites">
               <Star />
-              Favorites
+               <span className='group-data-[collapsible=icon]:hidden'>Favorites</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
@@ -78,49 +70,51 @@ export function AppSidebar() {
         <SidebarGroup>
           <SidebarGroupLabel className="flex items-center gap-2">
             <Sparkles className="text-accent-foreground" />
-            Smart Collections
+             <span className='group-data-[collapsible=icon]:hidden'>Smart Collections</span>
           </SidebarGroupLabel>
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton href="#">
+                <SidebarMenuButton href="#" tooltip="Tax Docs">
                   <Briefcase />
-                  Tax Docs
+                   <span className='group-data-[collapsible=icon]:hidden'>Tax Docs</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
-                <SidebarMenuButton href="#">
+                <SidebarMenuButton href="#" tooltip="Design Portfolio">
                   <User />
-                  Design Portfolio
+                   <span className='group-data-[collapsible=icon]:hidden'>Design Portfolio</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>
         </SidebarGroup>
 
         <SidebarGroup>
-          <SidebarGroupLabel>Categories</SidebarGroupLabel>
+          <SidebarGroupLabel>
+            <span className='group-data-[collapsible=icon]:hidden'>Categories</span>
+            </SidebarGroupLabel>
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton href="#">
+                <SidebarMenuButton href="#" tooltip="Work">
                   <Briefcase />
-                  Work
+                   <span className='group-data-[collapsible=icon]:hidden'>Work</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
-                <SidebarMenuButton href="#">
+                <SidebarMenuButton href="#" tooltip="Personal">
                   <Heart />
-                  Personal
+                   <span className='group-data-[collapsible=icon]:hidden'>Personal</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
-                <SidebarMenuButton href="#">
+                <SidebarMenuButton href="#" tooltip="Finance">
                   <Wallet />
-                  Finance
+                   <span className='group-data-[collapsible=icon]:hidden'>Finance</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
-                <SidebarMenuButton href="#">
+                <SidebarMenuButton href="#" tooltip="Legal">
                   <Scale />
-                  Legal
+                   <span className='group-data-[collapsible=icon]:hidden'>Legal</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>
@@ -130,30 +124,24 @@ export function AppSidebar() {
       <SidebarFooter>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton href="#">
+            <SidebarMenuButton href="#" tooltip="Settings">
               <Settings />
-              Settings
+               <span className='group-data-[collapsible=icon]:hidden'>Settings</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
           <SidebarMenuItem>
-            <SidebarMenuButton href="#">
-              <CircleHelp />
-              Help & Support
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-           <SidebarMenuItem>
-            <SidebarMenuButton onClick={logout}>
+            <SidebarMenuButton onClick={logout} tooltip="Logout">
               <LogOut />
-              Logout
+               <span className='group-data-[collapsible=icon]:hidden'>Logout</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
           <SidebarMenuItem>
-            <div className="flex items-center gap-3 px-2 py-1">
+            <div className="flex items-center gap-3 px-2 py-1 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0">
               <Avatar className="h-9 w-9">
                 <AvatarImage src={user?.avatar} alt={user?.name ?? ''} data-ai-hint="profile picture" />
                 <AvatarFallback>{user?.name?.charAt(0)}</AvatarFallback>
               </Avatar>
-              <div className="flex flex-col">
+              <div className="flex flex-col group-data-[collapsible=icon]:hidden">
                 <span className="font-medium text-sm">{user?.name}</span>
                 <span className="text-xs text-muted-foreground">{user?.email}</span>
               </div>

@@ -1,0 +1,50 @@
+'use client';
+
+import * as React from 'react';
+import type { Document } from '@/lib/types';
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from '@/components/ui/carousel';
+import { DocumentCard } from './document-card';
+
+interface TimelineViewProps {
+  documents: Document[];
+}
+
+export function TimelineView({ documents }: TimelineViewProps) {
+  if (documents.length === 0) {
+    return (
+      <div className="flex items-center justify-center rounded-lg border-2 border-dashed p-12 text-center">
+        <div>
+          <h3 className="text-xl font-semibold">No recent documents</h3>
+          <p className="text-muted-foreground mt-2">Upload a file to see your timeline.</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <Carousel
+      opts={{
+        align: 'start',
+      }}
+      className="w-full"
+    >
+      <CarouselContent>
+        {documents.map((doc, index) => (
+          <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/3 xl:basis-1/4">
+            <div className="p-1">
+              <DocumentCard document={doc} />
+            </div>
+          </CarouselItem>
+        ))}
+      </CarouselContent>
+      <CarouselPrevious className="hidden sm:flex" />
+      <CarouselNext className="hidden sm:flex" />
+    </Carousel>
+  );
+}

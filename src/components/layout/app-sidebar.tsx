@@ -7,9 +7,9 @@ import {
   SidebarMenuButton,
   SidebarGroup,
   SidebarGroupLabel,
-  SidebarGroupContent,
-  SidebarFooter,
   SidebarContent,
+  SidebarFooter,
+  SidebarTrigger,
 } from '@/components/ui/sidebar';
 import {
   Home,
@@ -38,13 +38,14 @@ export function AppSidebar() {
     <Sidebar>
       <SidebarHeader>
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon" className="h-9 w-9 bg-primary/10 text-primary">
+           <Button variant="ghost" size="icon" className="h-9 w-9 bg-primary/10 text-primary">
             <Zap className="h-5 w-5" />
           </Button>
           <div className="flex flex-col">
             <h2 className="text-lg font-semibold tracking-tight">DocuSync Lite</h2>
           </div>
         </div>
+        <SidebarTrigger className="ml-auto" />
       </SidebarHeader>
       <SidebarContent>
         <SidebarMenu>
@@ -79,7 +80,6 @@ export function AppSidebar() {
             <Sparkles className="text-accent-foreground" />
             Smart Collections
           </SidebarGroupLabel>
-          <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton href="#">
@@ -94,12 +94,10 @@ export function AppSidebar() {
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>
-          </SidebarGroupContent>
         </SidebarGroup>
 
         <SidebarGroup>
           <SidebarGroupLabel>Categories</SidebarGroupLabel>
-          <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton href="#">
@@ -126,7 +124,6 @@ export function AppSidebar() {
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>
-          </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
 
@@ -153,7 +150,7 @@ export function AppSidebar() {
           <SidebarMenuItem>
             <div className="flex items-center gap-3 px-2 py-1">
               <Avatar className="h-9 w-9">
-                <AvatarImage src={user?.avatar} alt={user?.name} data-ai-hint="profile picture" />
+                <AvatarImage src={user?.avatar} alt={user?.name ?? ''} data-ai-hint="profile picture" />
                 <AvatarFallback>{user?.name?.charAt(0)}</AvatarFallback>
               </Avatar>
               <div className="flex flex-col">

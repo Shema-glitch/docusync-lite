@@ -35,12 +35,10 @@ export function TimelineView({ documents }: TimelineViewProps) {
       }}
       className="w-full"
     >
-      <CarouselContent>
+      <CarouselContent className="-ml-4">
         {documents.map((doc, index) => (
-          <CarouselItem key={index} className="sm:basis-1/2 md:basis-1/2 lg:basis-1/3 xl:basis-1/4">
-            <div className="p-1">
-              <DocumentCard document={doc} />
-            </div>
+          <CarouselItem key={index} className="pl-4 sm:basis-1/2 lg:basis-1/3 xl:basis-1/4">
+            <DocumentCard document={doc} />
           </CarouselItem>
         ))}
       </CarouselContent>

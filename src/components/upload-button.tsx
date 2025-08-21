@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -10,9 +11,9 @@ export function UploadButton() {
 
   return (
     <>
-      <Button onClick={() => setIsDialogOpen(true)} className="rounded-full">
+      <Button onClick={() => setIsDialogOpen(true)} className="rounded-full shrink-0">
         <Upload className="mr-2 h-4 w-4" />
-        Upload
+        <span className="hidden sm:inline">Upload</span>
       </Button>
       <UploadDialog isOpen={isDialogOpen} onOpenChange={setIsDialogOpen} />
     </>

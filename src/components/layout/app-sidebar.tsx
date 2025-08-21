@@ -9,7 +9,6 @@ import {
   SidebarGroupLabel,
   SidebarContent,
   SidebarFooter,
-  SidebarTrigger,
 } from '@/components/ui/sidebar';
 import {
   Home,
@@ -17,7 +16,6 @@ import {
   Files,
   Star,
   Settings,
-  CircleHelp,
   Briefcase,
   User,
   Heart,
@@ -28,7 +26,6 @@ import {
   LogOut,
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Button } from '../ui/button';
 import { useAuth } from '@/hooks/use-auth';
 
 export function AppSidebar() {

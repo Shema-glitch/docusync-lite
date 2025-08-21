@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useCallback, type DragEvent } from 'react';
@@ -14,7 +15,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { X, UploadCloud, Sparkles, Loader2, FileText, Calendar as CalendarIcon } from 'lucide-react';
+import { X, UploadCloud, Sparkles, Loader2, FileText, Calendar as CalendarIcon, FileImage, Sheet, FileSignature } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { getAiSuggestions } from '@/app/actions';
 import { cn } from '@/lib/utils';
@@ -22,6 +23,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { Calendar } from './ui/calendar';
 import { format } from 'date-fns';
+import { useDocuments } from '@/hooks/use-documents.tsx';
+import type { Document } from '@/lib/types';
+
 
 interface UploadDialogProps {
   isOpen: boolean;
@@ -30,6 +34,8 @@ interface UploadDialogProps {
 
 export function UploadDialog({ isOpen, onOpenChange }: UploadDialogProps) {
   const { toast } = useToast();
+  const { addDocument } = useDocuments();
+
   const [file, setFile] = useState<File | null>(null);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -157,6 +163,42 @@ export function UploadDialog({ isOpen, onOpenChange }: UploadDialogProps) {
     }
   };
 
+  const getFileIcon = (fileType: string): string => {
+    if (fileType.includes('pdf')) return 'FileText';
+    if (fileType.includes('sheet') || fileType.includes('excel')) return 'Sheet';
+    if (fileType.includes('image')) return 'FileImage';
+    if (fileType.includes('document') || fileType.includes('word')) return 'FileSignature';
+    return 'FileText';
+  };
+
+  const handleUpload = () => {
+    if (!file || !title || !category) {
+        toast({
+            variant: 'destructive',
+            title: 'Missing information',
+            description: 'Please select a file, provide a title, and choose a category.',
+        });
+        return;
+    }
+
+    const newDocument: Document = {
+        id: new Date().toISOString(),
+        title,
+        description,
+        category: category as Document['category'],
+        tags,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        version: 1,
+        type: file.type.split('/')[1]?.toUpperCase() as Document['type'] || 'PDF',
+        icon: getFileIcon(file.type),
+    };
+
+    addDocument(newDocument);
+    toast({ title: 'Upload Successful!', description: `${file.name} has been added.` });
+    handleOpenChange(false);
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-2xl max-h-[90vh] flex flex-col">
@@ -245,6 +287,7 @@ export function UploadDialog({ isOpen, onOpenChange }: UploadDialogProps) {
                         <SelectItem value="Personal">Personal</SelectItem>
                         <SelectItem value="Finance">Finance</SelectItem>
                         <SelectItem value="Legal">Legal</SelectItem>
+                        <SelectItem value="Other">Other</SelectItem>
                     </SelectContent>
                 </Select>
             </div>
@@ -299,10 +342,7 @@ export function UploadDialog({ isOpen, onOpenChange }: UploadDialogProps) {
         </div>
         <DialogFooter className="pt-4">
           <Button variant="outline" onClick={() => handleOpenChange(false)}>Cancel</Button>
-          <Button onClick={() => {
-            toast({ title: 'Upload Successful!', description: `${file?.name} has been added.` });
-            handleOpenChange(false);
-          }} disabled={!file || !title}>Upload File</Button>
+          <Button onClick={handleUpload} disabled={!file || !title || !category}>Upload File</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

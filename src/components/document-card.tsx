@@ -1,3 +1,6 @@
+
+'use client';
+
 import type { Document } from '@/lib/types';
 import {
   Card,
@@ -9,15 +12,29 @@ import {
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from './ui/button';
-import { MoreVertical, Calendar, Bell, FileText, Sheet, FileImage, FileSignature } from 'lucide-react';
+import { MoreVertical, FileText, Sheet, FileImage, FileSignature } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator
 } from './ui/dropdown-menu';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { formatDistanceToNow } from 'date-fns';
-import React from 'react';
+import React, { useState } from 'react';
+import { useDocuments } from '@/hooks/use-documents.tsx';
+import { useToast } from '@/hooks/use-toast';
+
 
 interface DocumentCardProps {
   document: Document;
@@ -31,19 +48,33 @@ const iconMap = {
 };
 
 export function DocumentCard({ document }: DocumentCardProps) {
+  const { deleteDocument } = useDocuments();
+  const { toast } = useToast();
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+
   const timeAgo = formatDistanceToNow(new Date(document.updatedAt), {
     addSuffix: true,
   });
 
   const Icon = iconMap[document.icon as keyof typeof iconMap] || FileText;
 
+  const handleDelete = () => {
+    deleteDocument(document.id);
+    toast({
+        title: 'Document Deleted',
+        description: `"${document.title}" has been moved to the trash.`,
+    })
+    setIsDeleteDialogOpen(false);
+  }
+
   return (
+    <>
     <Card className="flex flex-col h-full overflow-hidden transition-transform duration-200 ease-in-out hover:-translate-y-1 hover:shadow-xl">
       <CardHeader className="flex-row items-start gap-4 p-4">
         <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary shrink-0">
           <Icon className="h-6 w-6" />
         </div>
-        <div className="flex-1">
+        <div className="flex-1 min-w-0">
           <CardTitle className="text-base font-semibold leading-tight mb-1 truncate">
             {document.title}
           </CardTitle>
@@ -58,10 +89,20 @@ export function DocumentCard({ document }: DocumentCardProps) {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem>View Details</DropdownMenuItem>
-            <DropdownMenuItem>Download</DropdownMenuItem>
-            <DropdownMenuItem>Set Reminder</DropdownMenuItem>
-            <DropdownMenuItem className="text-destructive">
+            <DropdownMenuItem onClick={() => toast({ title: 'Feature coming soon!', description: 'Detailed view is not yet available.'})}>
+                View Details
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => toast({ title: 'Feature coming soon!', description: 'Download is not yet available.'})}>
+                Download
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => toast({ title: 'Feature coming soon!', description: 'Reminders are not yet available.'})}>
+                Set Reminder
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem 
+                className="text-destructive focus:bg-destructive/10 focus:text-destructive"
+                onClick={() => setIsDeleteDialogOpen(true)}
+            >
               Delete
             </DropdownMenuItem>
           </DropdownMenuContent>
@@ -86,5 +127,22 @@ export function DocumentCard({ document }: DocumentCardProps) {
         </div>
       </CardFooter>
     </Card>
+
+    <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+          <AlertDialogDescription>
+            This action cannot be undone. This will permanently delete the
+            document "{document.title}".
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogAction onClick={handleDelete} className="bg-destructive hover:bg-destructive/90">Delete</AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+    </>
   );
 }

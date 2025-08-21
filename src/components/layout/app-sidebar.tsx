@@ -1,15 +1,6 @@
 
-import {
-  Sidebar,
-  SidebarHeader,
-  SidebarMenu,
-  SidebarMenuItem,
-  SidebarMenuButton,
-  SidebarGroup,
-  SidebarGroupLabel,
-  SidebarContent,
-  SidebarFooter,
-} from '@/components/ui/sidebar';
+'use client';
+
 import {
   Home,
   FileClock,
@@ -22,130 +13,100 @@ import {
   Wallet,
   Scale,
   Sparkles,
-  Zap,
   LogOut,
+  Zap
 } from 'lucide-react';
+import Link from 'next/link';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/hooks/use-auth';
+import { Button } from '../ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '../ui/dropdown-menu';
 
 export function AppSidebar() {
   const { user, logout } = useAuth();
 
   return (
-    <Sidebar collapsible="icon" variant="sidebar" className="shrink-0">
-      <SidebarContent>
-        <SidebarHeader className='justify-center'>
-            <Zap className="h-8 w-8 text-primary" />
-        </SidebarHeader>
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton href="/" isActive tooltip="Dashboard">
-              <Home />
-              <span className='group-data-[collapsible=icon]:hidden'>Dashboard</span>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-          <SidebarMenuItem>
-            <SidebarMenuButton href="#" tooltip="Timeline">
-              <FileClock />
-               <span className='group-data-[collapsible=icon]:hidden'>Timeline</span>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-          <SidebarMenuItem>
-            <SidebarMenuButton href="#" tooltip="All Files">
-              <Files />
-               <span className='group-data-[collapsible=icon]:hidden'>All Files</span>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-          <SidebarMenuItem>
-            <SidebarMenuButton href="#" tooltip="Favorites">
-              <Star />
-               <span className='group-data-[collapsible=icon]:hidden'>Favorites</span>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
-
-        <SidebarGroup>
-          <SidebarGroupLabel className="flex items-center gap-2">
-            <Sparkles className="text-accent-foreground" />
-             <span className='group-data-[collapsible=icon]:hidden'>Smart Collections</span>
-          </SidebarGroupLabel>
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton href="#" tooltip="Tax Docs">
-                  <Briefcase />
-                   <span className='group-data-[collapsible=icon]:hidden'>Tax Docs</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton href="#" tooltip="Design Portfolio">
-                  <User />
-                   <span className='group-data-[collapsible=icon]:hidden'>Design Portfolio</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
-        </SidebarGroup>
-
-        <SidebarGroup>
-          <SidebarGroupLabel>
-            <span className='group-data-[collapsible=icon]:hidden'>Categories</span>
-            </SidebarGroupLabel>
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton href="#" tooltip="Work">
-                  <Briefcase />
-                   <span className='group-data-[collapsible=icon]:hidden'>Work</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton href="#" tooltip="Personal">
-                  <Heart />
-                   <span className='group-data-[collapsible=icon]:hidden'>Personal</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton href="#" tooltip="Finance">
-                  <Wallet />
-                   <span className='group-data-[collapsible=icon]:hidden'>Finance</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton href="#" tooltip="Legal">
-                  <Scale />
-                   <span className='group-data-[collapsible=icon]:hidden'>Legal</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
-        </SidebarGroup>
-      </SidebarContent>
-
-      <SidebarFooter>
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton href="#" tooltip="Settings">
-              <Settings />
-               <span className='group-data-[collapsible=icon]:hidden'>Settings</span>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-          <SidebarMenuItem>
-            <SidebarMenuButton onClick={logout} tooltip="Logout">
-              <LogOut />
-               <span className='group-data-[collapsible=icon]:hidden'>Logout</span>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-          <SidebarMenuItem>
-            <div className="flex items-center gap-3 px-2 py-1 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0">
-              <Avatar className="h-9 w-9">
-                <AvatarImage src={user?.avatar} alt={user?.name ?? ''} data-ai-hint="profile picture" />
-                <AvatarFallback>{user?.name?.charAt(0)}</AvatarFallback>
-              </Avatar>
-              <div className="flex flex-col group-data-[collapsible=icon]:hidden">
-                <span className="font-medium text-sm">{user?.name}</span>
-                <span className="text-xs text-muted-foreground">{user?.email}</span>
-              </div>
-            </div>
-          </SidebarMenuItem>
-        </SidebarMenu>
-      </SidebarFooter>
-    </Sidebar>
+    <div className="hidden border-r bg-muted/40 md:block">
+      <div className="flex h-full max-h-screen flex-col gap-2">
+        <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6">
+          <Link href="/" className="flex items-center gap-2 font-semibold">
+            <Zap className="h-6 w-6 text-primary" />
+            <span className="">DocuSync Lite</span>
+          </Link>
+        </div>
+        <div className="flex-1">
+          <nav className="grid items-start px-2 text-sm font-medium lg:px-4">
+            <Link
+              href="#"
+              className="flex items-center gap-3 rounded-lg bg-muted px-3 py-2 text-primary transition-all hover:text-primary"
+            >
+              <Home className="h-4 w-4" />
+              Dashboard
+            </Link>
+            <Link
+              href="#"
+              className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary"
+            >
+              <FileClock className="h-4 w-4" />
+              Timeline
+            </Link>
+            <Link
+              href="#"
+              className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary"
+            >
+              <Files className="h-4 w-4" />
+              All Files
+            </Link>
+            <Link
+              href="#"
+              className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary"
+            >
+              <Star className="h-4 w-4" />
+              Favorites
+            </Link>
+          </nav>
+        </div>
+        <div className="mt-auto p-4">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="flex items-center gap-2 w-full justify-start">
+                    <Avatar className="h-9 w-9">
+                        <AvatarImage src={user?.avatar} alt={user?.name ?? ''} data-ai-hint="profile picture" />
+                        <AvatarFallback>{user?.name?.charAt(0)}</AvatarFallback>
+                    </Avatar>
+                    <div className="flex flex-col items-start">
+                        <span className="font-medium text-sm">{user?.name}</span>
+                        <span className="text-xs text-muted-foreground">{user?.email}</span>
+                    </div>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className='w-56'>
+                <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem>
+                    <Settings className="mr-2 h-4 w-4" />
+                    <span>Settings</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                    <Heart className="mr-2 h-4 w-4" />
+                    <span>Support</span>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={logout}>
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Logout</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+        </div>
+      </div>
+    </div>
   );
 }

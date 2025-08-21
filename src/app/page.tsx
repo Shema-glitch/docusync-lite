@@ -9,23 +9,24 @@ import {
 import { Dashboard } from '@/components/dashboard';
 import { useAuth } from '@/hooks/use-auth';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Loader2 } from 'lucide-react';
+import { DocumentsProvider } from '@/hooks/use-documents.tsx';
 
 function AuthenticatedApp() {
+  const [searchQuery, setSearchQuery] = useState('');
+
   return (
     <SidebarProvider>
-        <div className="flex min-h-screen">
-            <AppSidebar />
-            <SidebarInset>
-                <div className="flex flex-1 flex-col min-w-0">
-                    <AppHeader />
-                    <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
-                        <Dashboard />
-                    </main>
-                </div>
-            </SidebarInset>
+      <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
+        <AppSidebar />
+        <div className="flex flex-col min-w-0">
+          <AppHeader searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
+          <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6">
+            <Dashboard searchQuery={searchQuery} />
+          </main>
         </div>
+      </div>
     </SidebarProvider>
   );
 }
@@ -48,5 +49,9 @@ export default function Home() {
     );
   }
 
-  return <AuthenticatedApp />;
+  return (
+    <DocumentsProvider>
+      <AuthenticatedApp />
+    </DocumentsProvider>
+  );
 }

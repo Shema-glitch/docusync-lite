@@ -28,7 +28,7 @@ interface AppHeaderProps {
 
 export function AppHeader({ searchQuery, setSearchQuery }: AppHeaderProps) {
   return (
-    <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
+    <header className="sticky top-0 z-30 flex items-center gap-4 border-b bg-background px-4 py-2 sm:px-6">
       <Sheet>
         <SheetTrigger asChild>
           <Button size="icon" variant="outline" className="sm:hidden">
@@ -80,7 +80,7 @@ export function AppHeader({ searchQuery, setSearchQuery }: AppHeaderProps) {
           </nav>
         </SheetContent>
       </Sheet>
-      <div className="relative flex-1 md:grow-0">
+      <div className="relative flex-1">
         <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
         <Input
           type="search"

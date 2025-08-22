@@ -1,3 +1,4 @@
+
 import type { LucideIcon } from 'lucide-react';
 
 export type Document = {
@@ -9,8 +10,8 @@ export type Document = {
   createdAt: string;
   updatedAt: string;
   version: number;
-  type: 'PDF' | 'Word' | 'Image' | 'Spreadsheet';
-  icon: string;
+  type: 'PDF' | 'Word' | 'Image' | 'Spreadsheet' | 'OTHER';
+  icon: 'FileText' | 'FileSignature' | 'FileImage' | 'Sheet';
   status: 'active' | 'trashed';
   reminderDate?: string;
   isFavorite?: boolean;

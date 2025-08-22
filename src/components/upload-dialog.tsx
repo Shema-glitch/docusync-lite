@@ -163,7 +163,7 @@ export function UploadDialog({ isOpen, onOpenChange }: UploadDialogProps) {
     }
   };
 
-  const getFileIcon = (fileType: string): string => {
+  const getFileIcon = (fileType: string): Document['icon'] => {
     if (fileType.includes('pdf')) return 'FileText';
     if (fileType.includes('sheet') || fileType.includes('excel')) return 'Sheet';
     if (fileType.includes('image')) return 'FileImage';
@@ -186,7 +186,7 @@ export function UploadDialog({ isOpen, onOpenChange }: UploadDialogProps) {
         description,
         category: category as Document['category'],
         tags,
-        type: file.type.split('/')[1]?.toUpperCase() as Document['type'] || 'PDF',
+        type: file.type.split('/')[1]?.toUpperCase() as Document['type'] || 'OTHER',
         icon: getFileIcon(file.type),
         reminderDate: reminderDate?.toISOString(),
     };

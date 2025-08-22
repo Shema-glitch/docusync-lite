@@ -33,7 +33,7 @@ export function TimelineView({ documents }: TimelineViewProps) {
       opts={{
         align: 'start',
       }}
-      className="w-full"
+      className="w-full relative"
     >
       <CarouselContent className="-ml-4">
         {documents.map((doc, index) => (
@@ -42,8 +42,8 @@ export function TimelineView({ documents }: TimelineViewProps) {
           </CarouselItem>
         ))}
       </CarouselContent>
-      <CarouselPrevious className="hidden sm:flex" />
-      <CarouselNext className="hidden sm:flex" />
+      <CarouselPrevious className="hidden sm:flex bg-white/50 hover:bg-white" />
+      <CarouselNext className="hidden sm:flex bg-white/50 hover:bg-white" />
     </Carousel>
   );
 }

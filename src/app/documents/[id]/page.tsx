@@ -9,10 +9,10 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { format } from 'date-fns';
 
-export default function DocumentDetailsPage({ params: { id } }: { params: { id: string } }) {
+export default function DocumentDetailsPage({ params }: { params: { id: string } }) {
   const { documents } = useDocuments();
   const router = useRouter();
-  const document = documents.find((doc) => doc.id === id);
+  const document = documents.find((doc) => doc.id === params.id);
 
   if (!document) {
     return (

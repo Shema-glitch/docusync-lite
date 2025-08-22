@@ -8,7 +8,7 @@ import { useToast } from './use-toast';
 interface DocumentsContextType {
   documents: Document[];
   loading: boolean;
-  addDocument: (doc: Omit<Document, 'id' | 'createdAt' | 'updatedAt' | 'version' | 'status'>) => void;
+  addDocument: (doc: Omit<Document, 'id' | 'createdAt' | 'updatedAt' | 'version' | 'status' | 'isFavorite'>) => void;
   deleteDocument: (id: string) => void;
   updateDocument: (id: string, updates: Partial<Document>) => void;
   restoreDocument: (id: string) => void;
@@ -19,7 +19,7 @@ const DocumentsContext = createContext<DocumentsContextType | undefined>(undefin
 
 const MOCK_DOCUMENTS: Document[] = [
     {
-      id: '1',
+      id: 'doc_1',
       title: 'Project Phoenix Proposal',
       description: 'Initial proposal for the new marketing campaign.',
       category: 'Work',
@@ -33,7 +33,7 @@ const MOCK_DOCUMENTS: Document[] = [
       isFavorite: true,
     },
     {
-      id: '2',
+      id: 'doc_2',
       title: 'Q3 Financial Report',
       description: 'Quarterly financial results and analysis.',
       category: 'Finance',
@@ -47,7 +47,7 @@ const MOCK_DOCUMENTS: Document[] = [
       isFavorite: false,
     },
     {
-      id: '3',
+      id: 'doc_3',
       title: 'New Logo Concepts',
       description: 'Draft designs for the company rebranding.',
       category: 'Work',
@@ -61,7 +61,7 @@ const MOCK_DOCUMENTS: Document[] = [
       isFavorite: false,
     },
     {
-      id: '4',
+      id: 'doc_4',
       title: 'Signed NDA',
       description: 'Non-disclosure agreement with Partner Corp.',
       category: 'Legal',
@@ -75,7 +75,7 @@ const MOCK_DOCUMENTS: Document[] = [
       isFavorite: true,
     },
     {
-      id: '5',
+      id: 'doc_5',
       title: 'Vacation Photos',
       description: 'Pictures from the summer trip to Italy.',
       category: 'Personal',
@@ -89,7 +89,7 @@ const MOCK_DOCUMENTS: Document[] = [
       isFavorite: false,
     },
       {
-      id: '6',
+      id: 'doc_6',
       title: 'Home Loan Agreement',
       description: 'Mortgage agreement documents for the new house.',
       category: 'Finance',
@@ -126,6 +126,18 @@ export function DocumentsProvider({ children }: { children: ReactNode }) {
     setLoading(false);
   }, []);
 
+  const updateLocalStorage = (docs: Document[]) => {
+    localStorage.setItem('documents_db', JSON.stringify(docs));
+  };
+  
+  const updateDocument = useCallback((id: string, updates: Partial<Document>) => {
+    setDocuments(prevDocs => {
+        const newDocs = prevDocs.map(doc => doc.id === id ? { ...doc, ...updates, updatedAt: new Date().toISOString() } : doc);
+        updateLocalStorage(newDocs);
+        return newDocs;
+    });
+  }, []);
+
   // Reminder checking effect
   useEffect(() => {
     const interval = setInterval(() => {
@@ -146,17 +158,13 @@ export function DocumentsProvider({ children }: { children: ReactNode }) {
     }, 60000); // Check every minute
 
     return () => clearInterval(interval);
-  }, [documents, toast]);
+  }, [documents, toast, updateDocument]);
 
 
-  const updateLocalStorage = (docs: Document[]) => {
-    localStorage.setItem('documents_db', JSON.stringify(docs));
-  };
-
-  const addDocument = useCallback((docData: Omit<Document, 'id' | 'createdAt' | 'updatedAt' | 'version' | 'status'>) => {
+  const addDocument = useCallback((docData: Omit<Document, 'id' | 'createdAt' | 'updatedAt' | 'version' | 'status' | 'isFavorite'>) => {
     const newDoc: Document = {
       ...docData,
-      id: new Date().toISOString(),
+      id: `doc_${new Date().getTime()}`,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       version: 1,
@@ -191,15 +199,6 @@ export function DocumentsProvider({ children }: { children: ReactNode }) {
       const newDocs = prevDocs.filter(doc => doc.id !== id);
       updateLocalStorage(newDocs);
       return newDocs;
-    });
-  }, []);
-
-
-  const updateDocument = useCallback((id: string, updates: Partial<Document>) => {
-    setDocuments(prevDocs => {
-        const newDocs = prevDocs.map(doc => doc.id === id ? { ...doc, ...updates, updatedAt: new Date().toISOString() } : doc);
-        updateLocalStorage(newDocs);
-        return newDocs;
     });
   }, []);
 

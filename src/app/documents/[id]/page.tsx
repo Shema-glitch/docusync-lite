@@ -9,17 +9,17 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { format } from 'date-fns';
 
-export default function DocumentDetailsPage({ params }: { params: { id: string } }) {
+export default function DocumentDetailsPage({ params: { id } }: { params: { id: string } }) {
   const { documents } = useDocuments();
   const router = useRouter();
-  const document = documents.find((doc) => doc.id === params.id);
+  const document = documents.find((doc) => doc.id === id);
 
   if (!document) {
     return (
       <div className="flex flex-col items-center justify-center h-full text-center">
         <h2 className="text-2xl font-bold">Document not found</h2>
         <p className="text-muted-foreground mt-2">The document you are looking for does not exist or has been deleted.</p>
-        <Button onClick={() => router.push('/')} className="mt-4">
+        <Button onClick={() => router.push('/dashboard')} className="mt-4">
           Go to Dashboard
         </Button>
       </div>

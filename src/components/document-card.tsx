@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from './ui/button';
-import { MoreVertical, FileText, Sheet, FileImage, FileSignature, Download, Trash2, Edit, RotateCcw, Calendar as CalendarIcon } from 'lucide-react';
+import { MoreVertical, FileText, Sheet, FileImage, FileSignature, Trash2, RotateCcw, Calendar as CalendarIcon, Star } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -110,6 +110,15 @@ export function DocumentCard({ document }: DocumentCardProps) {
         description: `Reminder for "${document.title}" has been ${date ? `set to ${format(date, 'PPP')}`: 'cleared'}.`
     })
   }
+  
+  const toggleFavorite = () => {
+    updateDocument(document.id, { isFavorite: !document.isFavorite });
+     toast({
+        title: document.isFavorite ? 'Removed from Favorites' : 'Added to Favorites',
+        description: `"${document.title}" has been ${document.isFavorite ? 'removed from' : 'added to'} your favorites.`,
+    })
+  }
+
 
   return (
     <>
@@ -128,63 +137,68 @@ export function DocumentCard({ document }: DocumentCardProps) {
             Updated {timeAgo}
           </CardDescription>
         </div>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0">
-              <MoreVertical className="h-4 w-4" />
+        <div className="flex items-center">
+            <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={toggleFavorite}>
+                <Star className={cn("h-4 w-4", document.isFavorite ? "text-yellow-400 fill-yellow-400" : "text-muted-foreground")} />
             </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-             {document.status === 'active' ? (
-                <>
-                    <DropdownMenuItem asChild>
-                        <Link href={`/documents/${document.id}`}>View Details</Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => toast({ title: 'Feature coming soon!', description: 'Download is not yet available.'})}>
-                        Download
-                    </DropdownMenuItem>
-                    <Popover>
-                        <PopoverTrigger asChild>
-                           <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                                Set Reminder
-                           </DropdownMenuItem>
-                        </PopoverTrigger>
-                         <PopoverContent className="w-auto p-0 mr-2" align="end">
-                            <Calendar
-                                mode="single"
-                                selected={reminderDate}
-                                onSelect={handleSetReminder}
-                                initialFocus
-                            />
-                        </PopoverContent>
-                    </Popover>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem 
-                        className="text-destructive focus:bg-destructive/10 focus:text-destructive"
-                        onClick={handleDeleteClick}
-                    >
-                      <Trash2 className="mr-2 h-4 w-4"/>
-                      Delete
-                    </DropdownMenuItem>
-                </>
-             ) : (
-                <>
-                    <DropdownMenuItem onClick={handleRestore}>
-                       <RotateCcw className="mr-2 h-4 w-4"/>
-                       Restore
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem 
-                        className="text-destructive focus:bg-destructive/10 focus:text-destructive"
-                        onClick={handlePermanentDeleteClick}
-                    >
-                      <Trash2 className="mr-2 h-4 w-4"/>
-                      Delete Permanently
-                    </DropdownMenuItem>
-                </>
-             )}
-          </DropdownMenuContent>
-        </DropdownMenu>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0">
+                  <MoreVertical className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                 {document.status === 'active' ? (
+                    <>
+                        <DropdownMenuItem asChild>
+                            <Link href={`/documents/${document.id}`}>View Details</Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => toast({ title: 'Feature coming soon!', description: 'Download is not yet available.'})}>
+                            Download
+                        </DropdownMenuItem>
+                        <Popover>
+                            <PopoverTrigger asChild>
+                               <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                                    Set Reminder
+                               </DropdownMenuItem>
+                            </PopoverTrigger>
+                             <PopoverContent className="w-auto p-0 mr-2" align="end">
+                                <Calendar
+                                    mode="single"
+                                    selected={reminderDate}
+                                    onSelect={handleSetReminder}
+                                    initialFocus
+                                />
+                            </PopoverContent>
+                        </Popover>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem 
+                            className="text-destructive focus:bg-destructive/10 focus:text-destructive"
+                            onClick={handleDeleteClick}
+                        >
+                          <Trash2 className="mr-2 h-4 w-4"/>
+                          Delete
+                        </DropdownMenuItem>
+                    </>
+                 ) : (
+                    <>
+                        <DropdownMenuItem onClick={handleRestore}>
+                           <RotateCcw className="mr-2 h-4 w-4"/>
+                           Restore
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem 
+                            className="text-destructive focus:bg-destructive/10 focus:text-destructive"
+                            onClick={handlePermanentDeleteClick}
+                        >
+                          <Trash2 className="mr-2 h-4 w-4"/>
+                          Delete Permanently
+                        </DropdownMenuItem>
+                    </>
+                 )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+        </div>
       </CardHeader>
       <CardContent className="p-4 pt-0 flex-grow">
         <p className="text-sm text-muted-foreground line-clamp-2">

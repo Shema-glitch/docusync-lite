@@ -28,7 +28,7 @@ import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 
 const navItems = [
-  { href: '/', label: 'Dashboard', icon: Home },
+  { href: '/dashboard', label: 'Dashboard', icon: Home },
   { href: '/timeline', label: 'Timeline', icon: FileClock },
   { href: '/documents', label: 'All Files', icon: Files },
   { href: '/favorites', label: 'Favorites', icon: Star },

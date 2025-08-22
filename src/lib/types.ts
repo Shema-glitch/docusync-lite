@@ -13,4 +13,5 @@ export type Document = {
   icon: string;
   status: 'active' | 'trashed';
   reminderDate?: string;
+  isFavorite?: boolean;
 };

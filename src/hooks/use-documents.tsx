@@ -30,6 +30,7 @@ const MOCK_DOCUMENTS: Document[] = [
       type: 'PDF',
       icon: 'FileText',
       status: 'active',
+      isFavorite: true,
     },
     {
       id: '2',
@@ -43,6 +44,7 @@ const MOCK_DOCUMENTS: Document[] = [
       type: 'Spreadsheet',
       icon: 'Sheet',
       status: 'active',
+      isFavorite: false,
     },
     {
       id: '3',
@@ -56,6 +58,7 @@ const MOCK_DOCUMENTS: Document[] = [
       type: 'Image',
       icon: 'FileImage',
       status: 'active',
+      isFavorite: false,
     },
     {
       id: '4',
@@ -69,6 +72,7 @@ const MOCK_DOCUMENTS: Document[] = [
       type: 'Word',
       icon: 'FileSignature',
       status: 'active',
+      isFavorite: true,
     },
     {
       id: '5',
@@ -82,6 +86,7 @@ const MOCK_DOCUMENTS: Document[] = [
       type: 'Image',
       icon: 'FileImage',
       status: 'active',
+      isFavorite: false,
     },
       {
       id: '6',
@@ -95,6 +100,7 @@ const MOCK_DOCUMENTS: Document[] = [
       type: 'PDF',
       icon: 'FileText',
       status: 'active',
+      isFavorite: false,
     },
   ];
 
@@ -155,6 +161,7 @@ export function DocumentsProvider({ children }: { children: ReactNode }) {
       updatedAt: new Date().toISOString(),
       version: 1,
       status: 'active',
+      isFavorite: false,
     };
     setDocuments(prevDocs => {
       const newDocs = [newDoc, ...prevDocs];

@@ -3,14 +3,16 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import type { Document } from '@/lib/types';
-import { FileImage, FileSignature, FileText, Sheet } from 'lucide-react';
+import { useToast } from './use-toast';
 
 interface DocumentsContextType {
   documents: Document[];
   loading: boolean;
-  addDocument: (doc: Document) => void;
+  addDocument: (doc: Omit<Document, 'id' | 'createdAt' | 'updatedAt' | 'version' | 'status'>) => void;
   deleteDocument: (id: string) => void;
   updateDocument: (id: string, updates: Partial<Document>) => void;
+  restoreDocument: (id: string) => void;
+  permanentlyDeleteDocument: (id: string) => void;
 }
 
 const DocumentsContext = createContext<DocumentsContextType | undefined>(undefined);
@@ -27,6 +29,7 @@ const MOCK_DOCUMENTS: Document[] = [
       version: 2,
       type: 'PDF',
       icon: 'FileText',
+      status: 'active',
     },
     {
       id: '2',
@@ -39,6 +42,7 @@ const MOCK_DOCUMENTS: Document[] = [
       version: 1,
       type: 'Spreadsheet',
       icon: 'Sheet',
+      status: 'active',
     },
     {
       id: '3',
@@ -51,6 +55,7 @@ const MOCK_DOCUMENTS: Document[] = [
       version: 3,
       type: 'Image',
       icon: 'FileImage',
+      status: 'active',
     },
     {
       id: '4',
@@ -63,6 +68,7 @@ const MOCK_DOCUMENTS: Document[] = [
       version: 1,
       type: 'Word',
       icon: 'FileSignature',
+      status: 'active',
     },
     {
       id: '5',
@@ -75,6 +81,7 @@ const MOCK_DOCUMENTS: Document[] = [
       version: 1,
       type: 'Image',
       icon: 'FileImage',
+      status: 'active',
     },
       {
       id: '6',
@@ -87,12 +94,14 @@ const MOCK_DOCUMENTS: Document[] = [
       version: 1,
       type: 'PDF',
       icon: 'FileText',
+      status: 'active',
     },
   ];
 
 export function DocumentsProvider({ children }: { children: ReactNode }) {
   const [documents, setDocuments] = useState<Document[]>([]);
   const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
 
   useEffect(() => {
     setLoading(true);
@@ -101,7 +110,6 @@ export function DocumentsProvider({ children }: { children: ReactNode }) {
       if (storedDocs) {
         setDocuments(JSON.parse(storedDocs));
       } else {
-        // Initialize with mock data if nothing is in local storage
         setDocuments(MOCK_DOCUMENTS);
         localStorage.setItem('documents_db', JSON.stringify(MOCK_DOCUMENTS));
       }
@@ -112,13 +120,44 @@ export function DocumentsProvider({ children }: { children: ReactNode }) {
     setLoading(false);
   }, []);
 
+  // Reminder checking effect
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const now = new Date();
+      documents.forEach(doc => {
+        if (doc.reminderDate && doc.status === 'active') {
+          const reminderTime = new Date(doc.reminderDate);
+          if (now >= reminderTime && (now.getTime() - reminderTime.getTime()) < 60000) { // Check if reminder is due in the last minute
+            toast({
+              title: `Reminder: ${doc.title}`,
+              description: 'This is a reminder for your document.',
+            });
+            // To prevent re-triggering, you might want to clear the reminder date
+            updateDocument(doc.id, { reminderDate: undefined });
+          }
+        }
+      });
+    }, 60000); // Check every minute
+
+    return () => clearInterval(interval);
+  }, [documents, toast]);
+
+
   const updateLocalStorage = (docs: Document[]) => {
     localStorage.setItem('documents_db', JSON.stringify(docs));
   };
 
-  const addDocument = useCallback((doc: Document) => {
+  const addDocument = useCallback((docData: Omit<Document, 'id' | 'createdAt' | 'updatedAt' | 'version' | 'status'>) => {
+    const newDoc: Document = {
+      ...docData,
+      id: new Date().toISOString(),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      version: 1,
+      status: 'active',
+    };
     setDocuments(prevDocs => {
-      const newDocs = [doc, ...prevDocs];
+      const newDocs = [newDoc, ...prevDocs];
       updateLocalStorage(newDocs);
       return newDocs;
     });
@@ -126,11 +165,28 @@ export function DocumentsProvider({ children }: { children: ReactNode }) {
 
   const deleteDocument = useCallback((id: string) => {
     setDocuments(prevDocs => {
+        const newDocs = prevDocs.map(doc => doc.id === id ? { ...doc, status: 'trashed' as const, updatedAt: new Date().toISOString() } : doc);
+        updateLocalStorage(newDocs);
+        return newDocs;
+    });
+  }, []);
+
+  const restoreDocument = useCallback((id: string) => {
+    setDocuments(prevDocs => {
+        const newDocs = prevDocs.map(doc => doc.id === id ? { ...doc, status: 'active' as const, updatedAt: new Date().toISOString() } : doc);
+        updateLocalStorage(newDocs);
+        return newDocs;
+    });
+  }, []);
+
+  const permanentlyDeleteDocument = useCallback((id: string) => {
+    setDocuments(prevDocs => {
       const newDocs = prevDocs.filter(doc => doc.id !== id);
       updateLocalStorage(newDocs);
       return newDocs;
     });
   }, []);
+
 
   const updateDocument = useCallback((id: string, updates: Partial<Document>) => {
     setDocuments(prevDocs => {
@@ -140,7 +196,7 @@ export function DocumentsProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
-  const value = { documents, loading, addDocument, deleteDocument, updateDocument };
+  const value = { documents, loading, addDocument, deleteDocument, updateDocument, restoreDocument, permanentlyDeleteDocument };
 
   return <DocumentsContext.Provider value={value}>{children}</DocumentsContext.Provider>;
 }

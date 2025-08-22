@@ -39,7 +39,7 @@ export function UploadDialog({ isOpen, onOpenChange }: UploadDialogProps) {
   const [file, setFile] = useState<File | null>(null);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [category, setCategory] = useState<string>('');
+  const [category, setCategory] = useState<Document['category'] | ''>('');
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState('');
   const [suggestedTags, setSuggestedTags] = useState<string[]>([]);
@@ -181,17 +181,14 @@ export function UploadDialog({ isOpen, onOpenChange }: UploadDialogProps) {
         return;
     }
 
-    const newDocument: Document = {
-        id: new Date().toISOString(),
+    const newDocument = {
         title,
         description,
         category: category as Document['category'],
         tags,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        version: 1,
         type: file.type.split('/')[1]?.toUpperCase() as Document['type'] || 'PDF',
         icon: getFileIcon(file.type),
+        reminderDate: reminderDate?.toISOString(),
     };
 
     addDocument(newDocument);
@@ -278,7 +275,7 @@ export function UploadDialog({ isOpen, onOpenChange }: UploadDialogProps) {
           <div className="space-y-4">
              <div className="space-y-2">
                 <Label htmlFor="category">Category</Label>
-                <Select value={category} onValueChange={setCategory}>
+                <Select value={category} onValueChange={(value) => setCategory(value as Document['category'])}>
                     <SelectTrigger id="category">
                         <SelectValue placeholder="Select a category" />
                     </SelectTrigger>
@@ -287,7 +284,6 @@ export function UploadDialog({ isOpen, onOpenChange }: UploadDialogProps) {
                         <SelectItem value="Personal">Personal</SelectItem>
                         <SelectItem value="Finance">Finance</SelectItem>
                         <SelectItem value="Legal">Legal</SelectItem>
-                        <SelectItem value="Other">Other</SelectItem>
                     </SelectContent>
                 </Select>
             </div>

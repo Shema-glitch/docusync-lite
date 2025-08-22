@@ -11,4 +11,6 @@ export type Document = {
   version: number;
   type: 'PDF' | 'Word' | 'Image' | 'Spreadsheet';
   icon: string;
+  status: 'active' | 'trashed';
+  reminderDate?: string;
 };

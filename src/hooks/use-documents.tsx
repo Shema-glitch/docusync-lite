@@ -31,6 +31,8 @@ const MOCK_DOCUMENTS: Document[] = [
       icon: 'FileText',
       status: 'active',
       isFavorite: true,
+      fileType: 'application/pdf',
+      content: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf'
     },
     {
       id: 'doc_2',
@@ -42,7 +44,7 @@ const MOCK_DOCUMENTS: Document[] = [
       updatedAt: '2023-10-25T15:20:00Z',
       version: 1,
       type: 'Spreadsheet',
-      icon: 'Sheet',
+      icon: 'FileSpreadsheet',
       status: 'active',
       isFavorite: false,
     },
@@ -109,27 +111,6 @@ export function DocumentsProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
-  useEffect(() => {
-    setLoading(true);
-    try {
-      const storedDocs = localStorage.getItem('documents_db');
-      if (storedDocs) {
-        setDocuments(JSON.parse(storedDocs));
-      } else {
-        setDocuments(MOCK_DOCUMENTS);
-        localStorage.setItem('documents_db', JSON.stringify(MOCK_DOCUMENTS));
-      }
-    } catch (error) {
-        console.error("Could not parse documents from local storage", error);
-        setDocuments(MOCK_DOCUMENTS);
-    }
-    setLoading(false);
-  }, []);
-
-  const updateLocalStorage = (docs: Document[]) => {
-    localStorage.setItem('documents_db', JSON.stringify(docs));
-  };
-  
   const updateDocument = useCallback((id: string, updates: Partial<Document>) => {
     setDocuments(prevDocs => {
         const newDocs = prevDocs.map(doc => doc.id === id ? { ...doc, ...updates, updatedAt: new Date().toISOString() } : doc);
@@ -161,6 +142,27 @@ export function DocumentsProvider({ children }: { children: ReactNode }) {
   }, [documents, toast, updateDocument]);
 
 
+  useEffect(() => {
+    setLoading(true);
+    try {
+      const storedDocs = localStorage.getItem('documents_db');
+      if (storedDocs) {
+        setDocuments(JSON.parse(storedDocs));
+      } else {
+        setDocuments(MOCK_DOCUMENTS);
+        localStorage.setItem('documents_db', JSON.stringify(MOCK_DOCUMENTS));
+      }
+    } catch (error) {
+        console.error("Could not parse documents from local storage", error);
+        setDocuments(MOCK_DOCUMENTS);
+    }
+    setLoading(false);
+  }, []);
+
+  const updateLocalStorage = (docs: Document[]) => {
+    localStorage.setItem('documents_db', JSON.stringify(docs));
+  };
+  
   const addDocument = useCallback((docData: Omit<Document, 'id' | 'createdAt' | 'updatedAt' | 'version' | 'status' | 'isFavorite'>) => {
     const newDoc: Document = {
       ...docData,

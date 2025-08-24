@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from './ui/button';
-import { MoreVertical, FileText, Sheet, FileImage, FileSignature, Trash2, RotateCcw, Calendar as CalendarIcon, Star } from 'lucide-react';
+import { MoreVertical, FileText, Sheet, FileImage, FileSignature, Trash2, RotateCcw, Calendar as CalendarIcon, Star, Presentation, FileSpreadsheet } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -49,6 +49,8 @@ const iconMap = {
   Sheet: Sheet,
   FileImage: FileImage,
   FileSignature: FileSignature,
+  Presentation: Presentation,
+  FileSpreadsheet: FileSpreadsheet,
 };
 
 export function DocumentCard({ document }: DocumentCardProps) {

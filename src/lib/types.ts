@@ -10,8 +10,8 @@ export type Document = {
   createdAt: string;
   updatedAt: string;
   version: number;
-  type: 'PDF' | 'Word' | 'Image' | 'Spreadsheet' | 'TXT' | 'OTHER';
-  icon: 'FileText' | 'FileSignature' | 'FileImage' | 'Sheet';
+  type: 'PDF' | 'Word' | 'Image' | 'Spreadsheet' | 'Presentation' | 'TXT' | 'OTHER';
+  icon: 'FileText' | 'FileSignature' | 'FileImage' | 'FileSpreadsheet' | 'Presentation' | 'Sheet';
   status: 'active' | 'trashed';
   reminderDate?: string;
   isFavorite?: boolean;

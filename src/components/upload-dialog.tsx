@@ -15,7 +15,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { X, UploadCloud, Sparkles, Loader2, FileText, Calendar as CalendarIcon, FileImage, Sheet, FileSignature } from 'lucide-react';
+import { X, UploadCloud, Sparkles, Loader2, FileText, Calendar as CalendarIcon, FileImage, Sheet, FileSignature, Presentation, FileSpreadsheet } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { getAiSuggestions } from '@/app/actions';
 import { cn } from '@/lib/utils';
@@ -36,6 +36,8 @@ const ACCEPTED_FILE_TYPES = {
     'application/pdf': {icon: 'FileText', type: 'PDF'},
     'text/plain': {icon: 'FileText', type: 'TXT'},
     'application/vnd.openxmlformats-officedocument.wordprocessingml.document': {icon: 'FileSignature', type: 'Word'},
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': {icon: 'FileSpreadsheet', type: 'Spreadsheet'},
+    'application/vnd.openxmlformats-officedocument.presentationml.presentation': {icon: 'Presentation', type: 'Presentation'},
 };
 
 export function UploadDialog({ isOpen, onOpenChange }: UploadDialogProps) {
@@ -80,7 +82,7 @@ export function UploadDialog({ isOpen, onOpenChange }: UploadDialogProps) {
         toast({
             variant: 'destructive',
             title: 'Unsupported file type',
-            description: `Please upload a supported file type: PDF, TXT, DOCX.`,
+            description: `Please upload a supported file type: PDF, TXT, DOCX, XLSX, PPTX.`,
         });
         return;
       }

@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Maximize } from 'lucide-react';
+import { ArrowLeft, Maximize, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { Separator } from '@/components/ui/separator';
 
@@ -27,8 +27,9 @@ export default function DocumentDetailsPage({ params }: { params: { id: string }
   if (!document) {
     return (
       <div className="flex flex-col items-center justify-center h-full text-center">
-        <h2 className="text-2xl font-bold">Document not found</h2>
-        <p className="text-muted-foreground mt-2">The document you are looking for does not exist or has been deleted.</p>
+        <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
+        <h2 className="text-2xl font-bold">Loading Document...</h2>
+        <p className="text-muted-foreground mt-2">If this takes too long, the document may not exist.</p>
         <Button onClick={() => router.push('/dashboard')} className="mt-4">
           Go to Dashboard
         </Button>
@@ -40,9 +41,18 @@ export default function DocumentDetailsPage({ params }: { params: { id: string }
     if (!document.content) {
         return <p className="text-muted-foreground">No content available for this document.</p>;
     }
+
+    const isOfficeDoc = ['application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/vnd.openxmlformats-officedocument.presentationml.presentation'].includes(document.fileType || '');
+
     if (document.fileType === 'application/pdf' || document.fileType === 'text/plain') {
         return <iframe id="doc-iframe" src={document.content} className="w-full h-full border-0" title={document.title} />;
     }
+    
+    if (isOfficeDoc) {
+        const viewerUrl = `https://docs.google.com/gview?url=${encodeURIComponent(document.content)}&embedded=true`;
+        return <iframe id="doc-iframe" src={viewerUrl} className="w-full h-full border-0" title={document.title} />;
+    }
+
     return <p className="text-muted-foreground">This file type cannot be previewed.</p>;
   }
 

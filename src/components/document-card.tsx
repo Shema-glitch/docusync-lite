@@ -38,6 +38,7 @@ import Link from 'next/link';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { Calendar } from './ui/calendar';
 import { cn } from '@/lib/utils';
+import { useRouter } from 'next/navigation';
 
 
 interface DocumentCardProps {
@@ -56,6 +57,7 @@ const iconMap = {
 export function DocumentCard({ document }: DocumentCardProps) {
   const { deleteDocument, restoreDocument, permanentlyDeleteDocument, updateDocument } = useDocuments();
   const { toast } = useToast();
+  const router = useRouter();
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isPermanentDelete, setIsPermanentDelete] = useState(false);
   const [reminderDate, setReminderDate] = useState<Date | undefined>(
@@ -211,7 +213,7 @@ export function DocumentCard({ document }: DocumentCardProps) {
         <div className="flex flex-wrap gap-1">
           <Badge variant="secondary">{document.category}</Badge>
           {document.tags.slice(0, 2).map((tag) => (
-            <Badge key={tag} variant="outline">
+            <Badge key={tag} variant="outline" className="cursor-pointer hover:bg-accent" onClick={() => router.push(`/documents?tag=${tag}`)}>
               {tag}
             </Badge>
           ))}

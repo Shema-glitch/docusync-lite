@@ -4,19 +4,30 @@
 import { DocumentTable } from '@/components/document-table';
 import { useDocuments } from '@/hooks/use-documents.tsx';
 import { FolderNavigation } from '@/components/folder-navigation';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import type { Document } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useSearchParams } from 'next/navigation';
 
 export default function DocumentsPage() {
   const { documents } = useDocuments();
+  const searchParams = useSearchParams();
+  const tagFilter = searchParams.get('tag');
+
   const [selectedCategory, setSelectedCategory] = useState<Document['category'] | 'all'>('all');
 
   const activeDocuments = documents.filter((doc) => doc.status === 'active');
   
-  const filteredDocuments = selectedCategory === 'all' 
+  const filteredByCategory = selectedCategory === 'all' 
     ? activeDocuments
     : activeDocuments.filter(doc => doc.category === selectedCategory);
+
+  const filteredDocuments = useMemo(() => {
+    if (!tagFilter) {
+      return filteredByCategory;
+    }
+    return filteredByCategory.filter(doc => doc.tags.includes(tagFilter));
+  }, [tagFilter, filteredByCategory]);
 
   const categories = ['Work', 'Personal', 'Finance', 'Legal'] as const;
   const categoryCounts = categories.reduce((acc, category) => {
@@ -35,7 +46,9 @@ export default function DocumentsPage() {
         />
         <Card>
             <CardHeader>
-                <CardTitle>Documents</CardTitle>
+                <CardTitle>
+                  {tagFilter ? `Documents tagged "${tagFilter}"` : 'Documents'}
+                </CardTitle>
                 <CardDescription>
                     {selectedCategory === 'all' ? 'All documents' : `Documents in ${selectedCategory}`}
                 </CardDescription>

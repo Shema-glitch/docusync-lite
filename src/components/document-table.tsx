@@ -42,6 +42,7 @@ import { Checkbox } from './ui/checkbox';
 import { Avatar, AvatarFallback } from './ui/avatar';
 import { UploadButton } from './upload-button';
 import { Card, CardContent } from './ui/card';
+import { useRouter } from 'next/navigation';
 
 interface DocumentTableProps {
   documents: Document[];
@@ -60,8 +61,8 @@ export function DocumentTable({ documents }: DocumentTableProps) {
     if (documents.length === 0) {
         return (
           <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed p-12 text-center">
-            <h3 className="text-xl font-semibold">Your document vault is empty</h3>
-            <p className="text-muted-foreground mt-2 mb-4">Get started by uploading your first file.</p>
+            <h3 className="text-xl font-semibold">No documents found</h3>
+            <p className="text-muted-foreground mt-2 mb-4">Try adjusting your filters or upload a new document.</p>
             <UploadButton />
           </div>
         );
@@ -97,6 +98,7 @@ export function DocumentTable({ documents }: DocumentTableProps) {
 function DocumentRow({ document }: { document: Document }) {
     const { deleteDocument, restoreDocument, permanentlyDeleteDocument, updateDocument } = useDocuments();
     const { toast } = useToast();
+    const router = useRouter();
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const [isPermanentDelete, setIsPermanentDelete] = useState(false);
     const [reminderDate, setReminderDate] = useState<Date | undefined>(
@@ -185,8 +187,8 @@ function DocumentRow({ document }: { document: Document }) {
             <TableCell className="hidden lg:table-cell">
                 <div className="flex flex-wrap gap-1">
                     {document.tags.slice(0, 2).map((tag) => (
-                        <Badge key={tag} variant="secondary">
-                        {tag}
+                        <Badge key={tag} variant="secondary" className="cursor-pointer hover:bg-primary/20" onClick={() => router.push(`/documents?tag=${tag}`)}>
+                          {tag}
                         </Badge>
                     ))}
                     {document.tags.length > 2 && (
@@ -281,4 +283,3 @@ function DocumentRow({ document }: { document: Document }) {
         </>
     );
   }
-

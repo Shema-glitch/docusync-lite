@@ -4,6 +4,7 @@
 import { DocumentTable } from '@/components/document-table';
 import { useDocuments } from '@/hooks/use-documents.tsx';
 import { useState } from 'react';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 
 export default function DashboardPage() {
   const { documents } = useDocuments();
@@ -20,11 +21,16 @@ export default function DashboardPage() {
   
 
   return (
-    <div className="flex flex-col gap-8">
-      <section>
-        <h1 className="text-3xl font-bold tracking-tight mb-4">All Documents</h1>
-        <DocumentTable documents={filteredDocuments} />
-      </section>
-    </div>
+     <Card>
+        <CardHeader>
+          <CardTitle>All Documents</CardTitle>
+          <CardDescription>
+            Browse and manage all your documents in one place.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+            <DocumentTable documents={filteredDocuments} />
+        </CardContent>
+      </Card>
   );
 }

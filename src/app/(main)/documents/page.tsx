@@ -26,7 +26,7 @@ export default function DocumentsPage() {
 
 
   return (
-    <div className="grid md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr] gap-6 items-start">
+    <div className="grid md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr] gap-6">
         <FolderNavigation 
             selectedCategory={selectedCategory}
             onSelectCategory={setSelectedCategory}

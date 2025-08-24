@@ -16,9 +16,11 @@ export default function DocumentDetailsPage({ params }: { params: { id: string }
   const document = documents.find((doc) => doc.id === params.id);
 
   const openFullscreen = () => {
-    const iframe = document.getElementById('doc-iframe') as HTMLIFrameElement | null;
-    if (iframe?.requestFullscreen) {
-        iframe.requestFullscreen();
+    if (typeof window !== 'undefined' && typeof window.document !== 'undefined') {
+        const iframe = window.document.getElementById('doc-iframe') as HTMLIFrameElement | null;
+        if (iframe?.requestFullscreen) {
+            iframe.requestFullscreen();
+        }
     }
   }
 

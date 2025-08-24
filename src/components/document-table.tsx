@@ -41,7 +41,7 @@ import { cn } from '@/lib/utils';
 import { Checkbox } from './ui/checkbox';
 import { Avatar, AvatarFallback } from './ui/avatar';
 import { UploadButton } from './upload-button';
-
+import { Card, CardContent } from './ui/card';
 
 interface DocumentTableProps {
   documents: Document[];
@@ -69,18 +69,16 @@ export function DocumentTable({ documents }: DocumentTableProps) {
     
 
   return (
-    <Card>
-    <CardContent>
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead className="hidden w-[100px] sm:table-cell">
+          <TableHead className="w-[40px]">
             <Checkbox />
           </TableHead>
           <TableHead>Name</TableHead>
-          <TableHead>Type</TableHead>
+          <TableHead className="hidden md:table-cell">Category</TableHead>
           <TableHead className="hidden md:table-cell">Updated</TableHead>
-          <TableHead className="hidden md:table-cell">Tags</TableHead>
+          <TableHead className="hidden lg:table-cell">Tags</TableHead>
           <TableHead>
             <span className="sr-only">Actions</span>
           </TableHead>
@@ -92,8 +90,6 @@ export function DocumentTable({ documents }: DocumentTableProps) {
         ))}
       </TableBody>
     </Table>
-    </CardContent>
-    </Card>
   );
 }
 
@@ -110,6 +106,8 @@ function DocumentRow({ document }: { document: Document }) {
     const timeAgo = formatDistanceToNow(new Date(document.updatedAt), {
       addSuffix: true,
     });
+
+    const Icon = iconMap[document.icon as keyof typeof iconMap] || FileText;
   
     const handleDeleteClick = () => {
       setIsPermanentDelete(false);
@@ -162,33 +160,29 @@ function DocumentRow({ document }: { document: Document }) {
           description: `"${document.title}" has been ${document.isFavorite ? 'removed from' : 'added to'} your favorites.`,
       })
     }
-
-    const initials = document.title.split(' ').map(n => n[0]).join('').substring(0,2);
   
     return (
         <>
-        <TableRow>
-            <TableCell className="hidden sm:table-cell">
+        <TableRow className="group transition-all hover:bg-muted/10">
+            <TableCell>
                 <Checkbox />
             </TableCell>
             <TableCell>
                 <div className="flex items-center gap-3">
-                    <Avatar className="hidden h-9 w-9 sm:flex">
-                        <AvatarFallback>{initials}</AvatarFallback>
-                    </Avatar>
-                    <div className="grid gap-1">
+                    <Icon className="h-5 w-5 text-muted-foreground" />
+                    <div className="grid gap-0.5">
                         <Link href={`/documents/${document.id}`} className="font-medium hover:underline">
                             {document.title}
                         </Link>
-                        <p className="text-sm text-muted-foreground hidden md:block">{document.description}</p>
+                        <p className="text-xs text-muted-foreground hidden sm:block">{document.type}</p>
                     </div>
                 </div>
             </TableCell>
-            <TableCell>
-                <Badge variant="outline">{document.type}</Badge>
+            <TableCell className="hidden md:table-cell">
+                <Badge variant="outline">{document.category}</Badge>
             </TableCell>
             <TableCell className="hidden md:table-cell">{timeAgo}</TableCell>
-            <TableCell className="hidden md:table-cell">
+            <TableCell className="hidden lg:table-cell">
                 <div className="flex flex-wrap gap-1">
                     {document.tags.slice(0, 2).map((tag) => (
                         <Badge key={tag} variant="secondary">
@@ -201,7 +195,7 @@ function DocumentRow({ document }: { document: Document }) {
                 </div>
             </TableCell>
             <TableCell>
-              <div className="flex items-center justify-end">
+              <div className="flex items-center justify-end opacity-0 group-hover:opacity-100 transition-opacity">
                 <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={toggleFavorite}>
                     <Star className={cn("h-4 w-4", document.isFavorite ? "text-yellow-400 fill-yellow-400" : "text-muted-foreground")} />
                 </Button>
@@ -288,4 +282,3 @@ function DocumentRow({ document }: { document: Document }) {
     );
   }
 
-  import { Card, CardContent } from './ui/card';

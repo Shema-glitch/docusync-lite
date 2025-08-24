@@ -2,35 +2,29 @@
 'use client';
 
 import { DocumentTable } from '@/components/document-table';
+import { PinnedDocuments } from '@/components/dashboard/pinned-documents';
+import { SummaryPanel } from '@/components/dashboard/summary-panel';
 import { useDocuments } from '@/hooks/use-documents.tsx';
-import { useState } from 'react';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 
 export default function DashboardPage() {
   const { documents } = useDocuments();
-  const [searchQuery, setSearchQuery] = useState(''); // This state is now local to the dashboard
 
   const activeDocuments = documents.filter((doc) => doc.status === 'active');
-
-  const filteredDocuments = activeDocuments.filter(
-    (doc) =>
-      doc.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      doc.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      doc.tags.some((tag) => tag.toLowerCase().includes(searchQuery.toLowerCase()))
-  );
-  
+  const favoriteDocuments = activeDocuments.filter((doc) => doc.isFavorite);
 
   return (
-     <Card>
+    <div className="flex flex-col gap-6">
+      <SummaryPanel documents={activeDocuments} />
+      <PinnedDocuments documents={favoriteDocuments} />
+      <Card>
         <CardHeader>
           <CardTitle>All Documents</CardTitle>
-          <CardDescription>
-            Browse and manage all your documents in one place.
-          </CardDescription>
         </CardHeader>
         <CardContent>
-            <DocumentTable documents={filteredDocuments} />
+          <DocumentTable documents={activeDocuments} />
         </CardContent>
       </Card>
+    </div>
   );
 }

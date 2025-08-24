@@ -32,11 +32,18 @@ interface UploadDialogProps {
   onOpenChange: (isOpen: boolean) => void;
 }
 
+const ACCEPTED_FILE_TYPES = {
+    'application/pdf': {icon: 'FileText', type: 'PDF'},
+    'text/plain': {icon: 'FileText', type: 'TXT'},
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document': {icon: 'FileSignature', type: 'Word'},
+};
+
 export function UploadDialog({ isOpen, onOpenChange }: UploadDialogProps) {
   const { toast } = useToast();
   const { addDocument } = useDocuments();
 
   const [file, setFile] = useState<File | null>(null);
+  const [fileContent, setFileContent] = useState<string | null>(null);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState<Document['category'] | ''>('');
@@ -49,6 +56,7 @@ export function UploadDialog({ isOpen, onOpenChange }: UploadDialogProps) {
 
   const resetState = useCallback(() => {
     setFile(null);
+    setFileContent(null);
     setTitle('');
     setDescription('');
     setCategory('');
@@ -68,10 +76,23 @@ export function UploadDialog({ isOpen, onOpenChange }: UploadDialogProps) {
 
   const handleFileSelect = (selectedFile: File | null) => {
     if (selectedFile) {
+      if (!Object.keys(ACCEPTED_FILE_TYPES).includes(selectedFile.type)) {
+        toast({
+            variant: 'destructive',
+            title: 'Unsupported file type',
+            description: `Please upload a supported file type: PDF, TXT, DOCX.`,
+        });
+        return;
+      }
+
       setFile(selectedFile);
       if (!title) {
         setTitle(selectedFile.name.replace(/\.[^/.]+$/, ''));
       }
+
+      const reader = new FileReader();
+      reader.onload = (e) => setFileContent(e.target?.result as string);
+      reader.readAsDataURL(selectedFile);
     }
   };
 
@@ -83,6 +104,14 @@ export function UploadDialog({ isOpen, onOpenChange }: UploadDialogProps) {
         description: 'Please select a file to get tag suggestions.',
       });
       return;
+    }
+     if (file.type !== 'text/plain') {
+        toast({
+            variant: 'destructive',
+            title: 'Unsupported for Suggestions',
+            description: 'AI suggestions are currently only available for plain text (.txt) files.',
+        });
+        return;
     }
 
     setIsSuggesting(true);
@@ -163,16 +192,12 @@ export function UploadDialog({ isOpen, onOpenChange }: UploadDialogProps) {
     }
   };
 
-  const getFileIcon = (fileType: string): Document['icon'] => {
-    if (fileType.includes('pdf')) return 'FileText';
-    if (fileType.includes('sheet') || fileType.includes('excel')) return 'Sheet';
-    if (fileType.includes('image')) return 'FileImage';
-    if (fileType.includes('document') || fileType.includes('word')) return 'FileSignature';
-    return 'FileText';
+  const getDocInfo = (fileType: string): {icon: Document['icon'], type: Document['type']} => {
+    return ACCEPTED_FILE_TYPES[fileType as keyof typeof ACCEPTED_FILE_TYPES] || { icon: 'FileText', type: 'OTHER'};
   };
 
   const handleUpload = () => {
-    if (!file || !title || !category) {
+    if (!file || !title || !category || !fileContent) {
         toast({
             variant: 'destructive',
             title: 'Missing information',
@@ -181,14 +206,18 @@ export function UploadDialog({ isOpen, onOpenChange }: UploadDialogProps) {
         return;
     }
 
+    const {icon, type} = getDocInfo(file.type);
+
     const newDocument = {
         title,
         description,
         category: category as Document['category'],
         tags,
-        type: file.type.split('/')[1]?.toUpperCase() as Document['type'] || 'OTHER',
-        icon: getFileIcon(file.type),
+        type,
+        icon,
         reminderDate: reminderDate?.toISOString(),
+        content: fileContent,
+        fileType: file.type,
     };
 
     addDocument(newDocument);
@@ -224,7 +253,13 @@ export function UploadDialog({ isOpen, onOpenChange }: UploadDialogProps) {
                             browse your files
                         </label>
                     </Button>
-                    <Input id="file-upload" type="file" className="absolute w-0 h-0 opacity-0" onChange={(e) => handleFileSelect(e.target.files?.[0] || null)} />
+                    <Input 
+                        id="file-upload" 
+                        type="file" 
+                        className="absolute w-0 h-0 opacity-0" 
+                        onChange={(e) => handleFileSelect(e.target.files?.[0] || null)}
+                        accept={Object.keys(ACCEPTED_FILE_TYPES).join(',')}
+                    />
                 </div>
             ) : (
               <div className="flex items-center gap-4 rounded-lg border p-4">
@@ -233,7 +268,7 @@ export function UploadDialog({ isOpen, onOpenChange }: UploadDialogProps) {
                   <p className="font-semibold truncate">{file.name}</p>
                   <p className="text-sm text-muted-foreground">{Math.round(file.size / 1024)} KB</p>
                 </div>
-                <Button variant="ghost" size="icon" onClick={() => setFile(null)}>
+                <Button variant="ghost" size="icon" onClick={() => { setFile(null); setFileContent(null); }}>
                   <X className="h-4 w-4" />
                 </Button>
               </div>
@@ -328,7 +363,7 @@ export function UploadDialog({ isOpen, onOpenChange }: UploadDialogProps) {
                   ))
                 ) : (
                   <p className="text-sm text-muted-foreground">
-                    {isSuggesting ? 'Generating suggestions...' : 'Click "Suggest" to get AI-powered tags based on the file content.'}
+                    {isSuggesting ? 'Generating suggestions...' : 'Click "Suggest" to get AI-powered tags for .txt files.'}
                   </p>
                 )}
               </div>

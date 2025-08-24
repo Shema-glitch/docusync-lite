@@ -1,7 +1,7 @@
 
 'use client';
 
-import { DocumentList } from '@/components/document-list';
+import { DocumentTable } from '@/components/document-table';
 import { useDocuments } from '@/hooks/use-documents.tsx';
 
 export default function FavoritesPage() {
@@ -17,7 +17,7 @@ export default function FavoritesPage() {
                 <p className="text-muted-foreground mt-2">Click the star on a document to mark it as a favorite.</p>
             </div>
         ) : (
-            <DocumentList documents={favoriteDocuments} />
+            <DocumentTable documents={favoriteDocuments} />
         )}
     </div>
   );

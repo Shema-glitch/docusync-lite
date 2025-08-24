@@ -12,11 +12,11 @@ export default function MainLayout({
   const [searchQuery, setSearchQuery] = useState('');
 
   return (
-      <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
+      <div className="flex min-h-screen w-full bg-background">
         <AppSidebar />
-        <div className="flex flex-col">
+        <div className="flex flex-col flex-1">
           <AppHeader searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
-          <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 overflow-auto bg-muted/40">
+          <main className="flex flex-1 flex-col gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
             {children}
           </main>
         </div>

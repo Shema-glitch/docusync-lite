@@ -1,7 +1,7 @@
 
 'use client';
 
-import { DocumentList } from '@/components/document-list';
+import { DocumentTable } from '@/components/document-table';
 import { useDocuments } from '@/hooks/use-documents.tsx';
 import { Button } from '@/components/ui/button';
 
@@ -30,7 +30,7 @@ export default function TrashPage() {
                 <p className="text-muted-foreground mt-2">Deleted documents will appear here.</p>
             </div>
         ) : (
-            <DocumentList documents={trashedDocuments} />
+            <DocumentTable documents={trashedDocuments} />
         )}
     </div>
   );

@@ -10,7 +10,7 @@ interface DocumentListProps {
 export function DocumentList({ documents }: DocumentListProps) {
   if (documents.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed p-12 text-center">
+      <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed p-12 text-center bg-card">
         <h3 className="text-xl font-semibold">Your document vault is empty</h3>
         <p className="text-muted-foreground mt-2 mb-4">Get started by uploading your first file.</p>
         <UploadButton />

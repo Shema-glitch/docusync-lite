@@ -93,7 +93,9 @@ export default function DocumentDetailsPage({ params }: { params: { id: string }
                 </Button>
             </CardHeader>
             <CardContent className="flex-grow p-0">
-                {renderContent()}
+                <div className="w-full h-[70vh] bg-muted rounded-b-lg">
+                    {renderContent()}
+                </div>
             </CardContent>
         </Card>
        </div>

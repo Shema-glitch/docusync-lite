@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Maximize, Loader2 } from 'lucide-react';
+import { ArrowLeft, Maximize, Loader2, AlertTriangle } from 'lucide-react';
 import { format } from 'date-fns';
 import { Separator } from '@/components/ui/separator';
 
@@ -30,17 +30,15 @@ export default function DocumentDetailsPage({ params }: { params: { id: string }
         <div className="flex flex-col items-center gap-4 text-center">
             <Loader2 className="h-10 w-10 animate-spin text-primary" />
             <h2 className="text-2xl font-bold tracking-tight">Loading document...</h2>
-            <p className="text-muted-foreground">Please wait a moment.</p>
+            <p className="text-muted-foreground max-w-md">
+                Please wait a moment. If the document doesn't load, it might have been moved or deleted.
+            </p>
         </div>
       </div>
     );
   }
 
   const renderContent = () => {
-    if (!document.content) {
-        return <p className="text-muted-foreground">No content available for this document.</p>;
-    }
-
     const isOfficeDoc = ['application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/vnd.openxmlformats-officedocument.presentationml.presentation'].includes(document.fileType || '');
 
     if (document.fileType === 'application/pdf' || document.fileType === 'text/plain') {
@@ -48,11 +46,27 @@ export default function DocumentDetailsPage({ params }: { params: { id: string }
     }
     
     if (isOfficeDoc) {
+        if (!document.content) {
+             return (
+                <div className="flex flex-col items-center justify-center h-full text-center p-8">
+                    <AlertTriangle className="h-12 w-12 text-yellow-500 mb-4" />
+                    <h3 className="text-xl font-semibold">Live Preview Unavailable</h3>
+                    <p className="text-muted-foreground mt-2">This document type requires a link to an online file for preview.</p>
+                </div>
+            );
+        }
         const viewerUrl = `https://docs.google.com/gview?url=${encodeURIComponent(document.content)}&embedded=true`;
         return <iframe id="doc-iframe" src={viewerUrl} className="w-full h-full border-0" title={document.title} />;
     }
 
-    return <p className="text-muted-foreground">This file type cannot be previewed.</p>;
+    // Fallback for unsupported or missing file types
+    return (
+        <div className="flex flex-col items-center justify-center h-full text-center p-8">
+            <AlertTriangle className="h-12 w-12 text-destructive mb-4" />
+            <h3 className="text-xl font-semibold">Unsupported File Type</h3>
+            <p className="text-muted-foreground mt-2">A preview is not available for this file. You can download it to view.</p>
+        </div>
+    );
   }
 
   return (

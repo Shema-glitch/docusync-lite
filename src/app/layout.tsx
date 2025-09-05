@@ -4,6 +4,7 @@ import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { AuthProvider } from '@/hooks/use-auth';
 import { DocumentsProvider } from '@/hooks/use-documents.tsx';
+import { ThemeProvider } from '@/components/theme-provider';
 
 export const metadata: Metadata = {
   title: 'DocuSync Lite',
@@ -25,13 +26,20 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body className="font-body antialiased dark" suppressHydrationWarning>
-        <AuthProvider>
-            <DocumentsProvider>
-                {children}
-                <Toaster />
-            </DocumentsProvider>
-        </AuthProvider>
+      <body className="font-body antialiased" suppressHydrationWarning>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="dark"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <AuthProvider>
+              <DocumentsProvider>
+                  {children}
+                  <Toaster />
+              </DocumentsProvider>
+          </AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

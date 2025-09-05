@@ -48,10 +48,12 @@ export default function DocumentDetailsPage({ params }: { params: { id: string }
     if (isOfficeDoc) {
         if (!document.content) {
              return (
-                <div className="flex flex-col items-center justify-center h-full text-center p-8">
-                    <AlertTriangle className="h-12 w-12 text-yellow-500 mb-4" />
-                    <h3 className="text-xl font-semibold">Live Preview Unavailable</h3>
-                    <p className="text-muted-foreground mt-2">This document type requires a link to an online file for preview.</p>
+                <div className="flex items-center justify-center h-full">
+                    <div className="flex flex-col items-center justify-center text-center p-8">
+                        <AlertTriangle className="h-12 w-12 text-yellow-500 mb-4" />
+                        <h3 className="text-xl font-semibold">Live Preview Unavailable</h3>
+                        <p className="text-muted-foreground mt-2">This document type requires a link to an online file for preview.</p>
+                    </div>
                 </div>
             );
         }
@@ -61,10 +63,12 @@ export default function DocumentDetailsPage({ params }: { params: { id: string }
 
     // Fallback for unsupported or missing file types
     return (
-        <div className="flex flex-col items-center justify-center h-full text-center p-8">
-            <AlertTriangle className="h-12 w-12 text-destructive mb-4" />
-            <h3 className="text-xl font-semibold">Unsupported File Type</h3>
-            <p className="text-muted-foreground mt-2">A preview is not available for this file. You can download it to view.</p>
+        <div className="flex items-center justify-center h-full">
+            <div className="flex flex-col items-center justify-center text-center p-8">
+                <AlertTriangle className="h-12 w-12 text-destructive mb-4" />
+                <h3 className="text-xl font-semibold">Unsupported File Type</h3>
+                <p className="text-muted-foreground mt-2">A preview is not available for this file. You can download it to view.</p>
+            </div>
         </div>
     );
   }

@@ -26,13 +26,12 @@ export default function DocumentDetailsPage({ params }: { params: { id: string }
 
   if (!document) {
     return (
-      <div className="flex flex-col items-center justify-center h-full text-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
-        <h2 className="text-2xl font-bold">Loading Document...</h2>
-        <p className="text-muted-foreground mt-2">If this takes too long, the document may not exist.</p>
-        <Button onClick={() => router.push('/dashboard')} className="mt-4">
-          Go to Dashboard
-        </Button>
+      <div className="flex flex-1 items-center justify-center h-full">
+        <div className="flex flex-col items-center gap-4 text-center">
+            <Loader2 className="h-10 w-10 animate-spin text-primary" />
+            <h2 className="text-2xl font-bold tracking-tight">Loading document...</h2>
+            <p className="text-muted-foreground">Please wait a moment.</p>
+        </div>
       </div>
     );
   }

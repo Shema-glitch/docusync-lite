@@ -25,7 +25,7 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body className="font-body antialiased dark">
+      <body className="font-body antialiased dark" suppressHydrationWarning>
         <AuthProvider>
             <DocumentsProvider>
                 {children}

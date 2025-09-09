@@ -20,14 +20,10 @@ import { useAuth } from '@/hooks/use-auth';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuItem } from '../ui/dropdown-menu';
 import { LogOut, Heart } from 'lucide-react';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { useState, useEffect } from 'react';
 
-interface AppHeaderProps {
-  searchQuery: string;
-  setSearchQuery: (query: string) => void;
-}
 
 const navItems = [
     { href: '/dashboard', label: 'Dashboard', icon: Home },
@@ -37,15 +33,43 @@ const navItems = [
     { href: '/trash', label: 'Trash', icon: Trash2 },
   ];
 
-export function AppHeader({ searchQuery, setSearchQuery }: AppHeaderProps) {
+export function AppHeader() {
   const { user, logout } = useAuth();
   const pathname = usePathname();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [searchQuery, setSearchQuery] = useState(searchParams.get('q') || '');
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
     setIsClient(true);
   }, []);
 
+  useEffect(() => {
+    // Sync search input with URL query params
+    setSearchQuery(searchParams.get('q') || '');
+  }, [searchParams]);
+
+  const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      router.push(`/search?q=${encodeURIComponent(searchQuery)}`);
+    } else {
+      router.push(pathname);
+    }
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const query = e.target.value;
+    setSearchQuery(query);
+    if (query.trim()) {
+        router.replace(`/search?q=${encodeURIComponent(query)}`);
+    } else {
+        // If query is cleared, navigate back to the original page or a default page like dashboard
+        const cameFrom = pathname === '/search' ? '/dashboard' : pathname;
+        router.replace(cameFrom);
+    }
+  };
 
   return (
     <header className="flex h-14 items-center gap-4 border-b bg-muted/40 px-4 lg:h-[60px] lg:px-6 sticky top-0 z-30 backdrop-blur-sm">
@@ -93,7 +117,7 @@ export function AppHeader({ searchQuery, setSearchQuery }: AppHeaderProps) {
         </Sheet>
       )}
       <div className="w-full flex-1">
-        <form>
+        <form onSubmit={handleSearch}>
             <div className="relative">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
@@ -101,7 +125,7 @@ export function AppHeader({ searchQuery, setSearchQuery }: AppHeaderProps) {
               placeholder="Search documents..."
               className="w-full appearance-none bg-background pl-8 shadow-none md:w-2/3 lg:w-1/3"
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={handleInputChange}
             />
             </div>
         </form>

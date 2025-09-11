@@ -31,6 +31,7 @@ const navItems = [
     { href: '/favorites', label: 'Favorites', icon: Star },
     { href: '/timeline', label: 'Timeline', icon: FileClock },
     { href: '/trash', label: 'Trash', icon: Trash2 },
+    { href: '/settings', label: 'Settings', icon: Settings },
   ];
 
 export function AppHeader() {
@@ -150,9 +151,11 @@ export function AppHeader() {
             </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem>
-            <Settings className="mr-2 h-4 w-4" />
-            <span>Settings</span>
+        <DropdownMenuItem asChild>
+            <Link href="/settings">
+                <Settings className="mr-2 h-4 w-4" />
+                <span>Settings</span>
+            </Link>
         </DropdownMenuItem>
         <DropdownMenuItem>
             <Heart className="mr-2 h-4 w-4" />

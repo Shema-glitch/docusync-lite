@@ -26,6 +26,10 @@ const navItems = [
   { href: '/trash', label: 'Trash', icon: Trash2 },
 ];
 
+const secondaryNavItems = [
+    { href: '/settings', label: 'Settings', icon: Settings },
+]
+
 export function AppSidebar() {
   const pathname = usePathname();
 
@@ -58,7 +62,23 @@ export function AppSidebar() {
                     ))}
                 </nav>
             </div>
-            <div className="mt-auto p-4">
+             <div className="mt-auto p-4">
+                <nav className="grid items-start px-2 text-sm font-medium lg:px-4 mb-4">
+                     {secondaryNavItems.map((item) => (
+                         <Link
+                            key={item.label}
+                            href={item.href}
+                            prefetch={false}
+                            className={cn(
+                                'flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary',
+                                pathname === item.href && 'bg-muted text-primary'
+                            )}
+                            >
+                            <item.icon className="h-4 w-4" />
+                            {item.label}
+                        </Link>
+                    ))}
+                </nav>
                 <UploadButton />
             </div>
         </div>

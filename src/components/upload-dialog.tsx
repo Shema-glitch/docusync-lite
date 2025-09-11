@@ -345,10 +345,10 @@ export function UploadDialog({ isOpen, onOpenChange }: UploadDialogProps) {
               />
             </div>
 
-            <div className="space-y-2 rounded-lg border border-accent/50 bg-accent/20 p-4">
+            <div className="space-y-2 rounded-lg border bg-muted/30 p-4">
                <div className="flex justify-between items-center">
-                 <Label className="flex items-center gap-2 font-semibold text-accent-foreground">
-                    <Sparkles className="h-4 w-4" />
+                 <Label className="flex items-center gap-2 font-semibold text-foreground/80">
+                    <Sparkles className="h-4 w-4 text-primary" />
                     Smart Tag Suggestions
                 </Label>
                 <Button variant="ghost" size="sm" onClick={handleSuggest} disabled={isSuggesting || !file}>
@@ -381,3 +381,5 @@ export function UploadDialog({ isOpen, onOpenChange }: UploadDialogProps) {
     </Dialog>
   );
 }
+
+    

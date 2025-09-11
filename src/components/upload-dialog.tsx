@@ -227,6 +227,17 @@ export function UploadDialog({ isOpen, onOpenChange }: UploadDialogProps) {
     handleOpenChange(false);
   };
 
+  const handleTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const time = e.target.value;
+    if (reminderDate && time) {
+      const [hours, minutes] = time.split(':').map(Number);
+      const newDate = new Date(reminderDate);
+      newDate.setHours(hours);
+      newDate.setMinutes(minutes);
+      setReminderDate(newDate);
+    }
+  }
+
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-2xl max-h-[90vh] flex flex-col">
@@ -295,7 +306,7 @@ export function UploadDialog({ isOpen, onOpenChange }: UploadDialogProps) {
                             )}
                         >
                             <CalendarIcon className="mr-2 h-4 w-4" />
-                            {reminderDate ? format(reminderDate, "PPP") : <span>Pick a date</span>}
+                            {reminderDate ? format(reminderDate, "PPP p") : <span>Pick a date</span>}
                         </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0">
@@ -305,6 +316,11 @@ export function UploadDialog({ isOpen, onOpenChange }: UploadDialogProps) {
                             onSelect={setReminderDate}
                             initialFocus
                         />
+                        {reminderDate && (
+                           <div className="p-2 border-t">
+                             <Input type="time" onChange={handleTimeChange} defaultValue={format(reminderDate, "HH:mm")} />
+                           </div>
+                        )}
                     </PopoverContent>
                 </Popover>
             </div>
@@ -381,5 +397,3 @@ export function UploadDialog({ isOpen, onOpenChange }: UploadDialogProps) {
     </Dialog>
   );
 }
-
-    

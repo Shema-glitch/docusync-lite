@@ -39,6 +39,7 @@ import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { Calendar } from './ui/calendar';
 import { cn } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
+import { Input } from './ui/input';
 
 
 interface DocumentCardProps {
@@ -107,12 +108,46 @@ export function DocumentCard({ document }: DocumentCardProps) {
   }
 
   const handleSetReminder = (date: Date | undefined) => {
-    setReminderDate(date);
-    updateDocument(document.id, { reminderDate: date?.toISOString() });
-    toast({
-        title: "Reminder Updated",
-        description: `Reminder for "${document.title}" has been ${date ? `set to ${format(date, 'PPP')}`: 'cleared'}.`
-    })
+    if (date) {
+        // If there's an existing time, preserve it. Otherwise, default to noon.
+        const newDate = new Date(date);
+        if (reminderDate) {
+            newDate.setHours(reminderDate.getHours());
+            newDate.setMinutes(reminderDate.getMinutes());
+        } else {
+            newDate.setHours(12);
+            newDate.setMinutes(0);
+        }
+        setReminderDate(newDate);
+        updateDocument(document.id, { reminderDate: newDate.toISOString() });
+         toast({
+            title: "Reminder Updated",
+            description: `Reminder for "${document.title}" has been set to ${format(newDate, 'PPP p')}.`
+        });
+    } else {
+        setReminderDate(undefined);
+        updateDocument(document.id, { reminderDate: undefined });
+        toast({
+            title: "Reminder Cleared",
+            description: `Reminder for "${document.title}" has been cleared.`
+        });
+    }
+  }
+
+  const handleTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const time = e.target.value;
+    if (reminderDate && time) {
+      const [hours, minutes] = time.split(':').map(Number);
+      const newDate = new Date(reminderDate);
+      newDate.setHours(hours);
+      newDate.setMinutes(minutes);
+      setReminderDate(newDate);
+      updateDocument(document.id, { reminderDate: newDate.toISOString() });
+      toast({
+            title: "Reminder Updated",
+            description: `Reminder for "${document.title}" has been set to ${format(newDate, 'PPP p')}.`
+      });
+    }
   }
   
   const toggleFavorite = () => {
@@ -173,6 +208,11 @@ export function DocumentCard({ document }: DocumentCardProps) {
                                     onSelect={handleSetReminder}
                                     initialFocus
                                 />
+                                {reminderDate && (
+                                   <div className="p-2 border-t">
+                                     <Input type="time" onChange={handleTimeChange} defaultValue={format(reminderDate, "HH:mm")} />
+                                   </div>
+                                )}
                             </PopoverContent>
                         </Popover>
                         <DropdownMenuSeparator />

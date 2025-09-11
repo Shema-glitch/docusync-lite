@@ -9,12 +9,32 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, Maximize, Loader2, AlertTriangle } from 'lucide-react';
 import { format } from 'date-fns';
 import { Separator } from '@/components/ui/separator';
+import { useEffect, useState } from 'react';
+
+const loadingMessages = [
+    "Opening document...",
+    "Parsing content...",
+    "Rendering preview...",
+    "Almost there..."
+];
 
 export default function DocumentDetailsPage({ params }: { params: { id: string } }) {
   const { documents } = useDocuments();
   const router = useRouter();
   const { id } = params;
   const document = documents.find((doc) => doc.id === id);
+
+  const [loadingMessageIndex, setLoadingMessageIndex] = useState(0);
+
+  useEffect(() => {
+    if (!document) {
+      const interval = setInterval(() => {
+        setLoadingMessageIndex((prevIndex) => (prevIndex + 1) % loadingMessages.length);
+      }, 1500);
+      return () => clearInterval(interval);
+    }
+  }, [document]);
+
 
   const openFullscreen = () => {
     if (typeof window !== 'undefined' && typeof window.document !== 'undefined') {
@@ -30,9 +50,9 @@ export default function DocumentDetailsPage({ params }: { params: { id: string }
       <div className="flex flex-1 items-center justify-center h-full">
         <div className="flex flex-col items-center gap-4 text-center">
             <Loader2 className="h-10 w-10 animate-spin text-primary" />
-            <h2 className="text-2xl font-bold tracking-tight">Loading document...</h2>
+            <h2 className="text-2xl font-bold tracking-tight">{loadingMessages[loadingMessageIndex]}</h2>
             <p className="text-muted-foreground max-w-md">
-                Please wait a moment. If the document doesn't load, it might have been moved or deleted.
+                Please wait a moment. If the document takes too long to load, it might have been moved or deleted.
             </p>
         </div>
       </div>

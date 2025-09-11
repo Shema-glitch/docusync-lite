@@ -119,6 +119,13 @@ export function DocumentsProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
+  // Request notification permission on mount
+  useEffect(() => {
+    if ("Notification" in window && Notification.permission === "default") {
+        Notification.requestPermission();
+    }
+  }, []);
+
   // Reminder checking effect
   useEffect(() => {
     const interval = setInterval(() => {
@@ -126,12 +133,22 @@ export function DocumentsProvider({ children }: { children: ReactNode }) {
       documents.forEach(doc => {
         if (doc.reminderDate && doc.status === 'active') {
           const reminderTime = new Date(doc.reminderDate);
-          if (now >= reminderTime && (now.getTime() - reminderTime.getTime()) < 60000) { // Check if reminder is due in the last minute
-            toast({
-              title: `Reminder: ${doc.title}`,
-              description: 'This is a reminder for your document.',
-            });
-            // To prevent re-triggering, you might want to clear the reminder date
+          // Check if reminder is due in the last minute
+          if (now >= reminderTime && (now.getTime() - reminderTime.getTime()) < 60000) {
+            
+            const notificationTitle = `Reminder: ${doc.title}`;
+            const notificationBody = `This is a reminder for your document.`;
+
+            if ("Notification" in window && Notification.permission === "granted") {
+                new Notification(notificationTitle, { body: notificationBody });
+            } else {
+                 toast({
+                    title: notificationTitle,
+                    description: notificationBody,
+                });
+            }
+           
+            // To prevent re-triggering, clear the reminder date
             updateDocument(doc.id, { reminderDate: undefined });
           }
         }

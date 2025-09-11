@@ -11,12 +11,14 @@ import type { Document } from '@/lib/types';
 import { DocumentCard } from '../document-card';
 import { Card, CardHeader, CardTitle, CardContent } from '../ui/card';
 import { Star } from 'lucide-react';
+import { DocumentCardSkeleton } from '../document-card-skeleton';
 
 interface PinnedDocumentsProps {
   documents: Document[];
+  loading: boolean;
 }
 
-export function PinnedDocuments({ documents }: PinnedDocumentsProps) {
+export function PinnedDocuments({ documents, loading }: PinnedDocumentsProps) {
   return (
     <Card>
         <CardHeader>
@@ -26,7 +28,13 @@ export function PinnedDocuments({ documents }: PinnedDocumentsProps) {
             </CardTitle>
         </CardHeader>
         <CardContent>
-            {documents.length === 0 ? (
+            {loading ? (
+                <div className="flex space-x-4">
+                    <DocumentCardSkeleton className="w-1/3" />
+                    <DocumentCardSkeleton className="w-1/3" />
+                    <DocumentCardSkeleton className="w-1/3" />
+                </div>
+            ) : documents.length === 0 ? (
                  <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed p-12 text-center h-48">
                     <h3 className="text-xl font-semibold">No Pinned Documents</h3>
                     <p className="text-muted-foreground mt-2">Click the star on a document to pin it here.</p>

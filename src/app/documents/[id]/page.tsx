@@ -22,18 +22,28 @@ export default function DocumentDetailsPage({ params }: { params: { id: string }
   const { documents } = useDocuments();
   const router = useRouter();
   const { id } = params;
-  const document = documents.find((doc) => doc.id === id);
-
+  
+  const [document, setDocument] = useState(documents.find((doc) => doc.id === id));
+  const [isLoading, setIsLoading] = useState(true);
   const [loadingMessageIndex, setLoadingMessageIndex] = useState(0);
 
   useEffect(() => {
-    if (!document) {
-      const interval = setInterval(() => {
-        setLoadingMessageIndex((prevIndex) => (prevIndex + 1) % loadingMessages.length);
-      }, 1500);
-      return () => clearInterval(interval);
-    }
-  }, [document]);
+    // Always show a brief loading animation for a better UX
+    const cinematicTimer = setTimeout(() => {
+        const foundDoc = documents.find((doc) => doc.id === id);
+        setDocument(foundDoc);
+        setIsLoading(false);
+    }, 1000); // Simulate minimum loading time
+
+    const messageInterval = setInterval(() => {
+      setLoadingMessageIndex((prevIndex) => (prevIndex + 1) % loadingMessages.length);
+    }, 1500);
+
+    return () => {
+      clearTimeout(cinematicTimer);
+      clearInterval(messageInterval);
+    };
+  }, [id, documents]);
 
 
   const openFullscreen = () => {
@@ -45,7 +55,7 @@ export default function DocumentDetailsPage({ params }: { params: { id: string }
     }
   }
 
-  if (!document) {
+  if (isLoading || !document) {
     return (
       <div className="flex flex-1 items-center justify-center h-full">
         <div className="flex flex-col items-center gap-4 text-center">
@@ -69,7 +79,7 @@ export default function DocumentDetailsPage({ params }: { params: { id: string }
     if (isOfficeDoc) {
         if (!document.content) {
              return (
-                <div className="flex items-center justify-center h-full">
+                 <div className="w-full h-full flex items-center justify-center bg-muted rounded-b-lg">
                     <div className="flex flex-col items-center justify-center text-center p-8">
                         <AlertTriangle className="h-12 w-12 text-yellow-500 mb-4" />
                         <h3 className="text-xl font-semibold">Live Preview Unavailable</h3>
@@ -84,7 +94,7 @@ export default function DocumentDetailsPage({ params }: { params: { id: string }
 
     // Fallback for unsupported or missing file types
     return (
-        <div className="flex items-center justify-center h-full">
+        <div className="w-full h-full flex items-center justify-center bg-muted rounded-b-lg">
             <div className="flex flex-col items-center justify-center text-center p-8">
                 <AlertTriangle className="h-12 w-12 text-destructive mb-4" />
                 <h3 className="text-xl font-semibold">Unsupported File Type</h3>

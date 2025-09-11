@@ -13,7 +13,8 @@ import { Separator } from '@/components/ui/separator';
 export default function DocumentDetailsPage({ params }: { params: { id: string } }) {
   const { documents } = useDocuments();
   const router = useRouter();
-  const document = documents.find((doc) => doc.id === params.id);
+  const { id } = params;
+  const document = documents.find((doc) => doc.id === id);
 
   const openFullscreen = () => {
     if (typeof window !== 'undefined' && typeof window.document !== 'undefined') {

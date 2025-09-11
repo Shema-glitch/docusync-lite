@@ -15,7 +15,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { X, UploadCloud, Sparkles, Loader2, FileText, Calendar as CalendarIcon, FileImage, Sheet, FileSignature, Presentation, FileSpreadsheet } from 'lucide-react';
+import { X, UploadCloud, Sparkles, Loader2, FileText, Calendar as CalendarIcon } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { getAiSuggestions } from '@/app/actions';
 import { cn } from '@/lib/utils';
@@ -25,6 +25,10 @@ import { Calendar } from './ui/calendar';
 import { format } from 'date-fns';
 import { useDocuments } from '@/hooks/use-documents.tsx';
 import type { Document } from '@/lib/types';
+import { useAuth } from '@/hooks/use-auth';
+import { storage } from '@/lib/firebase';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { v4 as uuidv4 } from 'uuid';
 
 
 interface UploadDialogProps {
@@ -43,9 +47,9 @@ const ACCEPTED_FILE_TYPES = {
 export function UploadDialog({ isOpen, onOpenChange }: UploadDialogProps) {
   const { toast } = useToast();
   const { addDocument } = useDocuments();
+  const { user } = useAuth();
 
   const [file, setFile] = useState<File | null>(null);
-  const [fileContent, setFileContent] = useState<string | null>(null);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState<Document['category'] | ''>('');
@@ -53,12 +57,12 @@ export function UploadDialog({ isOpen, onOpenChange }: UploadDialogProps) {
   const [tagInput, setTagInput] = useState('');
   const [suggestedTags, setSuggestedTags] = useState<string[]>([]);
   const [isSuggesting, setIsSuggesting] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [reminderDate, setReminderDate] = useState<Date>();
 
   const resetState = useCallback(() => {
     setFile(null);
-    setFileContent(null);
     setTitle('');
     setDescription('');
     setCategory('');
@@ -66,6 +70,7 @@ export function UploadDialog({ isOpen, onOpenChange }: UploadDialogProps) {
     setTagInput('');
     setSuggestedTags([]);
     setIsSuggesting(false);
+    setIsUploading(false);
     setReminderDate(undefined);
   }, []);
 
@@ -91,10 +96,6 @@ export function UploadDialog({ isOpen, onOpenChange }: UploadDialogProps) {
       if (!title) {
         setTitle(selectedFile.name.replace(/\.[^/.]+$/, ''));
       }
-
-      const reader = new FileReader();
-      reader.onload = (e) => setFileContent(e.target?.result as string);
-      reader.readAsDataURL(selectedFile);
     }
   };
 
@@ -198,8 +199,8 @@ export function UploadDialog({ isOpen, onOpenChange }: UploadDialogProps) {
     return ACCEPTED_FILE_TYPES[fileType as keyof typeof ACCEPTED_FILE_TYPES] || { icon: 'FileText', type: 'OTHER'};
   };
 
-  const handleUpload = () => {
-    if (!file || !title || !category || !fileContent) {
+  const handleUpload = async () => {
+    if (!file || !title || !category || !user) {
         toast({
             variant: 'destructive',
             title: 'Missing information',
@@ -208,23 +209,46 @@ export function UploadDialog({ isOpen, onOpenChange }: UploadDialogProps) {
         return;
     }
 
-    const {icon, type} = getDocInfo(file.type);
+    setIsUploading(true);
 
-    const newDocument = {
-        title,
-        description,
-        category: category as Document['category'],
-        tags,
-        type,
-        icon,
-        reminderDate: reminderDate?.toISOString(),
-        content: fileContent,
-        fileType: file.type,
-    };
+    try {
+        // 1. Upload the file to Firebase Storage
+        const storagePath = `users/${user.id}/documents/${uuidv4()}-${file.name}`;
+        const storageRef = ref(storage, storagePath);
+        const uploadResult = await uploadBytes(storageRef, file);
+        const downloadURL = await getDownloadURL(uploadResult.ref);
 
-    addDocument(newDocument);
-    toast({ title: 'Upload Successful!', description: `${file.name} has been added.` });
-    handleOpenChange(false);
+        // 2. Prepare the document data for Firestore
+        const {icon, type} = getDocInfo(file.type);
+        const newDocument = {
+            title,
+            description,
+            category: category as Document['category'],
+            tags,
+            type,
+            icon,
+            reminderDate: reminderDate?.toISOString(),
+            content: downloadURL, // Store the download URL
+            fileType: file.type,
+            storagePath: storagePath, // Store path for future management
+        };
+    
+        // 3. Add the document metadata to Firestore
+        await addDocument(newDocument);
+    
+        toast({ title: 'Upload Successful!', description: `${file.name} has been added.` });
+        handleOpenChange(false);
+
+    } catch (error) {
+        console.error("Upload failed: ", error);
+        toast({
+            variant: 'destructive',
+            title: 'Upload Failed',
+            description: 'There was an error uploading your file. Please try again.',
+        });
+    } finally {
+        setIsUploading(false);
+    }
   };
 
   const handleTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -281,7 +305,7 @@ export function UploadDialog({ isOpen, onOpenChange }: UploadDialogProps) {
                   <p className="font-semibold truncate">{file.name}</p>
                   <p className="text-sm text-muted-foreground">{Math.round(file.size / 1024)} KB</p>
                 </div>
-                <Button variant="ghost" size="icon" onClick={() => { setFile(null); setFileContent(null); }}>
+                <Button variant="ghost" size="icon" onClick={() => { setFile(null); }}>
                   <X className="h-4 w-4" />
                 </Button>
               </div>
@@ -390,8 +414,10 @@ export function UploadDialog({ isOpen, onOpenChange }: UploadDialogProps) {
           </div>
         </div>
         <DialogFooter className="pt-4">
-          <Button variant="outline" onClick={() => handleOpenChange(false)}>Cancel</Button>
-          <Button onClick={handleUpload} disabled={!file || !title || !category}>Upload File</Button>
+          <Button variant="outline" onClick={() => handleOpenChange(false)} disabled={isUploading}>Cancel</Button>
+          <Button onClick={handleUpload} disabled={isUploading || !file || !title || !category}>
+            {isUploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Upload File'}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

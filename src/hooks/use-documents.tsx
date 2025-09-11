@@ -5,14 +5,15 @@ import { createContext, useContext, useState, useEffect, ReactNode, useCallback 
 import type { Document } from '@/lib/types';
 import { useToast } from './use-toast';
 import { useAuth } from './use-auth';
-import { db } from '@/lib/firebase';
+import { db, storage } from '@/lib/firebase';
 import { collection, query, where, onSnapshot, addDoc, updateDoc, doc, deleteDoc, serverTimestamp, orderBy } from 'firebase/firestore';
+import { ref, deleteObject } from 'firebase/storage';
 
 
 interface DocumentsContextType {
   documents: Document[];
   loading: boolean;
-  addDocument: (doc: Omit<Document, 'id' | 'createdAt' | 'updatedAt' | 'version' | 'status' | 'isFavorite'>) => Promise<void>;
+  addDocument: (doc: Omit<Document, 'id' | 'createdAt' | 'updatedAt' | 'version' | 'status' | 'isFavorite' | 'content'> & { content: string }) => Promise<void>;
   deleteDocument: (id: string) => Promise<void>;
   updateDocument: (id: string, updates: Partial<Document>) => Promise<void>;
   restoreDocument: (id: string) => Promise<void>;
@@ -131,6 +132,29 @@ export function DocumentsProvider({ children }: { children: ReactNode }) {
 
   const permanentlyDeleteDocument = async (id: string) => {
     if (!user) return;
+
+    const docToDelete = documents.find(d => d.id === id);
+
+    // Delete file from Storage if it exists
+    if (docToDelete && docToDelete.storagePath) {
+        const fileRef = ref(storage, docToDelete.storagePath);
+        try {
+            await deleteObject(fileRef);
+        } catch (error: any) {
+             // If file not found, it might have been already deleted or failed to upload.
+             // We can log this but shouldn't block deleting the DB record.
+            if (error.code !== 'storage/object-not-found') {
+                console.error("Error deleting file from storage: ", error);
+                toast({
+                    title: "Deletion Error",
+                    description: "Could not delete the file from storage, but removing the document record.",
+                    variant: "destructive"
+                });
+            }
+        }
+    }
+
+    // Delete the document from Firestore
     const docRef = doc(db, 'users', user.id, 'documents', id);
     await deleteDoc(docRef);
   };

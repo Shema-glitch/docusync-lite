@@ -10,6 +10,7 @@ import { ArrowLeft, Maximize, Loader2, AlertTriangle } from 'lucide-react';
 import { format } from 'date-fns';
 import { Separator } from '@/components/ui/separator';
 import { useEffect, useState } from 'react';
+import type { Document } from '@/lib/types';
 
 const loadingMessages = [
     "Opening document...",
@@ -23,15 +24,20 @@ export default function DocumentDetailsPage({ params }: { params: { id: string }
   const router = useRouter();
   const { id } = params;
   
-  const [document, setDocument] = useState(documents.find((doc) => doc.id === id));
+  const [document, setDocument] = useState<Document | undefined>(undefined);
   const [isLoading, setIsLoading] = useState(true);
   const [loadingMessageIndex, setLoadingMessageIndex] = useState(0);
 
   useEffect(() => {
+    const foundDoc = documents.find((doc) => doc.id === id);
+    if (foundDoc) {
+      setDocument(foundDoc);
+    }
+  }, [id, documents]);
+
+  useEffect(() => {
     // Always show a brief loading animation for a better UX
     const cinematicTimer = setTimeout(() => {
-        const foundDoc = documents.find((doc) => doc.id === id);
-        setDocument(foundDoc);
         setIsLoading(false);
     }, 1000); // Simulate minimum loading time
 
@@ -43,7 +49,7 @@ export default function DocumentDetailsPage({ params }: { params: { id: string }
       clearTimeout(cinematicTimer);
       clearInterval(messageInterval);
     };
-  }, [id, documents]);
+  }, [id]);
 
 
   const openFullscreen = () => {
@@ -55,56 +61,61 @@ export default function DocumentDetailsPage({ params }: { params: { id: string }
     }
   }
 
-  if (isLoading) {
+  if (isLoading || !document) {
     return (
       <div className="flex flex-1 items-center justify-center h-full">
         <div className="flex flex-col items-center gap-4 text-center">
-            <Loader2 className="h-10 w-10 animate-spin text-primary" />
-            <h2 className="text-2xl font-bold tracking-tight">{loadingMessages[loadingMessageIndex]}</h2>
-            <p className="text-muted-foreground max-w-md">
-                Please wait a moment. If the document takes too long to load, it might have been moved or deleted.
-            </p>
+            {isLoading ? (
+                <>
+                    <Loader2 className="h-10 w-10 animate-spin text-primary" />
+                    <h2 className="text-2xl font-bold tracking-tight">{loadingMessages[loadingMessageIndex]}</h2>
+                    <p className="text-muted-foreground max-w-md">
+                        Please wait a moment. If the document takes too long to load, it might have been moved or deleted.
+                    </p>
+                </>
+            ) : (
+                 <div className="flex flex-col items-center gap-4 text-center">
+                    <AlertTriangle className="h-10 w-10 text-destructive" />
+                    <h2 className="text-2xl font-bold tracking-tight">Document Not Found</h2>
+                    <p className="text-muted-foreground max-w-md">
+                        The document you are looking for does not exist or has been moved.
+                    </p>
+                    <Button onClick={() => router.back()}>Go Back</Button>
+                </div>
+            )}
         </div>
       </div>
-    );
-  }
-
-  if (!document) {
-    return (
-        <div className="flex flex-1 items-center justify-center h-full">
-            <div className="flex flex-col items-center gap-4 text-center">
-                <AlertTriangle className="h-10 w-10 text-destructive" />
-                <h2 className="text-2xl font-bold tracking-tight">Document Not Found</h2>
-                <p className="text-muted-foreground max-w-md">
-                    The document you are looking for does not exist or has been moved.
-                </p>
-                <Button onClick={() => router.back()}>Go Back</Button>
-            </div>
-        </div>
     );
   }
 
   const renderContent = () => {
     const isOfficeDoc = ['application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/vnd.openxmlformats-officedocument.presentationml.presentation'].includes(document.fileType || '');
 
-    if (document.fileType === 'application/pdf' || document.fileType === 'text/plain') {
+    if (!document.content) {
+        return (
+           <div className="w-full h-full flex items-center justify-center">
+               <div className="flex flex-col items-center justify-center text-center p-8">
+                   <AlertTriangle className="h-12 w-12 text-yellow-500 mb-4" />
+                   <h3 className="text-xl font-semibold">No Preview Available</h3>
+                   <p className="text-muted-foreground mt-2">This document does not have any content to display.</p>
+               </div>
+           </div>
+       );
+   }
+
+    if (fileTypeIsDataUrl(document.fileType)) {
         return <iframe id="doc-iframe" src={document.content} className="w-full h-full border-0" title={document.title} />;
     }
     
     if (isOfficeDoc) {
-        if (!document.content) {
-             return (
-                <div className="w-full h-full flex items-center justify-center">
-                    <div className="flex flex-col items-center justify-center text-center p-8">
-                        <AlertTriangle className="h-12 w-12 text-yellow-500 mb-4" />
-                        <h3 className="text-xl font-semibold">Live Preview Unavailable</h3>
-                        <p className="text-muted-foreground mt-2">This document type requires a link to an online file for preview.</p>
-                    </div>
-                </div>
-            );
-        }
+        // Use Google Docs viewer for Office files, which requires a publicly accessible URL.
         const viewerUrl = `https://docs.google.com/gview?url=${encodeURIComponent(document.content)}&embedded=true`;
         return <iframe id="doc-iframe" src={viewerUrl} className="w-full h-full border-0" title={document.title} />;
+    }
+
+    if (document.fileType === 'application/pdf') {
+        // Embed PDFs directly
+        return <iframe id="doc-iframe" src={document.content} className="w-full h-full border-0" title={document.title} />;
     }
 
     // Fallback for unsupported or missing file types
@@ -118,6 +129,12 @@ export default function DocumentDetailsPage({ params }: { params: { id: string }
         </div>
     );
   }
+  
+  // Helper to check if a file type was intended to be a data URL (from older implementation)
+  const fileTypeIsDataUrl = (fileType: string | undefined) => {
+    return fileType === 'text/plain';
+  }
+
 
   return (
     <div className="flex flex-col h-full p-4 md:p-6">

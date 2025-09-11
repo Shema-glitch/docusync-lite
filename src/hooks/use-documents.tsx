@@ -4,124 +4,38 @@
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import type { Document } from '@/lib/types';
 import { useToast } from './use-toast';
+import { useAuth } from './use-auth';
+import { db } from '@/lib/firebase';
+import { collection, query, where, onSnapshot, addDoc, updateDoc, doc, deleteDoc, serverTimestamp, orderBy } from 'firebase/firestore';
+
 
 interface DocumentsContextType {
   documents: Document[];
   loading: boolean;
-  addDocument: (doc: Omit<Document, 'id' | 'createdAt' | 'updatedAt' | 'version' | 'status' | 'isFavorite'>) => void;
-  deleteDocument: (id: string) => void;
-  updateDocument: (id: string, updates: Partial<Document>) => void;
-  restoreDocument: (id: string) => void;
-  permanentlyDeleteDocument: (id: string) => void;
+  addDocument: (doc: Omit<Document, 'id' | 'createdAt' | 'updatedAt' | 'version' | 'status' | 'isFavorite'>) => Promise<void>;
+  deleteDocument: (id: string) => Promise<void>;
+  updateDocument: (id: string, updates: Partial<Document>) => Promise<void>;
+  restoreDocument: (id: string) => Promise<void>;
+  permanentlyDeleteDocument: (id: string) => Promise<void>;
 }
 
 const DocumentsContext = createContext<DocumentsContextType | undefined>(undefined);
-
-const MOCK_DOCUMENTS: Document[] = [
-    {
-      id: 'doc_1',
-      title: 'Project Phoenix Proposal',
-      description: 'Initial proposal for the new marketing campaign.',
-      category: 'Work',
-      tags: ['marketing', 'q4', 'planning'],
-      createdAt: '2023-10-26T10:00:00Z',
-      updatedAt: '2023-10-26T11:30:00Z',
-      version: 2,
-      type: 'PDF',
-      icon: 'FileText',
-      status: 'active',
-      isFavorite: true,
-      fileType: 'application/pdf',
-      content: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf'
-    },
-    {
-      id: 'doc_2',
-      title: 'Q3 Financial Report',
-      description: 'Quarterly financial results and analysis.',
-      category: 'Finance',
-      tags: ['finance', 'report', 'earnings'],
-      createdAt: '2023-10-25T15:20:00Z',
-      updatedAt: '2023-10-25T15:20:00Z',
-      version: 1,
-      type: 'Spreadsheet',
-      icon: 'FileSpreadsheet',
-      status: 'active',
-      isFavorite: false,
-    },
-    {
-      id: 'doc_3',
-      title: 'New Logo Concepts',
-      description: 'Draft designs for the company rebranding.',
-      category: 'Work',
-      tags: ['design', 'branding', 'logo'],
-      createdAt: '2023-10-24T09:05:00Z',
-      updatedAt: '2023-10-24T14:00:00Z',
-      version: 3,
-      type: 'Image',
-      icon: 'FileImage',
-      status: 'active',
-      isFavorite: false,
-    },
-    {
-      id: 'doc_4',
-      title: 'Signed NDA',
-      description: 'Non-disclosure agreement with Partner Corp.',
-      category: 'Legal',
-      tags: ['legal', 'nda', 'contract'],
-      createdAt: '2023-10-22T18:00:00Z',
-      updatedAt: '2023-10-22T18:00:00Z',
-      version: 1,
-      type: 'Word',
-      icon: 'FileSignature',
-      status: 'active',
-      isFavorite: true,
-    },
-    {
-      id: 'doc_5',
-      title: 'Vacation Photos',
-      description: 'Pictures from the summer trip to Italy.',
-      category: 'Personal',
-      tags: ['travel', 'photos', 'vacation'],
-      createdAt: '2023-09-15T12:00:00Z',
-      updatedAt: '2023-09-15T12:00:00Z',
-      version: 1,
-      type: 'Image',
-      icon: 'FileImage',
-      status: 'active',
-      isFavorite: false,
-    },
-      {
-      id: 'doc_6',
-      title: 'Home Loan Agreement',
-      description: 'Mortgage agreement documents for the new house.',
-      category: 'Finance',
-      tags: ['loan', 'mortgage', 'housing'],
-      createdAt: '2023-08-01T11:45:00Z',
-      updatedAt: '2023-08-01T11:45:00Z',
-      version: 1,
-      type: 'PDF',
-      icon: 'FileText',
-      status: 'active',
-      isFavorite: false,
-    },
-  ];
 
 export function DocumentsProvider({ children }: { children: ReactNode }) {
   const [documents, setDocuments] = useState<Document[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const { user } = useAuth();
 
-  const updateDocument = useCallback((id: string, updates: Partial<Document>) => {
-    setDocuments(prevDocs => {
-        const newDocs = prevDocs.map(doc => doc.id === id ? { ...doc, ...updates, updatedAt: new Date().toISOString() } : doc);
-        updateLocalStorage(newDocs);
-        return newDocs;
-    });
-  }, []);
+  const updateDocument = useCallback(async (id: string, updates: Partial<Document>) => {
+    if (!user) return;
+    const docRef = doc(db, 'users', user.id, 'documents', id);
+    await updateDoc(docRef, { ...updates, updatedAt: serverTimestamp() });
+  }, [user]);
 
   // Request notification permission on mount
   useEffect(() => {
-    if ("Notification" in window && Notification.permission === "default") {
+    if (typeof window !== 'undefined' && "Notification" in window && Notification.permission === "default") {
         Notification.requestPermission();
     }
   }, []);
@@ -139,7 +53,7 @@ export function DocumentsProvider({ children }: { children: ReactNode }) {
             const notificationTitle = `Reminder: ${doc.title}`;
             const notificationBody = `This is a reminder for your document.`;
 
-            if ("Notification" in window && Notification.permission === "granted") {
+            if (typeof window !== 'undefined' && "Notification" in window && Notification.permission === "granted") {
                 new Notification(notificationTitle, { body: notificationBody });
             } else {
                  toast({
@@ -160,66 +74,66 @@ export function DocumentsProvider({ children }: { children: ReactNode }) {
 
 
   useEffect(() => {
-    setLoading(true);
-    try {
-      const storedDocs = localStorage.getItem('documents_db');
-      if (storedDocs) {
-        setDocuments(JSON.parse(storedDocs));
-      } else {
-        setDocuments(MOCK_DOCUMENTS);
-        localStorage.setItem('documents_db', JSON.stringify(MOCK_DOCUMENTS));
-      }
-    } catch (error) {
-        console.error("Could not parse documents from local storage", error);
-        setDocuments(MOCK_DOCUMENTS);
+    if (!user) {
+        setDocuments([]);
+        setLoading(false);
+        return;
     }
-    setLoading(false);
-  }, []);
 
-  const updateLocalStorage = (docs: Document[]) => {
-    localStorage.setItem('documents_db', JSON.stringify(docs));
-  };
+    setLoading(true);
+    const q = query(collection(db, 'users', user.id, 'documents'), orderBy('createdAt', 'desc'));
+
+    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+        const docs: Document[] = [];
+        querySnapshot.forEach((doc) => {
+            const data = doc.data();
+            docs.push({
+                id: doc.id,
+                ...data,
+                // Convert Firestore Timestamps to ISO strings
+                createdAt: data.createdAt?.toDate()?.toISOString() || new Date().toISOString(),
+                updatedAt: data.updatedAt?.toDate()?.toISOString() || new Date().toISOString(),
+            } as Document);
+        });
+        setDocuments(docs);
+        setLoading(false);
+    }, (error) => {
+        console.error("Error fetching documents: ", error);
+        toast({ title: "Error", description: "Could not fetch documents.", variant: "destructive" });
+        setLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, [user, toast]);
   
-  const addDocument = useCallback((docData: Omit<Document, 'id' | 'createdAt' | 'updatedAt' | 'version' | 'status' | 'isFavorite'>) => {
-    const newDoc: Document = {
+  const addDocument = async (docData: Omit<Document, 'id' | 'createdAt' | 'updatedAt' | 'version' | 'status' | 'isFavorite'>) => {
+    if (!user) {
+      toast({ title: "Not Authenticated", description: "You must be logged in to add a document.", variant: "destructive" });
+      return;
+    }
+    await addDoc(collection(db, 'users', user.id, 'documents'), {
       ...docData,
-      id: `doc_${new Date().getTime()}`,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
       version: 1,
       status: 'active',
       isFavorite: false,
-    };
-    setDocuments(prevDocs => {
-      const newDocs = [newDoc, ...prevDocs];
-      updateLocalStorage(newDocs);
-      return newDocs;
     });
-  }, []);
+  };
 
-  const deleteDocument = useCallback((id: string) => {
-    setDocuments(prevDocs => {
-        const newDocs = prevDocs.map(doc => doc.id === id ? { ...doc, status: 'trashed' as const, updatedAt: new Date().toISOString() } : doc);
-        updateLocalStorage(newDocs);
-        return newDocs;
-    });
-  }, []);
+  const deleteDocument = async (id: string) => {
+    await updateDocument(id, { status: 'trashed' });
+  };
 
-  const restoreDocument = useCallback((id: string) => {
-    setDocuments(prevDocs => {
-        const newDocs = prevDocs.map(doc => doc.id === id ? { ...doc, status: 'active' as const, updatedAt: new Date().toISOString() } : doc);
-        updateLocalStorage(newDocs);
-        return newDocs;
-    });
-  }, []);
+  const restoreDocument = async (id: string) => {
+    await updateDocument(id, { status: 'active' });
+  };
 
-  const permanentlyDeleteDocument = useCallback((id: string) => {
-    setDocuments(prevDocs => {
-      const newDocs = prevDocs.filter(doc => doc.id !== id);
-      updateLocalStorage(newDocs);
-      return newDocs;
-    });
-  }, []);
+  const permanentlyDeleteDocument = async (id: string) => {
+    if (!user) return;
+    const docRef = doc(db, 'users', user.id, 'documents', id);
+    await deleteDoc(docRef);
+  };
 
   const value = { documents, loading, addDocument, deleteDocument, updateDocument, restoreDocument, permanentlyDeleteDocument };
 

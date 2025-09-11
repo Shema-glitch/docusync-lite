@@ -55,7 +55,7 @@ export default function DocumentDetailsPage({ params }: { params: { id: string }
     }
   }
 
-  if (isLoading || !document) {
+  if (isLoading) {
     return (
       <div className="flex flex-1 items-center justify-center h-full">
         <div className="flex flex-col items-center gap-4 text-center">
@@ -69,6 +69,21 @@ export default function DocumentDetailsPage({ params }: { params: { id: string }
     );
   }
 
+  if (!document) {
+    return (
+        <div className="flex flex-1 items-center justify-center h-full">
+            <div className="flex flex-col items-center gap-4 text-center">
+                <AlertTriangle className="h-10 w-10 text-destructive" />
+                <h2 className="text-2xl font-bold tracking-tight">Document Not Found</h2>
+                <p className="text-muted-foreground max-w-md">
+                    The document you are looking for does not exist or has been moved.
+                </p>
+                <Button onClick={() => router.back()}>Go Back</Button>
+            </div>
+        </div>
+    );
+  }
+
   const renderContent = () => {
     const isOfficeDoc = ['application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/vnd.openxmlformats-officedocument.presentationml.presentation'].includes(document.fileType || '');
 
@@ -79,7 +94,7 @@ export default function DocumentDetailsPage({ params }: { params: { id: string }
     if (isOfficeDoc) {
         if (!document.content) {
              return (
-                 <div className="w-full h-full flex items-center justify-center bg-muted rounded-b-lg">
+                <div className="w-full h-full flex items-center justify-center">
                     <div className="flex flex-col items-center justify-center text-center p-8">
                         <AlertTriangle className="h-12 w-12 text-yellow-500 mb-4" />
                         <h3 className="text-xl font-semibold">Live Preview Unavailable</h3>
@@ -94,7 +109,7 @@ export default function DocumentDetailsPage({ params }: { params: { id: string }
 
     // Fallback for unsupported or missing file types
     return (
-        <div className="w-full h-full flex items-center justify-center bg-muted rounded-b-lg">
+        <div className="w-full h-full flex items-center justify-center">
             <div className="flex flex-col items-center justify-center text-center p-8">
                 <AlertTriangle className="h-12 w-12 text-destructive mb-4" />
                 <h3 className="text-xl font-semibold">Unsupported File Type</h3>

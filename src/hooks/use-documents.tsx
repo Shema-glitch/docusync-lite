@@ -12,7 +12,6 @@ import { ref, deleteObject } from 'firebase/storage';
 
 interface DocumentsContextType {
   documents: Document[];
-  loading: boolean;
   addDocument: (doc: Omit<Document, 'id' | 'createdAt' | 'updatedAt' | 'version' | 'status' | 'isFavorite' | 'content'> & { content: string }) => Promise<void>;
   deleteDocument: (id: string) => Promise<void>;
   updateDocument: (id: string, updates: Partial<Document>) => Promise<void>;
@@ -24,7 +23,6 @@ const DocumentsContext = createContext<DocumentsContextType | undefined>(undefin
 
 export function DocumentsProvider({ children }: { children: ReactNode }) {
   const [documents, setDocuments] = useState<Document[]>([]);
-  const [loading, setLoading] = useState(true);
   const { toast } = useToast();
   const { user } = useAuth();
 
@@ -77,11 +75,9 @@ export function DocumentsProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!user) {
         setDocuments([]);
-        setLoading(false);
         return;
     }
 
-    setLoading(true);
     const q = query(collection(db, 'users', user.id, 'documents'), orderBy('createdAt', 'desc'));
 
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
@@ -97,11 +93,9 @@ export function DocumentsProvider({ children }: { children: ReactNode }) {
             } as Document);
         });
         setDocuments(docs);
-        setLoading(false);
     }, (error) => {
         console.error("Error fetching documents: ", error);
         toast({ title: "Error", description: "Could not fetch documents.", variant: "destructive" });
-        setLoading(false);
     });
 
     return () => unsubscribe();
@@ -159,7 +153,7 @@ export function DocumentsProvider({ children }: { children: ReactNode }) {
     await deleteDoc(docRef);
   };
 
-  const value = { documents, loading, addDocument, deleteDocument, updateDocument, restoreDocument, permanentlyDeleteDocument };
+  const value = { documents, addDocument, deleteDocument, updateDocument, restoreDocument, permanentlyDeleteDocument };
 
   return <DocumentsContext.Provider value={value}>{children}</DocumentsContext.Provider>;
 }

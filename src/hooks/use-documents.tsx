@@ -6,7 +6,7 @@ import type { Document, DocumentMember } from '@/lib/types';
 import { useToast } from './use-toast';
 import { useAuth, type User } from './use-auth';
 import { db, storage } from '@/lib/firebase';
-import { collection, query, where, onSnapshot, addDoc, updateDoc, doc, deleteDoc, serverTimestamp, orderBy, writeBatch, getDocs } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, addDoc, updateDoc, doc, deleteDoc, serverTimestamp, getDocs } from 'firebase/firestore';
 import { ref, deleteObject } from 'firebase/storage';
 
 

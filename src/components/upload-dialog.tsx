@@ -29,6 +29,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { storage } from '@/lib/firebase';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { v4 as uuidv4 } from 'uuid';
+import { useRouter } from 'next/navigation';
 
 
 interface UploadDialogProps {
@@ -48,6 +49,7 @@ export function UploadDialog({ isOpen, onOpenChange }: UploadDialogProps) {
   const { toast } = useToast();
   const { addDocument } = useDocuments();
   const { user } = useAuth();
+  const router = useRouter();
 
   const [file, setFile] = useState<File | null>(null);
   const [title, setTitle] = useState('');
@@ -212,13 +214,11 @@ export function UploadDialog({ isOpen, onOpenChange }: UploadDialogProps) {
     setIsUploading(true);
 
     try {
-        // 1. Upload the file to Firebase Storage
-        const storagePath = `users/${user.id}/documents/${uuidv4()}-${file.name}`;
+        const storagePath = `documents/${uuidv4()}-${file.name}`;
         const storageRef = ref(storage, storagePath);
         const uploadResult = await uploadBytes(storageRef, file);
         const downloadURL = await getDownloadURL(uploadResult.ref);
 
-        // 2. Prepare the document data for Firestore
         const {icon, type} = getDocInfo(file.type);
         const newDocument = {
             title,
@@ -228,23 +228,25 @@ export function UploadDialog({ isOpen, onOpenChange }: UploadDialogProps) {
             type,
             icon,
             reminderDate: reminderDate?.toISOString(),
-            content: downloadURL, // Store the download URL
+            content: downloadURL,
             fileType: file.type,
-            storagePath: storagePath, // Store path for future management
+            storagePath: storagePath,
         };
     
-        // 3. Add the document metadata to Firestore
-        await addDocument(newDocument);
+        const newDocId = await addDocument(newDocument);
     
         toast({ title: 'Upload Successful!', description: `${file.name} has been added.` });
         handleOpenChange(false);
+        if (newDocId) {
+          router.push(`/documents/${newDocId}`);
+        }
 
-    } catch (error) {
+    } catch (error: any) {
         console.error("Upload failed: ", error);
         toast({
             variant: 'destructive',
             title: 'Upload Failed',
-            description: 'There was an error uploading your file. Please try again.',
+            description: error.message || 'There was an error uploading your file. Please try again.',
         });
     } finally {
         setIsUploading(false);

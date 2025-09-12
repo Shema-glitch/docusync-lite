@@ -6,27 +6,34 @@ import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Maximize, Loader2, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, Maximize, Loader2, AlertTriangle, Share2, Copy } from 'lucide-react';
 import { format } from 'date-fns';
 import { Separator } from '@/components/ui/separator';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import type { Document } from '@/lib/types';
+import { useAuth } from '@/hooks/use-auth';
+import { Members } from '@/components/document/members';
+import { ShareDialog } from '@/components/document/share-dialog';
+import { useToast } from '@/hooks/use-toast';
 
 const loadingMessages = [
     "Opening document...",
-    "Parsing content...",
+    "Verifying permissions...",
     "Rendering preview...",
     "Almost there..."
 ];
 
 export default function DocumentDetailsPage({ params }: { params: { id: string } }) {
   const { documents } = useDocuments();
+  const { user } = useAuth();
   const router = useRouter();
+  const { toast } = useToast();
   const { id } = params;
   
   const [document, setDocument] = useState<Document | undefined>(undefined);
   const [isLoading, setIsLoading] = useState(true);
   const [loadingMessageIndex, setLoadingMessageIndex] = useState(0);
+  const [isShareOpen, setShareOpen] = useState(false);
 
   useEffect(() => {
     const foundDoc = documents.find((doc) => doc.id === id);
@@ -36,10 +43,9 @@ export default function DocumentDetailsPage({ params }: { params: { id: string }
   }, [id, documents]);
 
   useEffect(() => {
-    // Always show a brief loading animation for a better UX
     const cinematicTimer = setTimeout(() => {
         setIsLoading(false);
-    }, 1000); // Simulate minimum loading time
+    }, 1000); 
 
     const messageInterval = setInterval(() => {
       setLoadingMessageIndex((prevIndex) => (prevIndex + 1) % loadingMessages.length);
@@ -51,6 +57,12 @@ export default function DocumentDetailsPage({ params }: { params: { id: string }
     };
   }, [id]);
 
+  const userRole = useMemo(() => {
+    if (!document || !user) return undefined;
+    return document.members[user.id]?.role;
+  }, [document, user]);
+
+  const isOwner = userRole === 'owner';
 
   const openFullscreen = () => {
     if (typeof window !== 'undefined' && typeof window.document !== 'undefined') {
@@ -59,6 +71,12 @@ export default function DocumentDetailsPage({ params }: { params: { id: string }
             iframe.requestFullscreen();
         }
     }
+  }
+
+  const copyShareLink = () => {
+    const url = `${window.location.origin}/share/${document?.id}`;
+    navigator.clipboard.writeText(url);
+    toast({ title: "Link Copied", description: "Share link has been copied to your clipboard." });
   }
 
   if (isLoading || !document) {
@@ -70,7 +88,7 @@ export default function DocumentDetailsPage({ params }: { params: { id: string }
                     <Loader2 className="h-10 w-10 animate-spin text-primary" />
                     <h2 className="text-2xl font-bold tracking-tight">{loadingMessages[loadingMessageIndex]}</h2>
                     <p className="text-muted-foreground max-w-md">
-                        Please wait a moment. If the document takes too long to load, it might have been moved or deleted.
+                        Please wait a moment. If the document takes too long to load, you might not have access to it.
                     </p>
                 </>
             ) : (
@@ -78,7 +96,7 @@ export default function DocumentDetailsPage({ params }: { params: { id: string }
                     <AlertTriangle className="h-10 w-10 text-destructive" />
                     <h2 className="text-2xl font-bold tracking-tight">Document Not Found</h2>
                     <p className="text-muted-foreground max-w-md">
-                        The document you are looking for does not exist or has been moved.
+                        The document you are looking for does not exist, has been moved, or you do not have permission to view it.
                     </p>
                     <Button onClick={() => router.back()}>Go Back</Button>
                 </div>
@@ -102,23 +120,16 @@ export default function DocumentDetailsPage({ params }: { params: { id: string }
            </div>
        );
    }
-
-    if (fileTypeIsDataUrl(document.fileType)) {
-        return <iframe id="doc-iframe" src={document.content} className="w-full h-full border-0" title={document.title} />;
-    }
     
     if (isOfficeDoc) {
-        // Use Google Docs viewer for Office files, which requires a publicly accessible URL.
         const viewerUrl = `https://docs.google.com/gview?url=${encodeURIComponent(document.content)}&embedded=true`;
         return <iframe id="doc-iframe" src={viewerUrl} className="w-full h-full border-0" title={document.title} />;
     }
 
     if (document.fileType === 'application/pdf') {
-        // Embed PDFs directly
         return <iframe id="doc-iframe" src={document.content} className="w-full h-full border-0" title={document.title} />;
     }
 
-    // Fallback for unsupported or missing file types
     return (
         <div className="w-full h-full flex items-center justify-center">
             <div className="flex flex-col items-center justify-center text-center p-8">
@@ -129,26 +140,40 @@ export default function DocumentDetailsPage({ params }: { params: { id: string }
         </div>
     );
   }
-  
-  // Helper to check if a file type was intended to be a data URL (from older implementation)
-  const fileTypeIsDataUrl = (fileType: string | undefined) => {
-    return fileType === 'text/plain';
-  }
-
 
   return (
+    <>
     <div className="flex flex-col h-full p-4 md:p-6">
        <div className="flex-shrink-0">
-        <Button variant="ghost" onClick={() => router.back()} className="mb-4">
-                <ArrowLeft className="mr-2 h-4 w-4"/>
-                Back
-        </Button>
+        <div className='flex justify-between items-center mb-4'>
+            <Button variant="ghost" onClick={() => router.back()}>
+                    <ArrowLeft className="mr-2 h-4 w-4"/>
+                    Back
+            </Button>
+            <div className='flex items-center gap-2'>
+                <Button variant="outline" onClick={copyShareLink}>
+                    <Copy className="mr-2 h-4 w-4"/>
+                    Copy Link
+                </Button>
+                {isOwner && (
+                    <Button onClick={() => setShareOpen(true)}>
+                        <Share2 className="mr-2 h-4 w-4"/>
+                        Share
+                    </Button>
+                )}
+            </div>
+        </div>
         <Card>
             <CardHeader>
-            <CardTitle className="text-3xl font-bold">{document.title}</CardTitle>
-            <CardDescription>
-                Last updated on {format(new Date(document.updatedAt), 'PPP p')}
-            </CardDescription>
+            <div className="flex items-start justify-between">
+                <div>
+                    <CardTitle className="text-3xl font-bold">{document.title}</CardTitle>
+                    <CardDescription className='mt-2'>
+                        Last updated on {format(new Date(document.updatedAt), 'PPP p')}
+                    </CardDescription>
+                </div>
+                <Members members={document.members} />
+            </div>
             </CardHeader>
             <CardContent>
                 <p className="text-muted-foreground">{document.description || 'No description provided.'}</p>
@@ -180,5 +205,11 @@ export default function DocumentDetailsPage({ params }: { params: { id: string }
         </Card>
        </div>
     </div>
+    <ShareDialog 
+        isOpen={isShareOpen} 
+        onOpenChange={setShareOpen}
+        document={document}
+    />
+    </>
   );
 }

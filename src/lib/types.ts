@@ -1,6 +1,12 @@
 
 import type { LucideIcon } from 'lucide-react';
 
+export type DocumentMember = {
+  role: 'owner' | 'editor' | 'viewer';
+  name: string;
+  avatar: string;
+}
+
 export type Document = {
   id: string;
   title: string;
@@ -15,7 +21,9 @@ export type Document = {
   status: 'active' | 'trashed';
   reminderDate?: string;
   isFavorite?: boolean;
-  content: string; // Firebase Storage URL or data URI for TXT
-  fileType: string; // e.g. 'application/pdf' or 'text/plain'
+  content: string; // Firebase Storage URL
+  fileType: string; // e.g. 'application/pdf'
   storagePath?: string; // Path in Firebase Storage
+  trashedAt?: string | null;
+  members: Record<string, DocumentMember>;
 };

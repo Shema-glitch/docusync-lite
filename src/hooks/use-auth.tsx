@@ -12,10 +12,11 @@ import {
     updateProfile,
     type User as FirebaseUser
 } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
+import { auth, db } from '@/lib/firebase';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 
 
-interface User {
+export interface User {
   id: string;
   name: string;
   email: string;
@@ -34,7 +35,21 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const MOCK_AVATAR_URL = 'https://placehold.co/100x100/EEDC82/333333?text=';
 
-function formatUser(firebaseUser: FirebaseUser): User {
+async function formatUser(firebaseUser: FirebaseUser): Promise<User> {
+    const userDocRef = doc(db, 'users', firebaseUser.uid);
+    const userDoc = await getDoc(userDocRef);
+
+    if (userDoc.exists()) {
+        const userData = userDoc.data();
+        return {
+            id: firebaseUser.uid,
+            email: firebaseUser.email || '',
+            name: userData.name || firebaseUser.displayName || 'Anonymous',
+            avatar: userData.avatar || firebaseUser.photoURL || `${MOCK_AVATAR_URL}${firebaseUser.displayName?.charAt(0) || 'A'}`,
+        };
+    }
+
+    // This is a fallback in case the user document doesn't exist for some reason
     return {
         id: firebaseUser.uid,
         email: firebaseUser.email || '',
@@ -49,9 +64,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
-        setUser(formatUser(firebaseUser));
+        const formattedUser = await formatUser(firebaseUser);
+        setUser(formattedUser);
       } else {
         setUser(null);
       }
@@ -77,10 +93,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setLoading(true);
     try {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        await updateProfile(userCredential.user, {
+        const firebaseUser = userCredential.user;
+        const avatar = `${MOCK_AVATAR_URL}${name.charAt(0) || 'A'}`;
+
+        await updateProfile(firebaseUser, {
             displayName: name,
-            photoURL: `${MOCK_AVATAR_URL}${name.charAt(0)}`
+            photoURL: avatar
         });
+        
+        // Also create a user document in Firestore
+        const userDocRef = doc(db, 'users', firebaseUser.uid);
+        await setDoc(userDocRef, {
+            name,
+            email,
+            avatar,
+        });
+
         // onAuthStateChanged will handle setting the new user
     } catch (error: any) {
         throw new Error(error.message);

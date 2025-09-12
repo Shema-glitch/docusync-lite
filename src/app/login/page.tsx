@@ -2,7 +2,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -18,6 +18,7 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const { login } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,13 +26,17 @@ export default function LoginPage() {
     setError(null);
     try {
       await login(email, password);
-      router.push('/');
+      const redirect = searchParams.get('redirect');
+      router.push(redirect ? decodeURIComponent(redirect) : '/');
     } catch (err: any) {
       setError(err.message);
     } finally {
       setIsLoading(false);
     }
   };
+  
+  const redirectParam = searchParams.get('redirect');
+  const signupHref = redirectParam ? `/signup?redirect=${redirectParam}` : '/signup';
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
@@ -73,7 +78,7 @@ export default function LoginPage() {
           </form>
           <div className="mt-4 text-center text-sm">
             Don't have an account?{' '}
-            <Link href="/signup" className="underline">
+            <Link href={signupHref} className="underline">
               Sign up
             </Link>
           </div>

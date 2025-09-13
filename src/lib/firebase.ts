@@ -1,3 +1,4 @@
+
 // It looks like you've provided some code to start. We'll be using this as a reference to get you connected to Firebase.
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAuth } from "firebase/auth";

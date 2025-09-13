@@ -17,7 +17,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { X, UploadCloud, Sparkles, Loader2, FileText, Calendar as CalendarIcon } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { getAiSuggestions } from '@/app/actions';
+import { getAiSuggestions, uploadFile } from '@/app/actions';
 import { cn } from '@/lib/utils';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
@@ -26,9 +26,6 @@ import { format } from 'date-fns';
 import { useDocuments } from '@/hooks/use-documents.tsx';
 import type { Document } from '@/lib/types';
 import { useAuth } from '@/hooks/use-auth';
-import { storage } from '@/lib/firebase';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { v4 as uuidv4 } from 'uuid';
 import { useRouter } from 'next/navigation';
 
 
@@ -214,10 +211,16 @@ export function UploadDialog({ isOpen, onOpenChange }: UploadDialogProps) {
     setIsUploading(true);
 
     try {
-        const storagePath = `documents/${uuidv4()}-${file.name}`;
-        const storageRef = ref(storage, storagePath);
-        const uploadResult = await uploadBytes(storageRef, file);
-        const downloadURL = await getDownloadURL(uploadResult.ref);
+        const formData = new FormData();
+        formData.append('file', file);
+        
+        const uploadResult = await uploadFile(formData);
+
+        if (uploadResult.error) {
+            throw new Error(uploadResult.error);
+        }
+
+        const { downloadURL, storagePath } = uploadResult;
 
         const {icon, type} = getDocInfo(file.type);
         const newDocument = {

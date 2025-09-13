@@ -1,6 +1,8 @@
 'use server';
 
 import { suggestTags, type SuggestTagsInput } from '@/ai/flows/suggest-tags';
+import { adminStorage } from '@/lib/firebase';
+import { v4 as uuidv4 } from 'uuid';
 
 export async function getAiSuggestions(data: SuggestTagsInput) {
   try {
@@ -11,4 +13,35 @@ export async function getAiSuggestions(data: SuggestTagsInput) {
     // In a real app, you'd want to log this error to a monitoring service
     return { tags: [], error: 'Failed to get AI suggestions. Please try again.' };
   }
+}
+
+export async function uploadFile(formData: FormData): Promise<{ downloadURL: string; storagePath: string; error: string | null; }> {
+    try {
+        const file = formData.get('file') as File;
+        if (!file) {
+            return { downloadURL: '', storagePath: '', error: 'No file provided.' };
+        }
+
+        const storagePath = `documents/${uuidv4()}-${file.name}`;
+        const bucket = adminStorage.bucket();
+        const buffer = Buffer.from(await file.arrayBuffer());
+
+        const fileUpload = bucket.file(storagePath);
+        
+        await fileUpload.save(buffer, {
+            metadata: {
+                contentType: file.type,
+            },
+        });
+        
+        const [downloadURL] = await fileUpload.getSignedUrl({
+          action: 'read',
+          expires: '03-09-2491' // A long time in the future
+        });
+
+        return { downloadURL, storagePath, error: null };
+    } catch (e: any) {
+        console.error('Upload failed:', e);
+        return { downloadURL: '', storagePath: '', error: 'File upload failed. Please try again.' };
+    }
 }

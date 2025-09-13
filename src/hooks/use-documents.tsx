@@ -5,7 +5,7 @@ import { createContext, useContext, useState, useEffect, ReactNode, useCallback 
 import type { Document, DocumentMember } from '@/lib/types';
 import { useToast } from './use-toast';
 import { useAuth, type User } from './use-auth';
-import { db, storage } from '@/lib/firebase';
+import { db, storage, adminDb } from '@/lib/firebase';
 import { collection, query, where, onSnapshot, addDoc, updateDoc, doc, deleteDoc, serverTimestamp, getDocs } from 'firebase/firestore';
 import { ref, deleteObject } from 'firebase/storage';
 
@@ -83,6 +83,7 @@ export function DocumentsProvider({ children }: { children: ReactNode }) {
                 createdAt: data.createdAt?.toDate()?.toISOString() || new Date().toISOString(),
                 updatedAt: data.updatedAt?.toDate()?.toISOString() || new Date().toISOString(),
             } as Document);
+
         });
         setDocuments(docs);
     }, (error) => {
@@ -149,13 +150,13 @@ export function DocumentsProvider({ children }: { children: ReactNode }) {
 
     const docToDelete = documents.find(d => d.id === id);
     if (docToDelete && docToDelete.storagePath) {
-        const fileRef = ref(storage, docToDelete.storagePath);
         try {
-            await deleteObject(fileRef);
+            const bucket = adminStorage.bucket();
+            await bucket.file(docToDelete.storagePath).delete();
         } catch (error: any) {
-            if (error.code !== 'storage/object-not-found') {
+             if (error.code !== 404) { // Ignore object not found errors
                 console.error("Error deleting file from storage: ", error);
-            }
+             }
         }
     }
 

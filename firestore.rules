@@ -1,38 +1,37 @@
-rules_version = '2';
 
+rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-  
-    // Helper Functions
-    function isSignedIn() {
+    
+    function isAuth() {
       return request.auth != null;
     }
-    
-    function isOwner(docData) {
-      return request.auth.uid == docData.members[request.auth.uid].role == 'owner';
-    }
-    
-    function isEditor(docData) {
-      return request.auth.uid == docData.members[request.auth.uid].role == 'editor';
+
+    function isOwner(docId) {
+      return get(/databases/$(database)/documents/documents/$(docId)).data.members[request.auth.uid].role == 'owner';
     }
 
-    // Rules for the 'users' collection
+    function isEditor(docId) {
+      let role = get(/databases/$(database)/documents/documents/$(docId)).data.members[request.auth.uid].role;
+      return role == 'editor' || role == 'owner';
+    }
+
+    function isMember(docId) {
+      return request.auth.uid in get(/databases/$(database)/documents/documents/$(docId)).data.members;
+    }
+
     match /users/{userId} {
       allow read, write: if request.auth.uid == userId;
     }
-    
-    // Rules for the 'documents' collection
-    match /documents/{documentId} {
-      allow read: if isSignedIn() && request.auth.uid in resource.data.members;
+
+    match /documents/{docId} {
+      allow read: if isAuth() && isMember(docId);
+
+      allow create: if isAuth() && request.resource.data.members[request.auth.uid].role == 'owner';
+
+      allow update: if isAuth() && isEditor(docId);
       
-      allow create: if isSignedIn() 
-                    && request.resource.data.members[request.auth.uid].role == 'owner'
-                    && request.resource.data.keys().hasAll(['title', 'category', 'members', 'createdAt', 'updatedAt'])
-                    && request.resource.data.members.size() == 1;
-
-      allow update: if isSignedIn() && (isOwner(resource.data) || isEditor(resource.data));
-
-      allow delete: if isSignedIn() && isOwner(resource.data);
+      allow delete: if isAuth() && isOwner(docId);
     }
   }
 }

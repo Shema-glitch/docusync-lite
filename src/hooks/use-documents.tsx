@@ -5,8 +5,8 @@ import { createContext, useContext, useState, useEffect, ReactNode, useCallback 
 import type { Document, DocumentMember } from '@/lib/types';
 import { useToast } from './use-toast';
 import { useAuth, type User } from './use-auth';
-import { db, storage } from '@/lib/firebase';
-import { collection, query, where, onSnapshot, addDoc, updateDoc, doc, deleteDoc, serverTimestamp, getDocs } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
+import { collection, query, where, onSnapshot, addDoc, updateDoc, doc, serverTimestamp, getDocs } from 'firebase/firestore';
 import { permanentlyDeleteFile } from '@/app/actions';
 
 

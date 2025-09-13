@@ -24,6 +24,6 @@ export type Document = {
   content: string; // Firebase Storage URL
   fileType: string; // e.g. 'application/pdf'
   storagePath?: string; // Path in Firebase Storage
-  trashedAt?: string | null;
+  trashedAt?: string;
   members: Record<string, DocumentMember>;
 };

@@ -5,9 +5,9 @@ import { createContext, useContext, useState, useEffect, ReactNode, useCallback 
 import type { Document, DocumentMember } from '@/lib/types';
 import { useToast } from './use-toast';
 import { useAuth, type User } from './use-auth';
-import { db, storage, adminDb } from '@/lib/firebase';
+import { db, storage } from '@/lib/firebase';
 import { collection, query, where, onSnapshot, addDoc, updateDoc, doc, deleteDoc, serverTimestamp, getDocs } from 'firebase/firestore';
-import { ref, deleteObject } from 'firebase/storage';
+import { permanentlyDeleteFile } from '@/app/actions';
 
 
 interface DocumentsContextType {
@@ -142,26 +142,23 @@ export function DocumentsProvider({ children }: { children: ReactNode }) {
   };
 
   const restoreDocument = async (id: string) => {
-    await updateDocument(id, { status: 'active', trashedAt: null });
+    await updateDocument(id, { status: 'active', trashedAt: undefined });
   };
 
   const permanentlyDeleteDocument = async (id: string) => {
     if (!user) return;
 
     const docToDelete = documents.find(d => d.id === id);
-    if (docToDelete && docToDelete.storagePath) {
-        try {
-            const bucket = adminStorage.bucket();
-            await bucket.file(docToDelete.storagePath).delete();
-        } catch (error: any) {
-             if (error.code !== 404) { // Ignore object not found errors
-                console.error("Error deleting file from storage: ", error);
-             }
+    if (docToDelete) {
+        const result = await permanentlyDeleteFile({id: docToDelete.id, storagePath: docToDelete.storagePath});
+        if (result.error) {
+            toast({
+                variant: 'destructive',
+                title: 'Deletion Failed',
+                description: result.error,
+            });
         }
     }
-
-    const docRef = doc(db, 'documents', id);
-    await deleteDoc(docRef);
   };
   
   const updateDocumentMembers = async (id: string, members: Record<string, DocumentMember>) => {

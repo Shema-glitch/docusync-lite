@@ -1,7 +1,9 @@
 'use server';
 
 import { suggestTags, type SuggestTagsInput } from '@/ai/flows/suggest-tags';
-import { adminStorage } from '@/lib/firebase';
+import { adminStorage } from '@/lib/firebase-admin';
+import { db } from '@/lib/firebase';
+import { doc, deleteDoc } from 'firebase/firestore';
 import { v4 as uuidv4 } from 'uuid';
 
 export async function getAiSuggestions(data: SuggestTagsInput) {
@@ -43,5 +45,30 @@ export async function uploadFile(formData: FormData): Promise<{ downloadURL: str
     } catch (e: any) {
         console.error('Upload failed:', e);
         return { downloadURL: '', storagePath: '', error: 'File upload failed. Please try again.' };
+    }
+}
+
+export async function permanentlyDeleteFile(document: { id: string; storagePath?: string }): Promise<{ error: string | null }> {
+    const { id, storagePath } = document;
+
+    if (storagePath) {
+        try {
+            const bucket = adminStorage.bucket();
+            await bucket.file(storagePath).delete();
+        } catch (error: any) {
+             if (error.code !== 404) { // Ignore "object not found" errors
+                console.error("Error deleting file from storage: ", error);
+                return { error: 'Failed to delete file from storage.' };
+             }
+        }
+    }
+
+    try {
+        const docRef = doc(db, 'documents', id);
+        await deleteDoc(docRef);
+        return { error: null };
+    } catch (error: any) {
+        console.error("Error deleting document from firestore: ", error);
+        return { error: 'Failed to delete document record.' };
     }
 }

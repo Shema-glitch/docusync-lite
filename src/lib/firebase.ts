@@ -3,7 +3,6 @@ import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
-import admin from 'firebase-admin';
 
 const firebaseConfig = {
   apiKey: "AIzaSyDQPWIV5GJorq0sb9JZ-2hpTC9YEtwEP8A",
@@ -20,20 +19,4 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 const storage = getStorage(app);
 
-// Initialize Firebase Admin SDK
-if (!admin.apps.length) {
-  try {
-    admin.initializeApp({
-      credential: admin.credential.applicationDefault(),
-      storageBucket: firebaseConfig.storageBucket,
-    });
-  } catch (error) {
-    console.error('Firebase admin initialization error', error);
-  }
-}
-const adminAuth = admin.auth();
-const adminStorage = admin.storage();
-const adminDb = admin.firestore();
-
-
-export { app, auth, db, storage, adminAuth, adminStorage, adminDb };
+export { app, auth, db, storage };

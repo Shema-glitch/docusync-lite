@@ -1,45 +1,45 @@
+
 rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-  
-    // Helper function to check if a user is a member of a document
-    function isMember(docId, userId) {
-      return get(/databases/$(database)/documents/documents/$(docId)).data.members[userId] != null;
-    }
-    
-    // Helper function to check the user's role
-    function getRole(docId, userId) {
-      return get(/databases/$(database)/documents/documents/$(docId)).data.members[userId].role;
-    }
 
-    // Rules for the 'users' collection
+    // Users: Can read/write their own user document
     match /users/{userId} {
-      // Allow users to create their own user document
-      allow create: if request.auth != null && request.auth.uid == userId;
-      // Allow users to read and update their own user document
-      allow read, update: if request.auth != null && request.auth.uid == userId;
+      allow read, write: if request.auth != null && request.auth.uid == userId;
     }
 
-    // Rules for the 'documents' collection
-    match /documents/{docId} {
-      // READ: Allow if the user is a member of the document.
-      allow read: if request.auth != null && isMember(docId, request.auth.uid);
+    // Documents: Complex rules for collaboration
+    match /documents/{documentId} {
       
-      // CREATE: Allow if the user is authenticated and they are setting themselves as the owner.
-      allow create: if request.auth != null && request.resource.data.members[request.auth.uid].role == 'owner';
+      // Helper function to get the role of the requesting user
+      function getRole() {
+        return resource.data.members[request.auth.uid].role;
+      }
       
-      // UPDATE: Allow if the user is an 'owner' or 'editor'.
-      // Additionally, the owner cannot be removed, and their role cannot be changed.
-      allow update: if request.auth != null && 
-                      (getRole(docId, request.auth.uid) == 'owner' || getRole(docId, request.auth.uid) == 'editor') &&
-                      // Ensure the owner is not removed from the members map
-                      request.resource.data.members[resource.data.members.keys().filter(key => resource.data.members[key].role == 'owner')[0]] != null &&
-                      // Ensure the owner's role is not changed
-                      request.resource.data.members.values().filter(member => member.role == 'owner').size() == 1;
+      // Helper function to check if the requesting user is the owner
+      function isOwner() {
+        return getRole() == 'owner';
+      }
+      
+      // Helper function to check if the requesting user is an editor or owner
+      function isEditor() {
+        let role = getRole();
+        return role == 'editor' || role == 'owner';
+      }
 
-      // DELETE: Allow only if the user is the owner.
-      allow delete: if request.auth != null && getRole(docId, request.auth.uid) == 'owner';
+      // READ: Allow if the user is listed in the members map.
+      allow read: if request.auth != null && request.auth.uid in resource.data.members;
+      
+      // CREATE: Allow if the user is authenticated and is setting themselves as the 'owner'.
+      allow create: if request.auth != null && request.resource.data.members[request.auth.uid].role == 'owner';
+
+      // UPDATE: Allow if the user is an owner or editor.
+      // Owners have full control, while editors cannot change the member list.
+      allow update: if request.auth != null && (isEditor() && request.resource.data.keys().diff(resource.data.keys()).hasOnly(['updatedAt', 'trashedAt', 'isFavorite', 'reminderDate', 'title', 'description', 'category', 'tags']) || isOwner());
+      
+      // DELETE: Only the owner can delete a document.
+      allow delete: if request.auth != null && isOwner();
     }
   }
 }

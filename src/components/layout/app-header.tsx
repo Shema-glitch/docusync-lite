@@ -58,19 +58,7 @@ export function AppHeader() {
     if (searchQuery.trim()) {
       router.push(`/search?q=${encodeURIComponent(searchQuery)}`);
     } else {
-      router.push(pathname);
-    }
-  };
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const query = e.target.value;
-    setSearchQuery(query);
-    if (query.trim()) {
-        router.replace(`/search?q=${encodeURIComponent(query)}`);
-    } else {
-        // If query is cleared, navigate back to the original page or a default page like dashboard
-        const cameFrom = pathname === '/search' ? '/dashboard' : pathname;
-        router.replace(cameFrom);
+      router.push('/dashboard');
     }
   };
 
@@ -128,7 +116,7 @@ export function AppHeader() {
               placeholder="Search documents..."
               className="w-full appearance-none bg-background pl-8 shadow-none md:w-2/3 lg:w-1/3"
               value={searchQuery}
-              onChange={handleInputChange}
+              onChange={(e) => setSearchQuery(e.target.value)}
             />
             </div>
         </form>

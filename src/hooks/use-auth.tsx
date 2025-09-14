@@ -13,6 +13,7 @@ import {
     GoogleAuthProvider,
     signInWithPopup,
     OAuthProvider,
+    sendPasswordResetEmail,
     type User as FirebaseUser
 } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase';
@@ -36,6 +37,7 @@ interface AuthContextType {
   updateUserProfile: (updates: Partial<Pick<User, 'name' | 'avatar' | 'organizationName'>>) => Promise<void>;
   loginWithGoogle: () => Promise<void>;
   loginWithMicrosoft: () => Promise<void>;
+  sendPasswordReset: (email: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -232,8 +234,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // 4. Update local state
     setUser(prevUser => prevUser ? { ...prevUser, name, avatar, organizationName } : null);
   };
+  
+  const sendPasswordReset = async (email: string): Promise<void> => {
+    try {
+        await sendPasswordResetEmail(auth, email);
+    } catch (error: any) {
+        throw new Error(error.message);
+    }
+  }
 
-  const value = { user, loading, login, signup, logout, updateUserProfile, loginWithGoogle, loginWithMicrosoft };
+  const value = { user, loading, login, signup, logout, updateUserProfile, loginWithGoogle, loginWithMicrosoft, sendPasswordReset };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

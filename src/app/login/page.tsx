@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { useAuth } from '@/hooks/use-auth';
 import { Loader2 } from 'lucide-react';
 import Link from 'next/link';
+import { ForgotPasswordDialog } from '@/components/auth/forgot-password-dialog';
 
 const GoogleIcon = () => (
     <svg className="h-5 w-5" viewBox="0 0 24 24">
@@ -39,6 +40,7 @@ export default function LoginPage() {
   const { login, loginWithGoogle, loginWithMicrosoft } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const [isForgotPassOpen, setForgotPassOpen] = useState(false);
   
   const anyLoading = isLoading || isGoogleLoading || isMicrosoftLoading;
 
@@ -89,6 +91,7 @@ export default function LoginPage() {
   const signupHref = redirectParam ? `/signup?redirect=${redirectParam}` : '/signup';
 
   return (
+    <>
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
       <div className="w-full max-w-sm space-y-6">
         <div className="text-center">
@@ -126,9 +129,9 @@ export default function LoginPage() {
             </Button>
         </form>
         <div className="text-center">
-            <Link href="#" className="text-sm text-primary hover:underline">
+            <Button variant="link" className="p-0 h-auto text-sm text-primary hover:underline" onClick={() => setForgotPassOpen(true)}>
                 Forgot password?
-            </Link>
+            </Button>
         </div>
 
         <div className="grid grid-cols-1 gap-2">
@@ -158,6 +161,7 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+    <ForgotPasswordDialog isOpen={isForgotPassOpen} onOpenChange={setForgotPassOpen} />
+    </>
   );
 }
-

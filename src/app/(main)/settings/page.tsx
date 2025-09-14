@@ -30,6 +30,10 @@ export default function SettingsPage() {
     const [inAppReminders, setInAppReminders] = useState(true);
     const [activityDigest, setActivityDigest] = useState(false);
 
+    // State for accessibility
+    const [fontSize, setFontSize] = useState(16);
+    const [isHighContrast, setIsHighContrast] = useState(false);
+
     useEffect(() => {
         if (user) {
             setName(user.name ?? '');
@@ -37,6 +41,21 @@ export default function SettingsPage() {
             setOrganizationName(user.organizationName ?? '');
         }
     }, [user]);
+
+    useEffect(() => {
+      document.documentElement.style.fontSize = `${fontSize}px`;
+    }, [fontSize]);
+
+    useEffect(() => {
+      if (isHighContrast) {
+        document.body.classList.add('high-contrast');
+      } else {
+        document.body.classList.remove('high-contrast');
+      }
+      // Cleanup on component unmount
+      return () => document.body.classList.remove('high-contrast');
+    }, [isHighContrast]);
+
 
     const hasChanges = name !== (user?.name ?? '') || avatar !== (user?.avatar ?? '') || organizationName !== (user?.organizationName ?? '');
 
@@ -189,8 +208,9 @@ export default function SettingsPage() {
                         <Label htmlFor="font-size">Font Size</Label>
                         <p className="text-sm text-muted-foreground">Adjust the font size for better readability.</p>
                     </div>
-                    <div className="w-1/3">
-                      <Slider defaultValue={[16]} max={24} min={12} step={1} />
+                    <div className="w-1/3 flex items-center gap-4">
+                      <Slider defaultValue={[fontSize]} max={24} min={12} step={1} onValueChange={([value]) => setFontSize(value)} />
+                       <span className="text-sm text-muted-foreground w-8">{fontSize}px</span>
                     </div>
                 </div>
                 <div className="flex items-center justify-between rounded-lg border p-4">
@@ -198,7 +218,7 @@ export default function SettingsPage() {
                         <Label htmlFor="high-contrast">High Contrast Mode</Label>
                         <p className="text-sm text-muted-foreground">Increase contrast throughout the app.</p>
                     </div>
-                    <Switch id="high-contrast" />
+                    <Switch id="high-contrast" checked={isHighContrast} onCheckedChange={setIsHighContrast} />
                 </div>
             </CardContent>
           </Card>

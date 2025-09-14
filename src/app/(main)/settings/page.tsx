@@ -36,8 +36,6 @@ export default function SettingsPage() {
     const [fontSize, setFontSize] = useState(16);
     const [isHighContrast, setIsHighContrast] = useState(false);
 
-    const [accent, setAccent] = useState<Accent>('default');
-
     useEffect(() => {
         if (user) {
             setName(user.name ?? '');
@@ -45,19 +43,6 @@ export default function SettingsPage() {
             setOrganizationName(user.organizationName ?? '');
         }
     }, [user]);
-
-    useEffect(() => {
-      const currentAccent = localStorage.getItem('theme-accent') as Accent | null;
-      if (currentAccent) {
-        setAccent(currentAccent);
-        document.documentElement.classList.forEach(c => {
-          if (c.startsWith('theme-')) document.documentElement.classList.remove(c);
-        });
-        if (currentAccent !== 'default') {
-          document.documentElement.classList.add(`theme-${currentAccent}`);
-        }
-      }
-    }, []);
 
 
     useEffect(() => {
@@ -72,17 +57,6 @@ export default function SettingsPage() {
       }
       return () => document.body.classList.remove('high-contrast');
     }, [isHighContrast]);
-
-    const handleSetAccent = (newAccent: Accent) => {
-        setAccent(newAccent);
-        localStorage.setItem('theme-accent', newAccent);
-        document.documentElement.classList.forEach(c => {
-            if (c.startsWith('theme-')) document.documentElement.classList.remove(c);
-        });
-        if (newAccent !== 'default') {
-            document.documentElement.classList.add(`theme-${newAccent}`);
-        }
-    };
     
 
     const hasChanges = name !== (user?.name ?? '') || avatar !== (user?.avatar ?? '') || organizationName !== (user?.organizationName ?? '');
@@ -185,25 +159,6 @@ export default function SettingsPage() {
                     <Button variant={theme === 'light' ? 'default' : 'outline'} onClick={() => setTheme('light')}>Light</Button>
                     <Button variant={theme === 'dark' ? 'default' : 'outline'} onClick={() => setTheme('dark')}>Dark</Button>
                     <Button variant={theme === 'system' ? 'default' : 'outline'} onClick={() => setTheme('system')}>System</Button>
-                </div>
-
-                <div className="space-y-2 pt-4">
-                    <Label>Accent Color</Label>
-                    <p className="text-sm text-muted-foreground">Choose an accent color for buttons and highlights.</p>
-                </div>
-                <div className="flex space-x-2">
-                   <Button variant={accent === 'default' ? 'default' : 'outline'} onClick={() => handleSetAccent('default')}>
-                       Default
-                       <div className="ml-2 h-4 w-4 rounded-full" style={{ backgroundColor: 'hsl(222.2 47.4% 11.2%)'}} />
-                    </Button>
-                     <Button variant={accent === 'violet' ? 'default' : 'outline'} onClick={() => handleSetAccent('violet')}>
-                       Violet
-                       <div className="ml-2 h-4 w-4 rounded-full" style={{ backgroundColor: 'hsl(262.1 83.3% 57.8%)'}} />
-                    </Button>
-                     <Button variant={accent === 'orange' ? 'default' : 'outline'} onClick={() => handleSetAccent('orange')}>
-                       Orange
-                       <div className="ml-2 h-4 w-4 rounded-full" style={{ backgroundColor: 'hsl(24 94% 51%)'}} />
-                    </Button>
                 </div>
             </CardContent>
           </Card>

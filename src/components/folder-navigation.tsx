@@ -5,12 +5,14 @@ import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import type { Document } from "@/lib/types"
 import { Folder, File, Users, Star, Trash2 } from "lucide-react"
+import { Skeleton } from "./ui/skeleton";
 
 interface FolderNavigationProps {
     selectedCategory: Document['category'] | 'all';
     onSelectCategory: (category: Document['category'] | 'all') => void;
     categoryCounts: Record<Document['category'], number>;
     totalCount: number;
+    isLoading?: boolean;
 }
 
 const categoryIcons = {
@@ -21,8 +23,24 @@ const categoryIcons = {
 };
 
 
-export function FolderNavigation({ selectedCategory, onSelectCategory, categoryCounts, totalCount }: FolderNavigationProps) {
+export function FolderNavigation({ selectedCategory, onSelectCategory, categoryCounts, totalCount, isLoading }: FolderNavigationProps) {
   const categories = ['Work', 'Personal', 'Finance', 'Legal'] as const;
+
+  if (isLoading) {
+    return (
+      <div className="hidden md:block bg-card p-4 rounded-lg shadow-sm sticky top-24">
+        <div className="grid gap-2">
+            <h3 className="font-semibold text-lg px-2 mb-2">Folders</h3>
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-full" />
+        </div>
+    </div>
+    )
+  }
+
   return (
     <div className="hidden md:block bg-card p-4 rounded-lg shadow-sm sticky top-24">
         <nav className="grid gap-2">

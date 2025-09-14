@@ -8,9 +8,10 @@ import { useState, useMemo } from 'react';
 import type { Document } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useSearchParams } from 'next/navigation';
+import { DocumentCardSkeleton } from '@/components/document-card-skeleton';
 
 export default function DocumentsPage() {
-  const { documents } = useDocuments();
+  const { documents, loading } = useDocuments();
   const searchParams = useSearchParams();
   const tagFilter = searchParams.get('tag');
 
@@ -43,6 +44,7 @@ export default function DocumentsPage() {
             onSelectCategory={setSelectedCategory}
             categoryCounts={categoryCounts}
             totalCount={activeDocuments.length}
+            isLoading={loading}
         />
         <Card>
             <CardHeader>
@@ -54,7 +56,15 @@ export default function DocumentsPage() {
                 </CardDescription>
             </CardHeader>
             <CardContent>
-                <DocumentTable documents={filteredDocuments} />
+                {loading ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                        {[...Array(8)].map((_, i) => (
+                          <DocumentCardSkeleton key={i} />
+                        ))}
+                    </div>
+                ) : (
+                    <DocumentTable documents={filteredDocuments} />
+                )}
             </CardContent>
         </Card>
     </div>

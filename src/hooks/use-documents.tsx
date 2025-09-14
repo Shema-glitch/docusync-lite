@@ -12,6 +12,7 @@ import { permanentlyDeleteFile } from '@/app/actions';
 
 interface DocumentsContextType {
   documents: Document[];
+  loading: boolean;
   addDocument: (doc: Omit<Document, 'id' | 'createdAt' | 'updatedAt' | 'version' | 'status' | 'isFavorite' | 'members'>) => Promise<string | undefined>;
   deleteDocument: (id: string) => Promise<void>;
   updateDocument: (id: string, updates: Partial<Document>) => Promise<void>;
@@ -25,6 +26,7 @@ const DocumentsContext = createContext<DocumentsContextType | undefined>(undefin
 
 export function DocumentsProvider({ children }: { children: ReactNode }) {
   const [documents, setDocuments] = useState<Document[]>([]);
+  const [loading, setLoading] = useState(true);
   const { toast } = useToast();
   const { user } = useAuth();
 
@@ -68,9 +70,10 @@ export function DocumentsProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!user) {
         setDocuments([]);
+        setLoading(false);
         return;
     }
-
+    setLoading(true);
     const q = query(collection(db, "documents"), where(`members.${user.id}`, "in", ["owner", "editor", "viewer"]));
 
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
@@ -86,9 +89,11 @@ export function DocumentsProvider({ children }: { children: ReactNode }) {
 
         });
         setDocuments(docs);
+        setLoading(false);
     }, (error) => {
         console.error("Error fetching documents: ", error);
         toast({ title: "Error", description: "Could not fetch documents.", variant: "destructive" });
+        setLoading(false);
     });
 
     return () => unsubscribe();
@@ -165,7 +170,7 @@ export function DocumentsProvider({ children }: { children: ReactNode }) {
     await updateDocument(id, { members });
   };
 
-  const value = { documents, addDocument, deleteDocument, updateDocument, restoreDocument, permanentlyDeleteDocument, updateDocumentMembers, findUserByEmail };
+  const value = { documents, loading, addDocument, deleteDocument, updateDocument, restoreDocument, permanentlyDeleteDocument, updateDocumentMembers, findUserByEmail };
 
   return <DocumentsContext.Provider value={value}>{children}</DocumentsContext.Provider>;
 }

@@ -13,7 +13,8 @@ import {
   Search,
   Trash2,
   Archive,
-  LayoutGrid
+  LayoutGrid,
+  User as UserIcon
 } from 'lucide-react';
 import Link from 'next/link';
 import { UploadButton } from '../upload-button';
@@ -48,22 +49,21 @@ export function AppHeader() {
     setIsClient(true);
   }, []);
 
+  const handleSearchSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const newPath = searchQuery ? `/search?q=${encodeURIComponent(searchQuery)}` : '/dashboard';
+    router.push(newPath);
+  };
+  
   useEffect(() => {
-    // Sync search input with URL query params
-    setSearchQuery(searchParams.get('q') || '');
+    const queryFromUrl = searchParams.get('q') || '';
+    if (searchQuery !== queryFromUrl) {
+      setSearchQuery(queryFromUrl);
+    }
   }, [searchParams]);
 
-  const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      router.push(`/search?q=${encodeURIComponent(searchQuery)}`);
-    } else {
-      router.push('/dashboard');
-    }
-  };
-
   return (
-    <header className="flex h-14 items-center gap-4 border-b bg-muted/40 px-4 lg:h-[60px] lg:px-6 sticky top-0 z-30 backdrop-blur-sm">
+    <header className="flex h-14 items-center gap-4 border-b bg-background/95 px-4 lg:h-[60px] lg:px-6 sticky top-0 z-30 backdrop-blur-sm">
       {isClient && (
         <Sheet>
           <SheetTrigger asChild>
@@ -108,7 +108,7 @@ export function AppHeader() {
         </Sheet>
       )}
       <div className="w-full flex-1">
-        <form onSubmit={handleSearch}>
+        <form onSubmit={handleSearchSubmit}>
             <div className="relative">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
@@ -141,6 +141,12 @@ export function AppHeader() {
             </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
+        <DropdownMenuItem asChild>
+             <Link href={`/profile/${user?.id}`}>
+                <UserIcon className="mr-2 h-4 w-4" />
+                <span>View Profile</span>
+            </Link>
+        </DropdownMenuItem>
         <DropdownMenuItem asChild>
             <Link href="/settings">
                 <Settings className="mr-2 h-4 w-4" />

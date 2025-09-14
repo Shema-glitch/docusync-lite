@@ -19,6 +19,7 @@ interface DocumentsContextType {
   permanentlyDeleteDocument: (id: string) => Promise<void>;
   updateDocumentMembers: (id: string, members: Record<string, DocumentMember>) => Promise<void>;
   findUserByEmail: (email: string) => Promise<User | null>;
+  findUserById: (id: string) => Promise<User | null>;
   deleteDocument: (id: string) => Promise<void>;
 }
 
@@ -106,7 +107,12 @@ export function DocumentsProvider({ children }: { children: ReactNode }) {
       toast({ title: "Not Authenticated", description: "You must be logged in to add a document.", variant: "destructive" });
       return;
     }
-    const docRef = await addDoc(collection(db, 'documents'), {
+
+    const batch = writeBatch(db);
+    
+    // 1. Create the new document
+    const newDocRef = doc(collection(db, 'documents'));
+    batch.set(newDocRef, {
       ...docData,
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
@@ -121,7 +127,21 @@ export function DocumentsProvider({ children }: { children: ReactNode }) {
         }
       }
     });
-    return docRef.id;
+
+    // 2. Create an activity log entry
+    const activityRef = doc(collection(db, 'users', user.id, 'activity'));
+    batch.set(activityRef, {
+        type: 'CREATE_DOCUMENT',
+        timestamp: serverTimestamp(),
+        details: {
+            documentId: newDocRef.id,
+            documentTitle: docData.title,
+        }
+    });
+
+    await batch.commit();
+    
+    return newDocRef.id;
   };
 
   const updateDocument = async (id: string, updates: Partial<Document>) => {
@@ -161,9 +181,9 @@ export function DocumentsProvider({ children }: { children: ReactNode }) {
     const docToDelete = documents.find(d => d.id === id);
     if (!docToDelete) return;
 
-    const originalDocuments = documents;
+    const originalDocuments = [...documents];
     const optimisticDocuments = documents.filter(d => d.id !== id);
-    setDocuments(optimistic.documents);
+    setDocuments(optimisticDocuments);
 
     try {
         const result = await permanentlyDeleteFile({id: docToDelete.id, storagePath: docToDelete.storagePath});
@@ -206,7 +226,25 @@ export function DocumentsProvider({ children }: { children: ReactNode }) {
     };
   };
 
-  const value = { documents, loading, addDocument, updateDocument, restoreDocument, permanentlyDeleteDocument, updateDocumentMembers, findUserByEmail, deleteDocument };
+  const findUserById = async (id: string): Promise<User | null> => {
+    const userDocRef = doc(db, 'users', id);
+    const userDoc = await getDoc(userDocRef);
+
+    if (!userDoc.exists()) {
+      return null;
+    }
+
+    const userData = userDoc.data();
+    return {
+      id: userDoc.id,
+      name: userData.name,
+      email: userData.email,
+      avatar: userData.avatar,
+      organizationName: userData.organizationName,
+    };
+  };
+
+  const value = { documents, loading, addDocument, updateDocument, restoreDocument, permanentlyDeleteDocument, updateDocumentMembers, findUserByEmail, findUserById, deleteDocument };
 
   return <DocumentsContext.Provider value={value}>{children}</DocumentsContext.Provider>;
 }

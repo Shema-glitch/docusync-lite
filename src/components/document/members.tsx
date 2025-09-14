@@ -26,14 +26,21 @@ export function Members({ members }: MembersProps) {
                         </TooltipTrigger>
                         <TooltipContent>
                             <p className="font-semibold">{member.name}</p>
-                            <p className="text-muted-foreground">{member.role}</p>
+                            <p className="text-muted-foreground capitalize">{member.role}</p>
                         </TooltipContent>
                     </Tooltip>
                 ))}
                 {remainingCount > 0 && (
-                    <Avatar className="border-2 border-background">
-                        <AvatarFallback>+{remainingCount}</AvatarFallback>
-                    </Avatar>
+                     <Tooltip>
+                        <TooltipTrigger asChild>
+                            <Avatar className="border-2 border-background">
+                                <AvatarFallback>+{remainingCount}</AvatarFallback>
+                            </Avatar>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            <p>{remainingCount} more member(s)</p>
+                        </TooltipContent>
+                    </Tooltip>
                 )}
             </div>
         </TooltipProvider>

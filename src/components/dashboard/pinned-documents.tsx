@@ -29,8 +29,9 @@ export function PinnedDocuments({ documents }: PinnedDocumentsProps) {
         <CardContent>
             {documents.length === 0 ? (
                  <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed p-12 text-center h-48">
+                    <Star className="h-10 w-10 text-muted-foreground mb-4" />
                     <h3 className="text-xl font-semibold">No Pinned Documents</h3>
-                    <p className="text-muted-foreground mt-2">Click the star on a document to pin it here.</p>
+                    <p className="text-muted-foreground mt-2">Click the star on a document to pin it here for quick access.</p>
                 </div>
             ) : (
                 <Carousel

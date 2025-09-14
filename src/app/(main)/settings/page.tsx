@@ -104,12 +104,11 @@ export default function SettingsPage() {
         <p className="text-muted-foreground">Manage your account settings, preferences, and more.</p>
       </div>
       <Tabs defaultValue="profile" className="w-full">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="profile">Profile</TabsTrigger>
           <TabsTrigger value="appearance">Appearance</TabsTrigger>
           <TabsTrigger value="notifications">Notifications</TabsTrigger>
           <TabsTrigger value="accessibility">Accessibility</TabsTrigger>
-          <TabsTrigger value="localization">Language</TabsTrigger>
         </TabsList>
         <TabsContent value="profile">
           <Card>
@@ -222,48 +221,6 @@ export default function SettingsPage() {
                     </div>
                     <Switch id="high-contrast" checked={isHighContrast} onCheckedChange={setIsHighContrast} />
                 </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-         <TabsContent value="localization">
-          <Card>
-            <CardHeader>
-              <CardTitle>Language & Region</CardTitle>
-              <CardDescription>
-                Set your preferred language and timezone.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-               <div className="space-y-2">
-                <Label htmlFor="language">Language</Label>
-                <Select defaultValue="en-us">
-                    <SelectTrigger id="language">
-                        <SelectValue placeholder="Select language" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="en-us">English (United States)</SelectItem>
-                        <SelectItem value="es-es" disabled>Spanish (Spain)</SelectItem>
-                        <SelectItem value="fr-fr" disabled>French (France)</SelectItem>
-                        <SelectItem value="de-de" disabled>German (Germany)</SelectItem>
-                    </SelectContent>
-                </Select>
-                <p className="text-sm text-muted-foreground">More languages coming soon.</p>
-              </div>
-               <div className="space-y-2">
-                <Label htmlFor="timezone">Timezone</Label>
-                 <Select defaultValue="gmt-8">
-                    <SelectTrigger id="timezone">
-                        <SelectValue placeholder="Select timezone" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="gmt-8">Pacific Time (GMT-08:00)</SelectItem>
-                        <SelectItem value="gmt-5" disabled>Eastern Time (GMT-05:00)</SelectItem>
-                        <SelectItem value="gmt" disabled>Greenwich Mean Time (GMT)</SelectItem>
-                        <SelectItem value="gmt+1" disabled>Central European Time (GMT+01:00)</SelectItem>
-                    </SelectContent>
-                </Select>
-                <p className="text-sm text-muted-foreground">This will affect how dates and times are displayed.</p>
-              </div>
             </CardContent>
           </Card>
         </TabsContent>

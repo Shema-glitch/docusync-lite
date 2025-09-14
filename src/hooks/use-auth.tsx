@@ -13,7 +13,7 @@ import {
     type User as FirebaseUser
 } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, writeBatch, collection, getDocs, query, where } from 'firebase/firestore';
 
 
 export interface User {
@@ -29,6 +29,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<void>;
   signup: (name: string, email: string, password: string) => Promise<void>;
   logout: () => void;
+  updateUserProfile: (updates: Partial<Pick<User, 'name' | 'avatar'>>) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -128,7 +129,44 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const value = { user, loading, login, signup, logout };
+  const updateUserProfile = async (updates: Partial<Pick<User, 'name' | 'avatar'>>) => {
+    const firebaseUser = auth.currentUser;
+    if (!firebaseUser || !user) {
+        throw new Error("You must be logged in to update your profile.");
+    }
+
+    const newName = updates.name ?? user.name;
+    const newAvatar = updates.avatar ?? user.avatar;
+
+    // 1. Update Firebase Auth profile
+    await updateProfile(firebaseUser, { displayName: newName, photoURL: newAvatar });
+
+    // 2. Update user document in 'users' collection
+    const userDocRef = doc(db, 'users', firebaseUser.uid);
+    await setDoc(userDocRef, { name: newName, avatar: newAvatar }, { merge: true });
+
+    // 3. Update 'members' field in all relevant documents
+    const documentsRef = collection(db, 'documents');
+    const q = query(documentsRef, where(`members.${firebaseUser.uid}`, '!=', null));
+    const querySnapshot = await getDocs(q);
+
+    const batch = writeBatch(db);
+    querySnapshot.forEach(docSnap => {
+        const docRef = doc(db, 'documents', docSnap.id);
+        const memberUpdate = {
+            [`members.${firebaseUser.uid}.name`]: newName,
+            [`members.${firebaseUser.uid}.avatar`]: newAvatar
+        };
+        batch.update(docRef, memberUpdate);
+    });
+    await batch.commit();
+
+
+    // 4. Update local state
+    setUser(prevUser => prevUser ? { ...prevUser, name: newName, avatar: newAvatar } : null);
+  };
+
+  const value = { user, loading, login, signup, logout, updateUserProfile };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

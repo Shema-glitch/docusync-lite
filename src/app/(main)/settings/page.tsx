@@ -7,11 +7,48 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/hooks/use-auth';
+import { useToast } from '@/hooks/use-toast';
 import { useTheme } from 'next-themes';
+import { useState } from 'react';
+import { Loader2 } from 'lucide-react';
+
 
 export default function SettingsPage() {
-    const { user } = useAuth();
+    const { user, updateUserProfile } = useAuth();
     const { theme, setTheme } = useTheme();
+    const { toast } = useToast();
+
+    const [name, setName] = useState(user?.name ?? '');
+    const [isSaving, setIsSaving] = useState(false);
+
+    const handleSaveChanges = async () => {
+        if (!user || !name.trim()) {
+            toast({
+                variant: 'destructive',
+                title: 'Invalid Name',
+                description: 'Name cannot be empty.',
+            });
+            return;
+        }
+
+        setIsSaving(true);
+        try {
+            await updateUserProfile({ name });
+            toast({
+                title: 'Profile Updated',
+                description: 'Your name has been successfully updated.',
+            });
+        } catch (error: any) {
+            toast({
+                variant: 'destructive',
+                title: 'Update Failed',
+                description: error.message || 'Could not update your profile.',
+            });
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
 
   return (
     <div className="space-y-6">
@@ -35,13 +72,15 @@ export default function SettingsPage() {
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="name">Name</Label>
-                <Input id="name" defaultValue={user?.name ?? ''} />
+                <Input id="name" value={name} onChange={(e) => setName(e.target.value)} />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <Input id="email" type="email" value={user?.email ?? ''} readOnly disabled />
               </div>
-               <Button>Save changes</Button>
+               <Button onClick={handleSaveChanges} disabled={isSaving || name === user?.name}>
+                 {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Save changes'}
+               </Button>
             </CardContent>
           </Card>
         </TabsContent>

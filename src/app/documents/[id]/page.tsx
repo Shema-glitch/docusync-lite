@@ -6,10 +6,10 @@ import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Maximize, Loader2, AlertTriangle, Share2, Copy, Sparkles, FileText, BookOpen } from 'lucide-react';
+import { ArrowLeft, Maximize, Loader2, AlertTriangle, Share2, Copy, Sparkles, FileText, BookOpen, Search } from 'lucide-react';
 import { format } from 'date-fns';
 import { Separator } from '@/components/ui/separator';
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useRef } from 'react';
 import type { Document } from '@/lib/types';
 import { useAuth } from '@/hooks/use-auth';
 import { Members } from '@/components/document/members';
@@ -18,6 +18,8 @@ import { useToast } from '@/hooks/use-toast';
 import { getAiSummary, getAiExplanation } from '@/app/actions';
 import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter } from '@/components/ui/alert-dialog';
 import { AlertDialogCancel } from '@radix-ui/react-alert-dialog';
+import { Input } from '@/components/ui/input';
+
 
 const loadingMessages = [
     "Opening document...",
@@ -46,6 +48,10 @@ export default function DocumentDetailsPage({ params }: { params: { id: string }
   const [explanation, setExplanation] = useState('');
   const [isExplainDialogOpen, setIsExplainDialogOpen] = useState(false);
 
+  const [documentText, setDocumentText] = useState<string | null>(null);
+  const [inDocSearchQuery, setInDocSearchQuery] = useState('');
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+
 
   useEffect(() => {
     const foundDoc = documents.find((doc) => doc.id === id);
@@ -69,6 +75,21 @@ export default function DocumentDetailsPage({ params }: { params: { id: string }
     };
   }, [id]);
 
+  useEffect(() => {
+    if (document && document.fileType === 'text/plain' && document.content) {
+      fetch(document.content)
+        .then(response => {
+          if (!response.ok) throw new Error('Could not fetch document content.');
+          return response.text();
+        })
+        .then(text => setDocumentText(text))
+        .catch(e => {
+            console.error(e);
+            toast({ variant: 'destructive', title: 'Error', description: 'Failed to load document content for searching.' });
+        });
+    }
+  }, [document, toast]);
+
   const userRole = useMemo(() => {
     if (!document || !user) return undefined;
     return document.members[user.id]?.role;
@@ -77,11 +98,8 @@ export default function DocumentDetailsPage({ params }: { params: { id: string }
   const isOwner = userRole === 'owner';
 
   const openFullscreen = () => {
-    if (typeof window !== 'undefined' && typeof window.document !== 'undefined') {
-        const iframe = window.document.getElementById('doc-iframe') as HTMLIFrameElement | null;
-        if (iframe?.requestFullscreen) {
-            iframe.requestFullscreen();
-        }
+    if (iframeRef.current) {
+        iframeRef.current.requestFullscreen();
     }
   }
 
@@ -92,7 +110,14 @@ export default function DocumentDetailsPage({ params }: { params: { id: string }
   }
 
   const handleAiFeature = async (type: 'summarize' | 'explain') => {
-    if (!document) return;
+    if (!document || !documentText) {
+       toast({
+        variant: 'destructive',
+        title: 'Content Not Loaded',
+        description: 'The document content is not available for this action.',
+      });
+      return;
+    };
   
     if (document.fileType !== 'text/plain') {
       const featureName = type === 'summarize' ? 'AI summary' : 'AI explanation';
@@ -108,10 +133,6 @@ export default function DocumentDetailsPage({ params }: { params: { id: string }
     if (type === 'explain') setIsExplainLoading(true);
   
     try {
-      const response = await fetch(document.content);
-      if (!response.ok) throw new Error('Could not fetch document content.');
-      const documentText = await response.text();
-      
       const commonPayload = {
         documentText: documentText.slice(0, 15000), // Truncate for performance & cost
         documentTitle: document.title,
@@ -188,15 +209,37 @@ export default function DocumentDetailsPage({ params }: { params: { id: string }
     
     if (isOfficeDoc) {
         const viewerUrl = `https://docs.google.com/gview?url=${encodeURIComponent(document.content)}&embedded=true`;
-        return <iframe id="doc-iframe" src={viewerUrl} className="w-full h-full border-0" title={document.title} />;
+        return <iframe id="doc-iframe" src={viewerUrl} className="w-full h-full border-0" title={document.title} ref={iframeRef} />;
     }
 
     if (document.fileType === 'application/pdf') {
-        return <iframe id="doc-iframe" src={document.content} className="w-full h-full border-0" title={document.title} />;
+        return <iframe id="doc-iframe" src={document.content} className="w-full h-full border-0" title={document.title} ref={iframeRef} />;
     }
 
     if (document.fileType === 'text/plain') {
-        return <iframe id="doc-iframe" src={document.content} className="w-full h-full border-0" title={document.title} />;
+        const highlightedText = inDocSearchQuery ? documentText?.replace(
+            new RegExp(inDocSearchQuery, 'gi'),
+            (match) => `<mark>${match}</mark>`
+        ) : documentText;
+
+        const contentWithStyles = `
+            <html>
+                <head>
+                    <style>
+                        body { 
+                            font-family: sans-serif; 
+                            color: ${document.documentElement.classList.contains('dark') ? '#fff' : '#000'}; 
+                            white-space: pre-wrap;
+                            word-wrap: break-word;
+                        }
+                        mark { background-color: #ffeb3b; color: black; }
+                    </style>
+                </head>
+                <body>${highlightedText}</body>
+            </html>
+        `;
+
+        return <iframe id="doc-iframe" srcDoc={contentWithStyles} className="w-full h-full border-0" title={document.title} ref={iframeRef} />;
     }
 
     return (
@@ -277,10 +320,24 @@ export default function DocumentDetailsPage({ params }: { params: { id: string }
         <Card className="h-full flex flex-col">
             <CardHeader className='flex-row items-center justify-between'>
                 <CardTitle>Document Preview</CardTitle>
-                <Button variant="outline" size="sm" onClick={openFullscreen}>
-                    <Maximize className="mr-2 h-4 w-4"/>
-                    Fullscreen
-                </Button>
+                <div className="flex items-center gap-2">
+                    {document.fileType === 'text/plain' && (
+                        <div className="relative">
+                            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                            <Input
+                                type="search"
+                                placeholder="Search in document..."
+                                className="w-full bg-background pl-8 shadow-none md:w-64"
+                                value={inDocSearchQuery}
+                                onChange={(e) => setInDocSearchQuery(e.target.value)}
+                            />
+                        </div>
+                    )}
+                    <Button variant="outline" size="sm" onClick={openFullscreen}>
+                        <Maximize className="mr-2 h-4 w-4"/>
+                        Fullscreen
+                    </Button>
+                </div>
             </CardHeader>
             <CardContent className="flex-grow p-0">
                 <div className="w-full h-[70vh] bg-muted rounded-b-lg">
@@ -339,3 +396,6 @@ export default function DocumentDetailsPage({ params }: { params: { id: string }
     </>
   );
 }
+
+
+    

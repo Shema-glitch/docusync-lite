@@ -102,36 +102,6 @@ export default function SignupPage() {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-                <Button variant="outline" className="w-full" onClick={handleGoogleLogin} disabled={anyLoading}>
-                    {isGoogleLoading ? (
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    ) : (
-                        <GoogleIcon />
-                    )}
-                    Google
-                </Button>
-                <Button variant="outline" className="w-full" onClick={handleMicrosoftLogin} disabled={anyLoading}>
-                    {isMicrosoftLoading ? (
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    ) : (
-                        <MicrosoftIcon />
-                    )}
-                    Microsoft
-                </Button>
-            </div>
-
-             <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                    <span className="w-full border-t" />
-                </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-background px-2 text-muted-foreground">
-                    Or continue with email
-                    </span>
-                </div>
-            </div>
-
             <form onSubmit={handleSignup} className="space-y-4">
                 <div className="space-y-2">
                 <Label htmlFor="name">Name</Label>
@@ -164,7 +134,7 @@ export default function SignupPage() {
                     type="password"
                     required
                     value={password}
-                    onChange={(e) => setPassword(e.g.value)}
+                    onChange={(e) => setPassword(e.target.value)}
                     disabled={anyLoading}
                 />
                 </div>
@@ -178,6 +148,35 @@ export default function SignupPage() {
                 <Link href={loginHref} className="underline">
                 Login
                 </Link>
+            </div>
+             <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-background px-2 text-muted-foreground">
+                    Or continue with
+                    </span>
+                </div>
+            </div>
+
+             <div className="grid grid-cols-2 gap-4">
+                <Button variant="outline" className="w-full" onClick={handleGoogleLogin} disabled={anyLoading}>
+                    {isGoogleLoading ? (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                        <GoogleIcon />
+                    )}
+                    Google
+                </Button>
+                <Button variant="outline" className="w-full" onClick={handleMicrosoftLogin} disabled={anyLoading}>
+                    {isMicrosoftLoading ? (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                        <MicrosoftIcon />
+                    )}
+                    Microsoft
+                </Button>
             </div>
           </div>
         </CardContent>

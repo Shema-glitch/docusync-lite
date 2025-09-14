@@ -14,11 +14,12 @@ import { Loader2 } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { Slider } from '@/components/ui/slider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { cn } from '@/lib/utils';
 
 
 export default function SettingsPage() {
     const { user, updateUserProfile } = useAuth();
-    const { theme, setTheme } = useTheme();
+    const { theme, setTheme, resolvedTheme } = useTheme();
     const { toast } = useToast();
 
     const [name, setName] = useState('');
@@ -26,14 +27,15 @@ export default function SettingsPage() {
     const [organizationName, setOrganizationName] = useState('');
     const [isSaving, setIsSaving] = useState(false);
     
-    // State for notification toggles
     const [emailNotifications, setEmailNotifications] = useState(true);
     const [inAppReminders, setInAppReminders] = useState(true);
     const [activityDigest, setActivityDigest] = useState(false);
 
-    // State for accessibility
     const [fontSize, setFontSize] = useState(16);
     const [isHighContrast, setIsHighContrast] = useState(false);
+
+    // Extract accent from theme string, e.g., "dark-orange" -> "orange"
+    const accentColor = theme?.split('-')[1];
 
     useEffect(() => {
         if (user) {
@@ -53,10 +55,22 @@ export default function SettingsPage() {
       } else {
         document.body.classList.remove('high-contrast');
       }
-      // Cleanup on component unmount
       return () => document.body.classList.remove('high-contrast');
     }, [isHighContrast]);
 
+    const handleSetTheme = (newTheme: 'light' | 'dark' | 'system') => {
+        const newFullTheme = accentColor ? `${newTheme}-${accentColor}` : newTheme;
+        setTheme(newFullTheme);
+    }
+    
+    const handleSetAccent = (accent: 'default' | 'orange') => {
+        const baseTheme = resolvedTheme?.split('-')[0]; // 'light' or 'dark'
+        if (accent === 'default') {
+            setTheme(baseTheme || 'system');
+        } else {
+            setTheme(`${baseTheme}-${accent}`);
+        }
+    }
 
     const hasChanges = name !== (user?.name ?? '') || avatar !== (user?.avatar ?? '') || organizationName !== (user?.organizationName ?? '');
 
@@ -149,15 +163,30 @@ export default function SettingsPage() {
                 Customize the look and feel of the app.
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-6">
                 <div className="space-y-2">
                     <Label>Theme</Label>
-                    <p className="text-sm text-muted-foreground">Select the theme for the dashboard.</p>
+                    <p className="text-sm text-muted-foreground">Select the overall color scheme for the app.</p>
                 </div>
                 <div className="flex space-x-2">
-                    <Button variant={theme === 'light' ? 'default' : 'outline'} onClick={() => setTheme('light')}>Light</Button>
-                    <Button variant={theme === 'dark' ? 'default' : 'outline'} onClick={() => setTheme('dark')}>Dark</Button>
-                    <Button variant={theme === 'system' ? 'default' : 'outline'} onClick={() => setTheme('system')}>System</Button>
+                    <Button variant={resolvedTheme?.startsWith('light') ? 'default' : 'outline'} onClick={() => handleSetTheme('light')}>Light</Button>
+                    <Button variant={resolvedTheme?.startsWith('dark') ? 'default' : 'outline'} onClick={() => handleSetTheme('dark')}>Dark</Button>
+                    <Button variant={theme === 'system' ? 'default' : 'outline'} onClick={() => handleSetTheme('system')}>System</Button>
+                </div>
+
+                <div className="space-y-2 pt-4">
+                    <Label>Accent Color</Label>
+                    <p className="text-sm text-muted-foreground">Choose an accent color for buttons and highlights.</p>
+                </div>
+                <div className="flex space-x-2">
+                   <Button variant={!accentColor ? 'default' : 'outline'} onClick={() => handleSetAccent('default')}>
+                       Default
+                       <div className="ml-2 h-4 w-4 rounded-full" style={{ backgroundColor: 'hsl(222.2 47.4% 11.2%)'}} />
+                    </Button>
+                     <Button variant={accentColor === 'orange' ? 'default' : 'outline'} onClick={() => handleSetAccent('orange')}>
+                       Orange
+                       <div className="ml-2 h-4 w-4 rounded-full" style={{ backgroundColor: 'hsl(24 94% 51%)'}} />
+                    </Button>
                 </div>
             </CardContent>
           </Card>
@@ -228,5 +257,3 @@ export default function SettingsPage() {
     </div>
   );
 }
-
-    

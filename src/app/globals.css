@@ -37,6 +37,7 @@
     --sidebar-accent-foreground: 210 40% 98%;
     --sidebar-border: 217.2 32.6% 17.5%;
     --sidebar-ring: 215 20.2% 65.1%;
+    transition: color 0.2s, background-color 0.2s;
   }
 
   .dark {
@@ -76,25 +77,25 @@
 }
 
 @layer base {
-  .theme-violet {
+  html.theme-violet {
     --primary: 262.1 83.3% 57.8%;
     --primary-foreground: 210 20% 98%;
     --ring: 262.1 83.3% 57.8%;
   }
 
-  .dark .theme-violet {
+  .dark html.theme-violet {
     --primary: 263.4 90.2% 51.2%;
     --primary-foreground: 210 20% 98%;
     --ring: 263.4 90.2% 51.2%;
   }
 
-  .theme-orange {
+  html.theme-orange {
     --primary: 24 94% 51%;
     --primary-foreground: 0 0% 100%;
     --ring: 24 94% 51%;
   }
 
-  .dark .theme-orange {
+  .dark html.theme-orange {
     --primary: 24 94% 51%;
     --primary-foreground: 0 0% 100%;
     --ring: 24 94% 51%;

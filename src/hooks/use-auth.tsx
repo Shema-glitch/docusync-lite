@@ -10,6 +10,8 @@ import {
     createUserWithEmailAndPassword, 
     signOut,
     updateProfile,
+    GoogleAuthProvider,
+    signInWithPopup,
     type User as FirebaseUser
 } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase';
@@ -31,6 +33,7 @@ interface AuthContextType {
   signup: (name: string, email: string, password: string) => Promise<void>;
   logout: () => void;
   updateUserProfile: (updates: Partial<Pick<User, 'name' | 'avatar' | 'organizationName'>>) => Promise<void>;
+  loginWithGoogle: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -120,6 +123,37 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const loginWithGoogle = async (): Promise<void> => {
+    setLoading(true);
+    try {
+        const provider = new GoogleAuthProvider();
+        const result = await signInWithPopup(auth, provider);
+        const firebaseUser = result.user;
+
+        // Check if user exists in Firestore, if not create a new doc
+        const userDocRef = doc(db, 'users', firebaseUser.uid);
+        const userDoc = await getDoc(userDocRef);
+
+        if (!userDoc.exists()) {
+             await setDoc(userDocRef, {
+                name: firebaseUser.displayName,
+                email: firebaseUser.email,
+                avatar: firebaseUser.photoURL,
+            });
+        }
+        // onAuthStateChanged will handle setting the user state
+    } catch (error: any) {
+         if (error.code === 'auth/popup-closed-by-user') {
+            // Silently fail if the user closes the popup
+            return;
+        }
+        throw new Error(error.message);
+    } finally {
+        setLoading(false);
+    }
+  };
+
+
   const logout = async () => {
     try {
         await signOut(auth);
@@ -167,7 +201,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(prevUser => prevUser ? { ...prevUser, name, avatar, organizationName } : null);
   };
 
-  const value = { user, loading, login, signup, logout, updateUserProfile };
+  const value = { user, loading, login, signup, logout, updateUserProfile, loginWithGoogle };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

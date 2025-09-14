@@ -6,12 +6,12 @@ import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyDQPWIV5GJorq0sb9JZ-2hpTC9YEtwEP8A",
-  authDomain: "docusync-lite-4254f.firebaseapp.com",
-  projectId: "docusync-lite-4254f",
-  storageBucket: "docusync-lite-4254f.appspot.com",
-  messagingSenderId: "146120250858",
-  appId: "1:146120250858:web:f2cb3647644048b80f4e93"
+  apiKey: "your-api-key-here",
+  authDomain: "your-auth-domain-here",
+  projectId: "your-project-id-here",
+  storageBucket: "your-storage-bucket-here",
+  messagingSenderId: "your-messaging-sender-id-here",
+  appId: "your-app-id-here"
 };
 
 // Initialize Firebase

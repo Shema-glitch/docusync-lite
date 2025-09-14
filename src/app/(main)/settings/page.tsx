@@ -12,6 +12,7 @@ import { useTheme } from 'next-themes';
 import { useState, useEffect } from 'react';
 import { Loader2 } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
+import { Slider } from '@/components/ui/slider';
 
 
 export default function SettingsPage() {
@@ -83,10 +84,11 @@ export default function SettingsPage() {
         <p className="text-muted-foreground">Manage your account settings, preferences, and more.</p>
       </div>
       <Tabs defaultValue="profile" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="profile">Profile</TabsTrigger>
           <TabsTrigger value="appearance">Appearance</TabsTrigger>
           <TabsTrigger value="notifications">Notifications</TabsTrigger>
+          <TabsTrigger value="accessibility">Accessibility</TabsTrigger>
         </TabsList>
         <TabsContent value="profile">
           <Card>
@@ -169,6 +171,34 @@ export default function SettingsPage() {
                         <p className="text-sm text-muted-foreground">Get a weekly summary of your document activity.</p>
                     </div>
                     <Switch id="activity-digest" checked={activityDigest} onCheckedChange={setActivityDigest} />
+                </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        <TabsContent value="accessibility">
+          <Card>
+            <CardHeader>
+              <CardTitle>Accessibility</CardTitle>
+              <CardDescription>
+                Make the app more comfortable for your needs.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+                <div className="flex items-center justify-between rounded-lg border p-4">
+                    <div>
+                        <Label htmlFor="font-size">Font Size</Label>
+                        <p className="text-sm text-muted-foreground">Adjust the font size for better readability.</p>
+                    </div>
+                    <div className="w-1/3">
+                      <Slider defaultValue={[16]} max={24} min={12} step={1} />
+                    </div>
+                </div>
+                <div className="flex items-center justify-between rounded-lg border p-4">
+                    <div>
+                        <Label htmlFor="high-contrast">High Contrast Mode</Label>
+                        <p className="text-sm text-muted-foreground">Increase contrast throughout the app.</p>
+                    </div>
+                    <Switch id="high-contrast" />
                 </div>
             </CardContent>
           </Card>

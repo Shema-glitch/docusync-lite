@@ -20,6 +20,15 @@ const GoogleIcon = () => (
     </svg>
 );
 
+const MicrosoftIcon = () => (
+    <svg className="h-5 w-5" viewBox="0 0 24 24">
+        <path 
+            fill="currentColor"
+            d="M11.5,3.5H3.5v8h8Zm9,0h-8v8h8Zm-9,9H3.5v8h8Zm9,0h-8v8h8Z" 
+        />
+    </svg>
+);
+
 
 export default function SignupPage() {
   const [name, setName] = useState('');
@@ -27,10 +36,13 @@ export default function SignupPage() {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [isMicrosoftLoading, setIsMicrosoftLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { signup, loginWithGoogle } = useAuth();
+  const { signup, loginWithGoogle, loginWithMicrosoft } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
+
+  const anyLoading = isLoading || isGoogleLoading || isMicrosoftLoading;
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -60,6 +72,20 @@ export default function SignupPage() {
         setIsGoogleLoading(false);
     }
   }
+
+  const handleMicrosoftLogin = async () => {
+    setIsMicrosoftLoading(true);
+    setError(null);
+    try {
+        await loginWithMicrosoft();
+        const redirect = searchParams.get('redirect');
+        router.push(redirect ? decodeURIComponent(redirect) : '/');
+    } catch (err: any) {
+        setError(err.message);
+    } finally {
+        setIsMicrosoftLoading(false);
+    }
+  }
   
   const redirectParam = searchParams.get('redirect');
   const loginHref = redirectParam ? `/login?redirect=${redirectParam}` : '/login';
@@ -76,14 +102,24 @@ export default function SignupPage() {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-             <Button variant="outline" className="w-full" onClick={handleGoogleLogin} disabled={isGoogleLoading || isLoading}>
-                {isGoogleLoading ? (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                ) : (
-                    <GoogleIcon />
-                )}
-                Sign up with Google
-            </Button>
+            <div className="grid grid-cols-2 gap-4">
+                <Button variant="outline" className="w-full" onClick={handleGoogleLogin} disabled={anyLoading}>
+                    {isGoogleLoading ? (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                        <GoogleIcon />
+                    )}
+                    Google
+                </Button>
+                <Button variant="outline" className="w-full" onClick={handleMicrosoftLogin} disabled={anyLoading}>
+                    {isMicrosoftLoading ? (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                        <MicrosoftIcon />
+                    )}
+                    Microsoft
+                </Button>
+            </div>
 
              <div className="relative">
                 <div className="absolute inset-0 flex items-center">
@@ -106,7 +142,7 @@ export default function SignupPage() {
                     required
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    disabled={isLoading || isGoogleLoading}
+                    disabled={anyLoading}
                 />
                 </div>
                 <div className="space-y-2">
@@ -118,7 +154,7 @@ export default function SignupPage() {
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    disabled={isLoading || isGoogleLoading}
+                    disabled={anyLoading}
                 />
                 </div>
                 <div className="space-y-2">
@@ -128,12 +164,12 @@ export default function SignupPage() {
                     type="password"
                     required
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    disabled={isLoading || isGoogleLoading}
+                    onChange={(e) => setPassword(e.g.value)}
+                    disabled={anyLoading}
                 />
                 </div>
                 {error && <p className="text-sm text-destructive">{error}</p>}
-                <Button type="submit" className="w-full" disabled={isLoading || isGoogleLoading}>
+                <Button type="submit" className="w-full" disabled={anyLoading}>
                 {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Create Account'}
                 </Button>
             </form>

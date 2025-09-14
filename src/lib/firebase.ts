@@ -7,7 +7,7 @@ import { getStorage } from "firebase/storage";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDQPWIV5GJorq0sb9JZ-2hpTC9YEtwEP8A",
-  authDomain: "docusync-lite-4254f",
+  authDomain: "docusync-lite-4254f.firebaseapp.com",
   projectId: "docusync-lite-4254f",
   storageBucket: "docusync-lite-4254f.appspot.com",
   messagingSenderId: "146120250858",

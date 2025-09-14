@@ -6,7 +6,7 @@ import type { Document, DocumentMember } from '@/lib/types';
 import { useToast } from './use-toast';
 import { useAuth, type User } from './use-auth';
 import { db } from '@/lib/firebase';
-import { collection, query, where, onSnapshot, addDoc, updateDoc, doc, serverTimestamp, getDocs, writeBatch, getDoc } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, addDoc, updateDoc, doc, serverTimestamp, getDocs, writeBatch, getDoc, deleteDoc } from 'firebase/firestore';
 import { permanentlyDeleteFile } from '@/app/actions';
 
 
@@ -30,41 +30,43 @@ export function DocumentsProvider({ children }: { children: ReactNode }) {
   const { toast } = useToast();
   const { user } = useAuth();
 
-  const updateDocument = useCallback(async (id: string, updates: Partial<Document>) => {
-    if (!user) return;
-    const docRef = doc(db, 'documents', id);
-    await updateDoc(docRef, { ...updates, updatedAt: serverTimestamp() });
-  }, [user]);
-
-  // Reminder checking effect
+  // Reminder checking effect - no changes needed here for optimistic UI
   useEffect(() => {
-    const interval = setInterval(() => {
+    const checkReminders = () => {
       const now = new Date();
       documents.forEach(doc => {
         if (doc.reminderDate && doc.status === 'active') {
           const reminderTime = new Date(doc.reminderDate);
+          // Check if the reminder time is in the past and within the last minute
           if (now >= reminderTime && (now.getTime() - reminderTime.getTime()) < 60000) {
             
             const notificationTitle = `Reminder: ${doc.title}`;
             const notificationBody = `This is a reminder for your document.`;
 
+            // Use browser notifications if available and permission is granted
             if (typeof window !== 'undefined' && "Notification" in window && Notification.permission === "granted") {
                 new Notification(notificationTitle, { body: notificationBody });
             } else {
+                 // Fallback to toast notification
                  toast({
                     title: notificationTitle,
                     description: notificationBody,
+                    duration: 10000,
                 });
             }
            
+            // Optimistically clear the reminder date from the UI and then from the backend
             updateDocument(doc.id, { reminderDate: undefined });
           }
         }
       });
-    }, 60000); 
+    };
+    
+    // Check every 30 seconds
+    const interval = setInterval(checkReminders, 30000); 
 
     return () => clearInterval(interval);
-  }, [documents, toast, updateDocument]);
+  }, [documents, toast, user]);
 
 
   useEffect(() => {
@@ -104,6 +106,8 @@ export function DocumentsProvider({ children }: { children: ReactNode }) {
       toast({ title: "Not Authenticated", description: "You must be logged in to add a document.", variant: "destructive" });
       return;
     }
+    // This action creates a new document, so optimistic UI isn't really applicable.
+    // We wait for the new ID from the database.
     const docRef = await addDoc(collection(db, 'documents'), {
       ...docData,
       createdAt: serverTimestamp(),
@@ -120,6 +124,67 @@ export function DocumentsProvider({ children }: { children: ReactNode }) {
       }
     });
     return docRef.id;
+  };
+
+  const updateDocument = async (id: string, updates: Partial<Document>) => {
+    if (!user) return;
+    
+    const originalDocuments = documents;
+    const optimisticDocuments = documents.map(doc => 
+      doc.id === id ? { ...doc, ...updates, updatedAt: new Date().toISOString() } : doc
+    );
+    setDocuments(optimisticDocuments);
+
+    try {
+      const docRef = doc(db, 'documents', id);
+      await updateDoc(docRef, { ...updates, updatedAt: serverTimestamp() });
+    } catch (error) {
+      console.error("Failed to update document: ", error);
+      setDocuments(originalDocuments); // Revert on failure
+      toast({
+        variant: "destructive",
+        title: "Update Failed",
+        description: "Your changes could not be saved. Please try again."
+      });
+    }
+  };
+
+  const deleteDocument = async (id: string) => {
+    updateDocument(id, { status: 'trashed', trashedAt: new Date().toISOString() });
+  };
+
+  const restoreDocument = async (id: string) => {
+    updateDocument(id, { status: 'active', trashedAt: undefined });
+  };
+
+  const permanentlyDeleteDocument = async (id: string) => {
+    if (!user) return;
+
+    const docToDelete = documents.find(d => d.id === id);
+    if (!docToDelete) return;
+
+    const originalDocuments = documents;
+    const optimisticDocuments = documents.filter(d => d.id !== id);
+    setDocuments(optimisticDocuments);
+
+    try {
+        const result = await permanentlyDeleteFile({id: docToDelete.id, storagePath: docToDelete.storagePath});
+        if (result.error) {
+            throw new Error(result.error);
+        }
+    } catch (error: any) {
+        console.error("Permanent delete failed: ", error);
+        setDocuments(originalDocuments); // Revert on failure
+        toast({
+            variant: 'destructive',
+            title: 'Deletion Failed',
+            description: error.message || 'The document could not be permanently deleted.',
+        });
+    }
+  };
+
+  const updateDocumentMembers = async (id: string, members: Record<string, DocumentMember>) => {
+    await updateDocument(id, { members });
   };
   
   const findUserByEmail = async (email: string): Promise<User | null> => {
@@ -140,34 +205,6 @@ export function DocumentsProvider({ children }: { children: ReactNode }) {
         email: userData.email,
         avatar: userData.avatar,
     };
-  };
-
-  const deleteDocument = async (id: string) => {
-    await updateDocument(id, { status: 'trashed', trashedAt: serverTimestamp() as any });
-  };
-
-  const restoreDocument = async (id: string) => {
-    await updateDocument(id, { status: 'active', trashedAt: undefined });
-  };
-
-  const permanentlyDeleteDocument = async (id: string) => {
-    if (!user) return;
-
-    const docToDelete = documents.find(d => d.id === id);
-    if (docToDelete) {
-        const result = await permanentlyDeleteFile({id: docToDelete.id, storagePath: docToDelete.storagePath});
-        if (result.error) {
-            toast({
-                variant: 'destructive',
-                title: 'Deletion Failed',
-                description: result.error,
-            });
-        }
-    }
-  };
-  
-  const updateDocumentMembers = async (id: string, members: Record<string, DocumentMember>) => {
-    await updateDocument(id, { members });
   };
 
   const value = { documents, loading, addDocument, deleteDocument, updateDocument, restoreDocument, permanentlyDeleteDocument, updateDocumentMembers, findUserByEmail };

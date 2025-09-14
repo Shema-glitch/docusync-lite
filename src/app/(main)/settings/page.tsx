@@ -11,6 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useTheme } from 'next-themes';
 import { useState } from 'react';
 import { Loader2 } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
 
 
 export default function SettingsPage() {
@@ -57,9 +58,10 @@ export default function SettingsPage() {
         <p className="text-muted-foreground">Manage your account settings, preferences, and more.</p>
       </div>
       <Tabs defaultValue="profile" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="profile">Profile</TabsTrigger>
           <TabsTrigger value="appearance">Appearance</TabsTrigger>
+          <TabsTrigger value="notifications">Notifications</TabsTrigger>
         </TabsList>
         <TabsContent value="profile">
           <Card>
@@ -105,7 +107,41 @@ export default function SettingsPage() {
             </CardContent>
           </Card>
         </TabsContent>
+        <TabsContent value="notifications">
+          <Card>
+            <CardHeader>
+              <CardTitle>Notifications</CardTitle>
+              <CardDescription>
+                Manage how you receive notifications and reminders.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+                <div className="flex items-center justify-between rounded-lg border p-4">
+                    <div>
+                        <Label htmlFor="email-notifications">Email Notifications</Label>
+                        <p className="text-sm text-muted-foreground">Receive emails for document shares, comments, and reminders.</p>
+                    </div>
+                    <Switch id="email-notifications" />
+                </div>
+                <div className="flex items-center justify-between rounded-lg border p-4">
+                    <div>
+                        <Label htmlFor="inapp-notifications">In-App Reminders</Label>
+                        <p className="text-sm text-muted-foreground">Show browser notifications for upcoming document reminders.</p>
+                    </div>
+                    <Switch id="inapp-notifications" defaultChecked />
+                </div>
+                <div className="flex items-center justify-between rounded-lg border p-4">
+                    <div>
+                        <Label htmlFor="activity-digest">Weekly Activity Digest</Label>
+                        <p className="text-sm text-muted-foreground">Get a weekly summary of your document activity.</p>
+                    </div>
+                    <Switch id="activity-digest" />
+                </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
       </Tabs>
     </div>
   );
 }
+

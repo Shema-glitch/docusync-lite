@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Maximize, Loader2, AlertTriangle, Share2, Copy, Sparkles, FileText } from 'lucide-react';
+import { ArrowLeft, Maximize, Loader2, AlertTriangle, Share2, Copy, Sparkles, FileText, BookOpen } from 'lucide-react';
 import { format } from 'date-fns';
 import { Separator } from '@/components/ui/separator';
 import { useEffect, useState, useMemo } from 'react';
@@ -15,7 +15,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { Members } from '@/components/document/members';
 import { ShareDialog } from '@/components/document/share-dialog';
 import { useToast } from '@/hooks/use-toast';
-import { getAiSummary } from '@/app/actions';
+import { getAiSummary, getAiExplanation } from '@/app/actions';
 import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter } from '@/components/ui/alert-dialog';
 import { AlertDialogCancel } from '@radix-ui/react-alert-dialog';
 
@@ -37,9 +37,14 @@ export default function DocumentDetailsPage({ params }: { params: { id: string }
   const [isLoading, setIsLoading] = useState(true);
   const [loadingMessageIndex, setLoadingMessageIndex] = useState(0);
   const [isShareOpen, setShareOpen] = useState(false);
+
   const [isSummaryLoading, setIsSummaryLoading] = useState(false);
   const [summary, setSummary] = useState('');
   const [isSummaryDialogOpen, setIsSummaryDialogOpen] = useState(false);
+
+  const [isExplainLoading, setIsExplainLoading] = useState(false);
+  const [explanation, setExplanation] = useState('');
+  const [isExplainDialogOpen, setIsExplainDialogOpen] = useState(false);
 
 
   useEffect(() => {
@@ -86,44 +91,55 @@ export default function DocumentDetailsPage({ params }: { params: { id: string }
     toast({ title: "Link Copied", description: "Share link has been copied to your clipboard." });
   }
 
-  const handleSummarize = async () => {
+  const handleAiFeature = async (type: 'summarize' | 'explain') => {
     if (!document) return;
-
+  
     if (document.fileType !== 'text/plain') {
-        toast({
-            variant: 'destructive',
-            title: 'Unsupported for Summarization',
-            description: 'AI summary is currently only available for plain text (.txt) files.',
-        });
-        return;
+      const featureName = type === 'summarize' ? 'AI summary' : 'AI explanation';
+      toast({
+        variant: 'destructive',
+        title: `Unsupported for ${type === 'summarize' ? 'Summarization' : 'Explanation'}`,
+        description: `${featureName} is currently only available for plain text (.txt) files.`,
+      });
+      return;
     }
-
-    setIsSummaryLoading(true);
+  
+    if (type === 'summarize') setIsSummaryLoading(true);
+    if (type === 'explain') setIsExplainLoading(true);
+  
     try {
-        // Since we can't read file content on the client for security reasons after upload,
-        // we'll fetch it. In a real app, you'd secure this with auth.
-        const response = await fetch(document.content);
-        if (!response.ok) {
-            throw new Error('Could not fetch document content.');
-        }
-        const documentText = await response.text();
-        
-        const result = await getAiSummary({
-            documentText: documentText.slice(0, 10000), // Truncate for performance & cost
-            documentTitle: document.title,
-        });
-
+      const response = await fetch(document.content);
+      if (!response.ok) throw new Error('Could not fetch document content.');
+      const documentText = await response.text();
+      
+      const commonPayload = {
+        documentText: documentText.slice(0, 15000), // Truncate for performance & cost
+        documentTitle: document.title,
+      };
+  
+      if (type === 'summarize') {
+        const result = await getAiSummary(commonPayload);
         if (result.error) {
-            toast({ variant: 'destructive', title: 'Summarization Failed', description: result.error });
+          toast({ variant: 'destructive', title: 'Summarization Failed', description: result.error });
         } else {
-            setSummary(result.summary);
-            setIsSummaryDialogOpen(true);
+          setSummary(result.summary);
+          setIsSummaryDialogOpen(true);
         }
-
+      } else if (type === 'explain') {
+        const result = await getAiExplanation(commonPayload);
+        if (result.error) {
+          toast({ variant: 'destructive', title: 'Explanation Failed', description: result.error });
+        } else {
+          setExplanation(result.explanation);
+          setIsExplainDialogOpen(true);
+        }
+      }
+  
     } catch (e: any) {
-        toast({ variant: 'destructive', title: 'Error', description: e.message || 'Failed to generate summary.' });
+      toast({ variant: 'destructive', title: 'Error', description: e.message || 'Failed to generate response.' });
     } finally {
-        setIsSummaryLoading(false);
+      if (type === 'summarize') setIsSummaryLoading(false);
+      if (type === 'explain') setIsExplainLoading(false);
     }
   };
 
@@ -204,7 +220,15 @@ export default function DocumentDetailsPage({ params }: { params: { id: string }
                     Back
             </Button>
             <div className='flex items-center gap-2'>
-                <Button variant="outline" onClick={handleSummarize} disabled={isSummaryLoading}>
+                <Button variant="outline" onClick={() => handleAiFeature('explain')} disabled={isExplainLoading}>
+                    {isExplainLoading ? (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin"/>
+                    ) : (
+                        <BookOpen className="mr-2 h-4 w-4"/>
+                    )}
+                    Explain
+                </Button>
+                <Button variant="outline" onClick={() => handleAiFeature('summarize')} disabled={isSummaryLoading}>
                     {isSummaryLoading ? (
                         <Loader2 className="mr-2 h-4 w-4 animate-spin"/>
                     ) : (
@@ -286,6 +310,25 @@ export default function DocumentDetailsPage({ params }: { params: { id: string }
                             ))}
                         </ul>
                     </div>
+                </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+                <AlertDialogCancel>Close</AlertDialogCancel>
+            </AlertDialogFooter>
+        </AlertDialogContent>
+    </AlertDialog>
+    <AlertDialog open={isExplainDialogOpen} onOpenChange={setIsExplainDialogOpen}>
+        <AlertDialogContent className="max-w-2xl">
+            <AlertDialogHeader>
+                <AlertDialogTitle className="flex items-center gap-2">
+                    <BookOpen className="h-5 w-5 text-primary" />
+                    Explanation of "{document.title}"
+                </AlertDialogTitle>
+                <AlertDialogDescription asChild>
+                     <div 
+                        className="pt-4 text-sm text-foreground space-y-4 prose prose-sm dark:prose-invert max-h-[60vh] overflow-y-auto"
+                        dangerouslySetInnerHTML={{ __html: explanation.replace(/\n/g, '<br />') }}
+                    />
                 </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>

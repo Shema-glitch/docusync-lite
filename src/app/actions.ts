@@ -3,6 +3,7 @@
 
 import { suggestTags, type SuggestTagsInput } from '@/ai/flows/suggest-tags';
 import { summarizeDoc, type SummarizeDocInput } from '@/ai/flows/summarize-doc';
+import { explainDoc, type ExplainDocInput } from '@/ai/flows/explain-doc';
 import { adminStorage } from '@/lib/firebase-admin';
 import { db } from '@/lib/firebase';
 import { doc, deleteDoc } from 'firebase/firestore';
@@ -26,6 +27,16 @@ export async function getAiSummary(data: SummarizeDocInput) {
   } catch (e) {
     console.error(e);
     return { summary: '', error: 'Failed to generate summary. The document may be too long or in an unsupported format.' };
+  }
+}
+
+export async function getAiExplanation(data: ExplainDocInput) {
+  try {
+    const result = await explainDoc(data);
+    return { explanation: result.explanation, error: null };
+  } catch (e) {
+    console.error(e);
+    return { explanation: '', error: 'Failed to generate explanation. The document may be too long or in an unsupported format.' };
   }
 }
 

@@ -3,3 +3,4 @@ config();
 
 import '@/ai/flows/suggest-tags.ts';
 import '@/ai/flows/summarize-doc.ts';
+import '@/ai/flows/explain-doc.ts';

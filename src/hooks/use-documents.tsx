@@ -163,7 +163,7 @@ export function DocumentsProvider({ children }: { children: ReactNode }) {
 
     const originalDocuments = documents;
     const optimisticDocuments = documents.filter(d => d.id !== id);
-    setDocuments(optimisticDocuments);
+    setDocuments(optimistic.documents);
 
     try {
         const result = await permanentlyDeleteFile({id: docToDelete.id, storagePath: docToDelete.storagePath});
@@ -202,6 +202,7 @@ export function DocumentsProvider({ children }: { children: ReactNode }) {
         name: userData.name,
         email: userData.email,
         avatar: userData.avatar,
+        organizationName: userData.organizationName,
     };
   };
 

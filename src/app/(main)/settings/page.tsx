@@ -34,8 +34,8 @@ export default function SettingsPage() {
     const [fontSize, setFontSize] = useState(16);
     const [isHighContrast, setIsHighContrast] = useState(false);
 
-    // Extract accent from theme string, e.g., "dark-orange" -> "orange"
-    const accentColor = theme?.split('-')[1];
+    const [baseTheme, setBaseTheme] = useState('system');
+    const [accent, setAccent] = useState('default');
 
     useEffect(() => {
         if (user) {
@@ -44,6 +44,14 @@ export default function SettingsPage() {
             setOrganizationName(user.organizationName ?? '');
         }
     }, [user]);
+
+    useEffect(() => {
+        if (resolvedTheme) {
+          const [resolvedBase, resolvedAccent] = resolvedTheme.split('-');
+          setBaseTheme(resolvedBase === 'dark' ? 'dark' : 'light');
+          setAccent(resolvedAccent || 'default');
+        }
+    }, [resolvedTheme]);
 
     useEffect(() => {
       document.documentElement.style.fontSize = `${fontSize}px`;
@@ -58,17 +66,19 @@ export default function SettingsPage() {
       return () => document.body.classList.remove('high-contrast');
     }, [isHighContrast]);
 
-    const handleSetTheme = (newTheme: 'light' | 'dark' | 'system') => {
-        const newFullTheme = accentColor ? `${newTheme}-${accentColor}` : newTheme;
-        setTheme(newFullTheme);
+    const handleSetBaseTheme = (newBaseTheme: 'light' | 'dark' | 'system') => {
+        if (accent === 'default') {
+            setTheme(newBaseTheme);
+        } else {
+            setTheme(`${newBaseTheme}-${accent}`);
+        }
     }
     
-    const handleSetAccent = (accent: 'default' | 'orange') => {
-        const baseTheme = resolvedTheme?.split('-')[0]; // 'light' or 'dark'
-        if (accent === 'default') {
-            setTheme(baseTheme || 'system');
+    const handleSetAccent = (newAccent: 'default' | 'violet' | 'orange') => {
+        if (newAccent === 'default') {
+            setTheme(baseTheme);
         } else {
-            setTheme(`${baseTheme}-${accent}`);
+            setTheme(`${baseTheme}-${newAccent}`);
         }
     }
 
@@ -169,9 +179,9 @@ export default function SettingsPage() {
                     <p className="text-sm text-muted-foreground">Select the overall color scheme for the app.</p>
                 </div>
                 <div className="flex space-x-2">
-                    <Button variant={resolvedTheme?.startsWith('light') ? 'default' : 'outline'} onClick={() => handleSetTheme('light')}>Light</Button>
-                    <Button variant={resolvedTheme?.startsWith('dark') ? 'default' : 'outline'} onClick={() => handleSetTheme('dark')}>Dark</Button>
-                    <Button variant={theme === 'system' ? 'default' : 'outline'} onClick={() => handleSetTheme('system')}>System</Button>
+                    <Button variant={baseTheme === 'light' ? 'default' : 'outline'} onClick={() => handleSetBaseTheme('light')}>Light</Button>
+                    <Button variant={baseTheme === 'dark' ? 'default' : 'outline'} onClick={() => handleSetBaseTheme('dark')}>Dark</Button>
+                    <Button variant={theme === 'system' ? 'default' : 'outline'} onClick={() => handleSetBaseTheme('system')}>System</Button>
                 </div>
 
                 <div className="space-y-2 pt-4">
@@ -179,11 +189,15 @@ export default function SettingsPage() {
                     <p className="text-sm text-muted-foreground">Choose an accent color for buttons and highlights.</p>
                 </div>
                 <div className="flex space-x-2">
-                   <Button variant={!accentColor ? 'default' : 'outline'} onClick={() => handleSetAccent('default')}>
+                   <Button variant={accent === 'default' ? 'default' : 'outline'} onClick={() => handleSetAccent('default')}>
                        Default
                        <div className="ml-2 h-4 w-4 rounded-full" style={{ backgroundColor: 'hsl(222.2 47.4% 11.2%)'}} />
                     </Button>
-                     <Button variant={accentColor === 'orange' ? 'default' : 'outline'} onClick={() => handleSetAccent('orange')}>
+                     <Button variant={accent === 'violet' ? 'default' : 'outline'} onClick={() => handleSetAccent('violet')}>
+                       Violet
+                       <div className="ml-2 h-4 w-4 rounded-full" style={{ backgroundColor: 'hsl(262.1 83.3% 57.8%)'}} />
+                    </Button>
+                     <Button variant={accent === 'orange' ? 'default' : 'outline'} onClick={() => handleSetAccent('orange')}>
                        Orange
                        <div className="ml-2 h-4 w-4 rounded-full" style={{ backgroundColor: 'hsl(24 94% 51%)'}} />
                     </Button>

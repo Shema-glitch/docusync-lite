@@ -4,6 +4,7 @@
 import { DocumentTable } from '@/components/document-table';
 import { PinnedDocuments } from '@/components/dashboard/pinned-documents';
 import { SummaryPanel } from '@/components/dashboard/summary-panel';
+import { ForYou } from '@/components/dashboard/for-you';
 import { useDocuments } from '@/hooks/use-documents.tsx';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -27,6 +28,8 @@ export default function DashboardPage() {
         <SummaryPanel documents={activeDocuments} />
       )}
       
+      <ForYou />
+
       {loading ? (
          <Card>
             <CardHeader>

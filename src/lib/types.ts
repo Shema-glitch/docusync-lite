@@ -18,7 +18,7 @@ export type Document = {
   version: number;
   type: 'PDF' | 'Word' | 'Image' | 'Spreadsheet' | 'Presentation' | 'TXT' | 'OTHER';
   icon: 'FileText' | 'FileSignature' | 'FileImage' | 'FileSpreadsheet' | 'Presentation' | 'Sheet';
-  status: 'active' | 'trashed';
+  status: 'active' | 'trashed' | 'archived';
   reminderDate?: string;
   isFavorite?: boolean;
   content: string; // Firebase Storage URL

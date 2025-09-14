@@ -14,12 +14,12 @@ interface DocumentsContextType {
   documents: Document[];
   loading: boolean;
   addDocument: (doc: Omit<Document, 'id' | 'createdAt' | 'updatedAt' | 'version' | 'status' | 'isFavorite' | 'members'>) => Promise<string | undefined>;
-  deleteDocument: (id: string) => Promise<void>;
   updateDocument: (id: string, updates: Partial<Document>) => Promise<void>;
   restoreDocument: (id: string) => Promise<void>;
   permanentlyDeleteDocument: (id: string) => Promise<void>;
   updateDocumentMembers: (id: string, members: Record<string, DocumentMember>) => Promise<void>;
   findUserByEmail: (email: string) => Promise<User | null>;
+  deleteDocument: (id: string) => Promise<void>;
 }
 
 const DocumentsContext = createContext<DocumentsContextType | undefined>(undefined);
@@ -30,7 +30,7 @@ export function DocumentsProvider({ children }: { children: ReactNode }) {
   const { toast } = useToast();
   const { user } = useAuth();
 
-  // Reminder checking effect - no changes needed here for optimistic UI
+  // Reminder checking effect
   useEffect(() => {
     const checkReminders = () => {
       const now = new Date();
@@ -106,8 +106,6 @@ export function DocumentsProvider({ children }: { children: ReactNode }) {
       toast({ title: "Not Authenticated", description: "You must be logged in to add a document.", variant: "destructive" });
       return;
     }
-    // This action creates a new document, so optimistic UI isn't really applicable.
-    // We wait for the new ID from the database.
     const docRef = await addDoc(collection(db, 'documents'), {
       ...docData,
       createdAt: serverTimestamp(),
@@ -207,7 +205,7 @@ export function DocumentsProvider({ children }: { children: ReactNode }) {
     };
   };
 
-  const value = { documents, loading, addDocument, deleteDocument, updateDocument, restoreDocument, permanentlyDeleteDocument, updateDocumentMembers, findUserByEmail };
+  const value = { documents, loading, addDocument, updateDocument, restoreDocument, permanentlyDeleteDocument, updateDocumentMembers, findUserByEmail, deleteDocument };
 
   return <DocumentsContext.Provider value={value}>{children}</DocumentsContext.Provider>;
 }

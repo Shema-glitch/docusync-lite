@@ -12,6 +12,7 @@ import {
   PanelLeft,
   Search,
   Trash2,
+  Archive,
   LayoutGrid
 } from 'lucide-react';
 import Link from 'next/link';
@@ -30,6 +31,7 @@ const navItems = [
     { href: '/documents', label: 'All Files', icon: Files },
     { href: '/favorites', label: 'Favorites', icon: Star },
     { href: '/timeline', label: 'Timeline', icon: FileClock },
+    { href: '/archive', label: 'Archive', icon: Archive },
     { href: '/trash', label: 'Trash', icon: Trash2 },
     { href: '/settings', label: 'Settings', icon: Settings },
   ];

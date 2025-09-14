@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from './ui/button';
-import { MoreVertical, FileText, Sheet, FileImage, FileSignature, Trash2, RotateCcw, Calendar as CalendarIcon, Star, Presentation, FileSpreadsheet } from 'lucide-react';
+import { MoreVertical, FileText, Sheet, FileImage, FileSignature, Trash2, RotateCcw, Calendar as CalendarIcon, Star, Presentation, FileSpreadsheet, Archive, Unarchive } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -107,6 +107,23 @@ export function DocumentCard({ document }: DocumentCardProps) {
       })
   }
 
+  const handleArchive = () => {
+    updateDocument(document.id, { status: 'archived' });
+    toast({
+        title: 'Document Archived',
+        description: `"${document.title}" has been moved to the archive.`,
+    });
+  };
+
+  const handleUnarchive = () => {
+      updateDocument(document.id, { status: 'active' });
+      toast({
+          title: 'Document Unarchived',
+          description: `"${document.title}" has been restored to your active documents.`,
+      });
+  };
+
+
   const handleSetReminder = (date: Date | undefined) => {
     if (date) {
         // If there's an existing time, preserve it. Otherwise, default to noon.
@@ -158,6 +175,80 @@ export function DocumentCard({ document }: DocumentCardProps) {
     })
   }
 
+  const renderDropdownMenuItems = () => {
+    switch (document.status) {
+        case 'active':
+            return (
+                <>
+                    <DropdownMenuItem asChild>
+                        <Link href={`/documents/${document.id}`}>View Details</Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => toast({ title: 'Feature coming soon!', description: 'Download is not yet available.'})}>
+                        Download
+                    </DropdownMenuItem>
+                    <Popover>
+                        <PopoverTrigger asChild>
+                           <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                                Set Reminder
+                           </DropdownMenuItem>
+                        </PopoverTrigger>
+                         <PopoverContent className="w-auto p-0 mr-2" align="end">
+                            <Calendar
+                                mode="single"
+                                selected={reminderDate}
+                                onSelect={handleSetReminder}
+                                initialFocus
+                            />
+                            {reminderDate && (
+                               <div className="p-2 border-t">
+                                 <Input type="time" onChange={handleTimeChange} defaultValue={format(reminderDate, "HH:mm")} />
+                               </div>
+                            )}
+                        </PopoverContent>
+                    </Popover>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={handleArchive}>
+                        <Archive className="mr-2 h-4 w-4"/>
+                        Archive
+                    </DropdownMenuItem>
+                    <DropdownMenuItem 
+                        className="text-destructive focus:bg-destructive/10 focus:text-destructive"
+                        onClick={handleDeleteClick}
+                    >
+                      <Trash2 className="mr-2 h-4 w-4"/>
+                      Delete
+                    </DropdownMenuItem>
+                </>
+            );
+        case 'trashed':
+            return (
+                <>
+                    <DropdownMenuItem onClick={handleRestore}>
+                       <RotateCcw className="mr-2 h-4 w-4"/>
+                       Restore
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem 
+                        className="text-destructive focus:bg-destructive/10 focus:text-destructive"
+                        onClick={handlePermanentDeleteClick}
+                    >
+                      <Trash2 className="mr-2 h-4 w-4"/>
+                      Delete Permanently
+                    </DropdownMenuItem>
+                </>
+            );
+        case 'archived':
+            return (
+                <DropdownMenuItem onClick={handleUnarchive}>
+                   <Unarchive className="mr-2 h-4 w-4"/>
+                   Unarchive
+                </DropdownMenuItem>
+            );
+        default:
+            return null;
+    }
+  }
+
 
   return (
     <>
@@ -187,59 +278,7 @@ export function DocumentCard({ document }: DocumentCardProps) {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                 {document.status === 'active' ? (
-                    <>
-                        <DropdownMenuItem asChild>
-                            <Link href={`/documents/${document.id}`}>View Details</Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => toast({ title: 'Feature coming soon!', description: 'Download is not yet available.'})}>
-                            Download
-                        </DropdownMenuItem>
-                        <Popover>
-                            <PopoverTrigger asChild>
-                               <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                                    Set Reminder
-                               </DropdownMenuItem>
-                            </PopoverTrigger>
-                             <PopoverContent className="w-auto p-0 mr-2" align="end">
-                                <Calendar
-                                    mode="single"
-                                    selected={reminderDate}
-                                    onSelect={handleSetReminder}
-                                    initialFocus
-                                />
-                                {reminderDate && (
-                                   <div className="p-2 border-t">
-                                     <Input type="time" onChange={handleTimeChange} defaultValue={format(reminderDate, "HH:mm")} />
-                                   </div>
-                                )}
-                            </PopoverContent>
-                        </Popover>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem 
-                            className="text-destructive focus:bg-destructive/10 focus:text-destructive"
-                            onClick={handleDeleteClick}
-                        >
-                          <Trash2 className="mr-2 h-4 w-4"/>
-                          Delete
-                        </DropdownMenuItem>
-                    </>
-                 ) : (
-                    <>
-                        <DropdownMenuItem onClick={handleRestore}>
-                           <RotateCcw className="mr-2 h-4 w-4"/>
-                           Restore
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem 
-                            className="text-destructive focus:bg-destructive/10 focus:text-destructive"
-                            onClick={handlePermanentDeleteClick}
-                        >
-                          <Trash2 className="mr-2 h-4 w-4"/>
-                          Delete Permanently
-                        </DropdownMenuItem>
-                    </>
-                 )}
+                {renderDropdownMenuItems()}
               </DropdownMenuContent>
             </DropdownMenu>
         </div>

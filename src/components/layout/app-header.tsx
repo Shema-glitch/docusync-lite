@@ -59,7 +59,7 @@ export function AppHeader() {
     if (searchQuery !== queryFromUrl) {
       setSearchQuery(queryFromUrl);
     }
-  }, [searchParams]);
+  }, [searchParams, searchQuery]);
 
   return (
     <header className="flex h-14 items-center gap-4 border-b bg-background/95 px-4 lg:h-[60px] lg:px-6 sticky top-0 z-30 backdrop-blur-sm">
@@ -119,6 +119,9 @@ export function AppHeader() {
             />
             </div>
         </form>
+      </div>
+      <div className="hidden md:block">
+        <UploadButton />
       </div>
       <HeaderSuggestions />
       <DropdownMenu>

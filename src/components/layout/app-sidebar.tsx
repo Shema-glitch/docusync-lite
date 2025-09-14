@@ -12,7 +12,11 @@ import {
   ChevronDown,
   LogOut,
   User as UserIcon,
-  MoreHorizontal
+  MoreHorizontal,
+  Users,
+  Tag,
+  FileText,
+  UploadCloud,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -31,12 +35,16 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { useState } from 'react';
+import { useDocuments } from '@/hooks/use-documents.tsx';
+import { useOnboarding } from '@/hooks/use-onboarding';
+import { Progress } from '../ui/progress';
 
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: Home },
   { href: '/documents', label: 'All Files', icon: Files },
   { href: '/favorites', label: 'Favorites', icon: Star },
+  { href: '/shared', label: 'Shared with Me', icon: Users },
   { href: '/archive', label: 'Archive', icon: Archive },
   { href: '/trash', label: 'Trash', icon: Trash2 },
 ];
@@ -44,7 +52,12 @@ const navItems = [
 export function AppSidebar() {
   const pathname = usePathname();
   const { user, logout } = useAuth();
+  const { tags: allTags } = useDocuments();
+  const { isFirstTime: showOnboarding, currentStep } = useOnboarding();
   const [isWorkflowOpen, setIsWorkflowOpen] = useState(true);
+  const [isTagsOpen, setIsTagsOpen] = useState(true);
+
+  const onboardingProgress = showOnboarding ? ((currentStep + 1) / 5) * 100 : 0;
 
   return (
     <aside className="hidden border-r bg-muted/40 md:block">
@@ -54,7 +67,7 @@ export function AppSidebar() {
                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-6 w-6 text-primary">
                         <path d="M12.378 1.602a.75.75 0 00-.756 0L3 7.232V18a1.5 1.5 0 001.5 1.5h15A1.5 1.5 0 0021 18V7.232l-8.622-5.63zM12 7.5a.75.75 0 01.75.75v3.69l3.44-2.293a.75.75 0 01.912 1.214l-4.25 2.833a.75.75 0 01-.912 0L7.898 11.16a.75.75 0 01.912-1.213L11.25 11.94V8.25A.75.75 0 0112 7.5z" />
                     </svg>
-                    <span className="">{user?.organizationName || 'DocuSync Lite'}</span>
+                    <span className="truncate">{user?.organizationName || 'DocuSync Lite'}</span>
                 </Link>
             </div>
             <div className="flex-1 overflow-y-auto">
@@ -95,6 +108,40 @@ export function AppSidebar() {
                                 <FileClock className="h-4 w-4" />
                                 Recent Activity
                             </Link>
+                             <Button variant="ghost" className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary justify-start" disabled>
+                                <FileText className="h-4 w-4" />
+                                Templates
+                            </Button>
+                             <Button variant="ghost" className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary justify-start" disabled>
+                                <UploadCloud className="h-4 w-4" />
+                                Upload Queue
+                            </Button>
+                        </CollapsibleContent>
+                    </Collapsible>
+                </div>
+                 <div className="px-2 text-sm font-medium lg:px-4 mt-4">
+                     <Collapsible open={isTagsOpen} onOpenChange={setIsTagsOpen}>
+                        <CollapsibleTrigger className="w-full">
+                            <div className='flex items-center justify-between px-3 py-2'>
+                                <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Tags</h3>
+                                <ChevronDown className={cn("h-4 w-4 text-muted-foreground transition-transform", isTagsOpen && "rotate-180")} />
+                            </div>
+                        </CollapsibleTrigger>
+                        <CollapsibleContent className="grid items-start max-h-48 overflow-y-auto">
+                            {allTags.map(tag => (
+                                <Link
+                                    key={tag}
+                                    href={`/documents?tag=${tag}`}
+                                    prefetch={false}
+                                    className={cn(
+                                        'flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary',
+                                        // TODO: Add active state based on search param
+                                    )}
+                                >
+                                    <Tag className="h-4 w-4" />
+                                    {tag}
+                                </Link>
+                            ))}
                         </CollapsibleContent>
                     </Collapsible>
                 </div>
@@ -102,6 +149,12 @@ export function AppSidebar() {
              <div className="mt-auto p-4 space-y-4">
                 <UploadButton />
                 <div className="border-t pt-4">
+                   {showOnboarding && (
+                       <div className="mb-4 space-y-2">
+                           <p className="text-xs text-muted-foreground">Onboarding Progress</p>
+                           <Progress value={onboardingProgress} className="h-2" />
+                       </div>
+                   )}
                    <div className="flex justify-between items-center">
                         <Link href={`/profile/${user?.id}`} className="flex items-center gap-3">
                             <Avatar className="h-9 w-9">

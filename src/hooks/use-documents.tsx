@@ -1,7 +1,7 @@
 
 'use client';
 
-import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode, useCallback, useMemo } from 'react';
 import type { Document, DocumentMember } from '@/lib/types';
 import { useToast } from './use-toast';
 import { useAuth, type User } from './use-auth';
@@ -13,6 +13,7 @@ import { permanentlyDeleteFile } from '@/app/actions';
 interface DocumentsContextType {
   documents: Document[];
   loading: boolean;
+  tags: string[];
   addDocument: (doc: Omit<Document, 'id' | 'createdAt' | 'updatedAt' | 'version' | 'status' | 'isFavorite' | 'members'>) => Promise<string | undefined>;
   updateDocument: (id: string, updates: Partial<Document>) => Promise<void>;
   restoreDocument: (id: string) => Promise<void>;
@@ -101,6 +102,16 @@ export function DocumentsProvider({ children }: { children: ReactNode }) {
 
     return () => unsubscribe();
   }, [user, toast]);
+
+  const tags = useMemo(() => {
+    const allTags = new Set<string>();
+    documents
+      .filter(doc => doc.status === 'active')
+      .forEach(doc => {
+        doc.tags.forEach(tag => allTags.add(tag));
+      });
+    return Array.from(allTags).sort();
+  }, [documents]);
   
  const addDocument = async (docData: Omit<Document, 'id' | 'createdAt' | 'updatedAt' | 'version' | 'status' | 'isFavorite' | 'members'>): Promise<string | undefined> => {
     if (!user) {
@@ -276,7 +287,7 @@ export function DocumentsProvider({ children }: { children: ReactNode }) {
     };
   };
 
-  const value = { documents, loading, addDocument, updateDocument, restoreDocument, permanentlyDeleteDocument, updateDocumentMembers, findUserByEmail, findUserById, deleteDocument };
+  const value = { documents, loading, tags, addDocument, updateDocument, restoreDocument, permanentlyDeleteDocument, updateDocumentMembers, findUserByEmail, findUserById, deleteDocument };
 
   return <DocumentsContext.Provider value={value}>{children}</DocumentsContext.Provider>;
 }

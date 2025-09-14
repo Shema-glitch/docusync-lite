@@ -12,7 +12,7 @@ import {
   } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from './ui/button';
-import { MoreHorizontal, FileText, Sheet, FileImage, FileSignature, Trash2, RotateCcw, Star, Presentation, FileSpreadsheet, Archive, Unarchive } from 'lucide-react';
+import { MoreHorizontal, FileText, Sheet, FileImage, FileSignature, Trash2, RotateCcw, Star, Presentation, FileSpreadsheet, Archive, ArchiveRestore } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -278,7 +278,7 @@ function DocumentRow({ document }: { document: Document }) {
             case 'archived':
                 return (
                     <DropdownMenuItem onClick={handleUnarchive}>
-                       <Unarchive className="mr-2 h-4 w-4"/>
+                       <ArchiveRestore className="mr-2 h-4 w-4"/>
                        Unarchive
                     </DropdownMenuItem>
                 );

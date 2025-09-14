@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from './ui/button';
-import { MoreVertical, FileText, Sheet, FileImage, FileSignature, Trash2, RotateCcw, Calendar as CalendarIcon, Star, Presentation, FileSpreadsheet, Archive, Unarchive } from 'lucide-react';
+import { MoreVertical, FileText, Sheet, FileImage, FileSignature, Trash2, RotateCcw, Calendar as CalendarIcon, Star, Presentation, FileSpreadsheet, Archive, ArchiveRestore } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -240,7 +240,7 @@ export function DocumentCard({ document }: DocumentCardProps) {
         case 'archived':
             return (
                 <DropdownMenuItem onClick={handleUnarchive}>
-                   <Unarchive className="mr-2 h-4 w-4"/>
+                   <ArchiveRestore className="mr-2 h-4 w-4"/>
                    Unarchive
                 </DropdownMenuItem>
             );

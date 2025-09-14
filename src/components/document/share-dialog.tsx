@@ -115,18 +115,11 @@ export function ShareDialog({ isOpen, onOpenChange, document }: ShareDialogProps
         <DialogHeader>
           <DialogTitle>Share "{document.title}"</DialogTitle>
           <DialogDescription>
-            Anyone with the link can view. Invite others to collaborate.
+            Invite others to collaborate or manage existing member permissions.
           </DialogDescription>
         </DialogHeader>
         
         <div className='space-y-4'>
-            <div className="flex space-x-2">
-                <Input value={`${window.location.origin}/share/${document.id}`} readOnly className="flex-1 bg-muted border-none" />
-                <Button onClick={copyShareLink}>
-                    <Copy className="h-4 w-4" />
-                </Button>
-            </div>
-
             <div className="space-y-2">
                 <Label htmlFor="email">Invite people</Label>
                 <div className="flex space-x-2">
@@ -159,14 +152,14 @@ export function ShareDialog({ isOpen, onOpenChange, document }: ShareDialogProps
                                </Avatar>
                                <div>
                                    <p className="font-medium leading-none">{member.name} {id === currentUser?.id && '(You)'}</p>
-                                   <p className="text-sm text-muted-foreground">{member.role === 'owner' ? <span className='flex items-center gap-1'><Crown className="h-3 w-3 text-yellow-500"/>Owner</span> : member.role}</p>
+                                   <p className="text-sm text-muted-foreground capitalize">{member.role === 'owner' ? <span className='flex items-center gap-1'><Crown className="h-3 w-3 text-yellow-500"/>Owner</span> : member.role}</p>
                                </div>
                            </div>
                            {member.role !== 'owner' && (
                                <DropdownMenu>
                                    <DropdownMenuTrigger asChild>
-                                       <Button variant="outline" size="sm">
-                                           {member.role === 'editor' ? 'Editor' : 'Viewer'}
+                                       <Button variant="outline" size="sm" className="capitalize">
+                                           {member.role}
                                        </Button>
                                    </DropdownMenuTrigger>
                                    <DropdownMenuContent align="end">
@@ -191,10 +184,17 @@ export function ShareDialog({ isOpen, onOpenChange, document }: ShareDialogProps
                    ))}
                 </div>
             </div>
+             <div className="flex space-x-2 pt-4">
+                <Input value={`${window.location.origin}/share/${document.id}`} readOnly className="flex-1 bg-muted border-none" />
+                <Button onClick={copyShareLink} variant="secondary">
+                    <Copy className="h-4 w-4 mr-2" />
+                    Copy Link
+                </Button>
+            </div>
         </div>
 
         <DialogFooter>
-          <Button variant="secondary" onClick={() => onOpenChange(false)}>Done</Button>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>Done</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

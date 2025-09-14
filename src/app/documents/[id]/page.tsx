@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Maximize, Loader2, AlertTriangle, Share2, Copy } from 'lucide-react';
+import { ArrowLeft, Maximize, Loader2, AlertTriangle, Share2, Copy, Sparkles, FileText } from 'lucide-react';
 import { format } from 'date-fns';
 import { Separator } from '@/components/ui/separator';
 import { useEffect, useState, useMemo } from 'react';
@@ -15,6 +15,9 @@ import { useAuth } from '@/hooks/use-auth';
 import { Members } from '@/components/document/members';
 import { ShareDialog } from '@/components/document/share-dialog';
 import { useToast } from '@/hooks/use-toast';
+import { getAiSummary } from '@/app/actions';
+import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter } from '@/components/ui/alert-dialog';
+import { AlertDialogCancel } from '@radix-ui/react-alert-dialog';
 
 const loadingMessages = [
     "Opening document...",
@@ -34,6 +37,10 @@ export default function DocumentDetailsPage({ params }: { params: { id: string }
   const [isLoading, setIsLoading] = useState(true);
   const [loadingMessageIndex, setLoadingMessageIndex] = useState(0);
   const [isShareOpen, setShareOpen] = useState(false);
+  const [isSummaryLoading, setIsSummaryLoading] = useState(false);
+  const [summary, setSummary] = useState('');
+  const [isSummaryDialogOpen, setIsSummaryDialogOpen] = useState(false);
+
 
   useEffect(() => {
     const foundDoc = documents.find((doc) => doc.id === id);
@@ -78,6 +85,48 @@ export default function DocumentDetailsPage({ params }: { params: { id: string }
     navigator.clipboard.writeText(url);
     toast({ title: "Link Copied", description: "Share link has been copied to your clipboard." });
   }
+
+  const handleSummarize = async () => {
+    if (!document) return;
+
+    if (document.fileType !== 'text/plain') {
+        toast({
+            variant: 'destructive',
+            title: 'Unsupported for Summarization',
+            description: 'AI summary is currently only available for plain text (.txt) files.',
+        });
+        return;
+    }
+
+    setIsSummaryLoading(true);
+    try {
+        // Since we can't read file content on the client for security reasons after upload,
+        // we'll fetch it. In a real app, you'd secure this with auth.
+        const response = await fetch(document.content);
+        if (!response.ok) {
+            throw new Error('Could not fetch document content.');
+        }
+        const documentText = await response.text();
+        
+        const result = await getAiSummary({
+            documentText: documentText.slice(0, 10000), // Truncate for performance & cost
+            documentTitle: document.title,
+        });
+
+        if (result.error) {
+            toast({ variant: 'destructive', title: 'Summarization Failed', description: result.error });
+        } else {
+            setSummary(result.summary);
+            setIsSummaryDialogOpen(true);
+        }
+
+    } catch (e: any) {
+        toast({ variant: 'destructive', title: 'Error', description: e.message || 'Failed to generate summary.' });
+    } finally {
+        setIsSummaryLoading(false);
+    }
+  };
+
 
   if (isLoading || !document) {
     return (
@@ -130,6 +179,10 @@ export default function DocumentDetailsPage({ params }: { params: { id: string }
         return <iframe id="doc-iframe" src={document.content} className="w-full h-full border-0" title={document.title} />;
     }
 
+    if (document.fileType === 'text/plain') {
+        return <iframe id="doc-iframe" src={document.content} className="w-full h-full border-0" title={document.title} />;
+    }
+
     return (
         <div className="w-full h-full flex items-center justify-center">
             <div className="flex flex-col items-center justify-center text-center p-8">
@@ -151,6 +204,14 @@ export default function DocumentDetailsPage({ params }: { params: { id: string }
                     Back
             </Button>
             <div className='flex items-center gap-2'>
+                <Button variant="outline" onClick={handleSummarize} disabled={isSummaryLoading}>
+                    {isSummaryLoading ? (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin"/>
+                    ) : (
+                        <Sparkles className="mr-2 h-4 w-4"/>
+                    )}
+                    Summarize
+                </Button>
                 <Button variant="outline" onClick={copyShareLink}>
                     <Copy className="mr-2 h-4 w-4"/>
                     Copy Link
@@ -210,6 +271,28 @@ export default function DocumentDetailsPage({ params }: { params: { id: string }
         onOpenChange={setShareOpen}
         document={document}
     />
+    <AlertDialog open={isSummaryDialogOpen} onOpenChange={setIsSummaryDialogOpen}>
+        <AlertDialogContent>
+            <AlertDialogHeader>
+                <AlertDialogTitle className="flex items-center gap-2">
+                    <Sparkles className="h-5 w-5 text-primary" />
+                    AI Summary of "{document.title}"
+                </AlertDialogTitle>
+                <AlertDialogDescription asChild>
+                    <div className="pt-4 text-sm text-foreground space-y-2">
+                        <ul className="list-disc pl-5 space-y-2">
+                            {summary.split('- ').filter(s => s.trim()).map((item, index) => (
+                                <li key={index}>{item.trim()}</li>
+                            ))}
+                        </ul>
+                    </div>
+                </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+                <AlertDialogCancel>Close</AlertDialogCancel>
+            </AlertDialogFooter>
+        </AlertDialogContent>
+    </AlertDialog>
     </>
   );
 }

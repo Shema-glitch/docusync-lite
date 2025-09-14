@@ -13,18 +13,17 @@ import {
   Search,
   Trash2,
   Archive,
-  LayoutGrid,
-  User as UserIcon
 } from 'lucide-react';
 import Link from 'next/link';
 import { UploadButton } from '../upload-button';
 import { useAuth } from '@/hooks/use-auth';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuItem } from '../ui/dropdown-menu';
-import { LogOut, Heart } from 'lucide-react';
+import { LogOut, Heart, User as UserIcon } from 'lucide-react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { useState, useEffect } from 'react';
+import { HeaderSuggestions } from './header-suggestions';
 
 
 const navItems = [
@@ -121,6 +120,7 @@ export function AppHeader() {
             </div>
         </form>
       </div>
+      <HeaderSuggestions />
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
         <Button variant="secondary" size="icon" className="rounded-full">

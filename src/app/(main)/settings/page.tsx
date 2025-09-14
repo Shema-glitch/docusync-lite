@@ -23,6 +23,11 @@ export default function SettingsPage() {
     const [avatar, setAvatar] = useState('');
     const [organizationName, setOrganizationName] = useState('');
     const [isSaving, setIsSaving] = useState(false);
+    
+    // State for notification toggles
+    const [emailNotifications, setEmailNotifications] = useState(true);
+    const [inAppReminders, setInAppReminders] = useState(true);
+    const [activityDigest, setActivityDigest] = useState(false);
 
     useEffect(() => {
         if (user) {
@@ -149,21 +154,21 @@ export default function SettingsPage() {
                         <Label htmlFor="email-notifications">Email Notifications</Label>
                         <p className="text-sm text-muted-foreground">Receive emails for document shares, comments, and reminders.</p>
                     </div>
-                    <Switch id="email-notifications" />
+                    <Switch id="email-notifications" checked={emailNotifications} onCheckedChange={setEmailNotifications} />
                 </div>
                 <div className="flex items-center justify-between rounded-lg border p-4">
                     <div>
                         <Label htmlFor="inapp-notifications">In-App Reminders</Label>
                         <p className="text-sm text-muted-foreground">Show browser notifications for upcoming document reminders.</p>
                     </div>
-                    <Switch id="inapp-notifications" defaultChecked />
+                    <Switch id="inapp-notifications" checked={inAppReminders} onCheckedChange={setInAppReminders} />
                 </div>
                 <div className="flex items-center justify-between rounded-lg border p-4">
                     <div>
                         <Label htmlFor="activity-digest">Weekly Activity Digest</Label>
                         <p className="text-sm text-muted-foreground">Get a weekly summary of your document activity.</p>
                     </div>
-                    <Switch id="activity-digest" />
+                    <Switch id="activity-digest" checked={activityDigest} onCheckedChange={setActivityDigest} />
                 </div>
             </CardContent>
           </Card>

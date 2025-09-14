@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
 import { useTheme } from 'next-themes';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Loader2 } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 
@@ -19,11 +19,31 @@ export default function SettingsPage() {
     const { theme, setTheme } = useTheme();
     const { toast } = useToast();
 
-    const [name, setName] = useState(user?.name ?? '');
+    const [name, setName] = useState('');
+    const [avatar, setAvatar] = useState('');
+    const [organizationName, setOrganizationName] = useState('');
     const [isSaving, setIsSaving] = useState(false);
 
+    useEffect(() => {
+        if (user) {
+            setName(user.name ?? '');
+            setAvatar(user.avatar ?? '');
+            setOrganizationName(user.organizationName ?? '');
+        }
+    }, [user]);
+
+    const hasChanges = name !== (user?.name ?? '') || avatar !== (user?.avatar ?? '') || organizationName !== (user?.organizationName ?? '');
+
     const handleSaveChanges = async () => {
-        if (!user || !name.trim()) {
+        if (!user) {
+            toast({
+                variant: 'destructive',
+                title: 'Not Authenticated',
+                description: 'You must be logged in to save changes.',
+            });
+            return;
+        }
+        if (!name.trim()) {
             toast({
                 variant: 'destructive',
                 title: 'Invalid Name',
@@ -34,10 +54,10 @@ export default function SettingsPage() {
 
         setIsSaving(true);
         try {
-            await updateUserProfile({ name });
+            await updateUserProfile({ name, avatar, organizationName });
             toast({
                 title: 'Profile Updated',
-                description: 'Your name has been successfully updated.',
+                description: 'Your profile has been successfully updated.',
             });
         } catch (error: any) {
             toast({
@@ -66,9 +86,9 @@ export default function SettingsPage() {
         <TabsContent value="profile">
           <Card>
             <CardHeader>
-              <CardTitle>Profile</CardTitle>
+              <CardTitle>Profile & Branding</CardTitle>
               <CardDescription>
-                This is how others will see you on the site.
+                Customize your personal and workspace appearance.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -76,11 +96,19 @@ export default function SettingsPage() {
                 <Label htmlFor="name">Name</Label>
                 <Input id="name" value={name} onChange={(e) => setName(e.target.value)} />
               </div>
+               <div className="space-y-2">
+                <Label htmlFor="organizationName">Organization Name</Label>
+                <Input id="organizationName" value={organizationName} onChange={(e) => setOrganizationName(e.target.value)} placeholder="Your Company, Inc." />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="avatar">Avatar URL</Label>
+                <Input id="avatar" value={avatar} onChange={(e) => setAvatar(e.target.value)} placeholder="https://example.com/logo.png"/>
+              </div>
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <Input id="email" type="email" value={user?.email ?? ''} readOnly disabled />
               </div>
-               <Button onClick={handleSaveChanges} disabled={isSaving || name === user?.name}>
+               <Button onClick={handleSaveChanges} disabled={isSaving || !hasChanges}>
                  {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Save changes'}
                </Button>
             </CardContent>
@@ -144,4 +172,3 @@ export default function SettingsPage() {
     </div>
   );
 }
-

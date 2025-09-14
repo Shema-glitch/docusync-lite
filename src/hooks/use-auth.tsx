@@ -21,6 +21,7 @@ export interface User {
   name: string;
   email: string;
   avatar: string;
+  organizationName?: string;
 }
 
 interface AuthContextType {
@@ -29,7 +30,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<void>;
   signup: (name: string, email: string, password: string) => Promise<void>;
   logout: () => void;
-  updateUserProfile: (updates: Partial<Pick<User, 'name' | 'avatar'>>) => Promise<void>;
+  updateUserProfile: (updates: Partial<Pick<User, 'name' | 'avatar' | 'organizationName'>>) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -47,6 +48,7 @@ async function formatUser(firebaseUser: FirebaseUser): Promise<User> {
             email: firebaseUser.email || '',
             name: userData.name || firebaseUser.displayName || 'Anonymous',
             avatar: userData.avatar || firebaseUser.photoURL || `${MOCK_AVATAR_URL}${firebaseUser.displayName?.charAt(0) || 'A'}`,
+            organizationName: userData.organizationName,
         };
     }
 
@@ -129,21 +131,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const updateUserProfile = async (updates: Partial<Pick<User, 'name' | 'avatar'>>) => {
+  const updateUserProfile = async (updates: Partial<Pick<User, 'name' | 'avatar' | 'organizationName'>>) => {
     const firebaseUser = auth.currentUser;
     if (!firebaseUser || !user) {
         throw new Error("You must be logged in to update your profile.");
     }
 
-    const newName = updates.name ?? user.name;
-    const newAvatar = updates.avatar ?? user.avatar;
-
+    const { name = user.name, avatar = user.avatar, organizationName = user.organizationName } = updates;
+    
     // 1. Update Firebase Auth profile
-    await updateProfile(firebaseUser, { displayName: newName, photoURL: newAvatar });
+    await updateProfile(firebaseUser, { displayName: name, photoURL: avatar });
 
     // 2. Update user document in 'users' collection
     const userDocRef = doc(db, 'users', firebaseUser.uid);
-    await setDoc(userDocRef, { name: newName, avatar: newAvatar }, { merge: true });
+    await setDoc(userDocRef, { name, avatar, organizationName }, { merge: true });
 
     // 3. Update 'members' field in all relevant documents
     const documentsRef = collection(db, 'documents');
@@ -154,8 +155,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     querySnapshot.forEach(docSnap => {
         const docRef = doc(db, 'documents', docSnap.id);
         const memberUpdate = {
-            [`members.${firebaseUser.uid}.name`]: newName,
-            [`members.${firebaseUser.uid}.avatar`]: newAvatar
+            [`members.${firebaseUser.uid}.name`]: name,
+            [`members.${firebaseUser.uid}.avatar`]: avatar
         };
         batch.update(docRef, memberUpdate);
     });
@@ -163,7 +164,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 
     // 4. Update local state
-    setUser(prevUser => prevUser ? { ...prevUser, name: newName, avatar: newAvatar } : null);
+    setUser(prevUser => prevUser ? { ...prevUser, name, avatar, organizationName } : null);
   };
 
   const value = { user, loading, login, signup, logout, updateUserProfile };

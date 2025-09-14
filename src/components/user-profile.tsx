@@ -24,7 +24,7 @@ interface ActivityLog {
   details: {
     documentId: string;
     documentTitle: string;
-    sharedWith?: string; // email of user shared with
+    sharedWith?: string; // name of user shared with
   };
 }
 

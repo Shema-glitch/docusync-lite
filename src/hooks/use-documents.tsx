@@ -202,7 +202,39 @@ export function DocumentsProvider({ children }: { children: ReactNode }) {
   };
 
   const updateDocumentMembers = async (id: string, members: Record<string, DocumentMember>) => {
-    await updateDocument(id, { members });
+    if (!user) return;
+  
+    const docRef = doc(db, 'documents', id);
+    const docSnap = await getDoc(docRef);
+    if (!docSnap.exists()) return;
+  
+    const originalMembers = docSnap.data().members || {};
+    const newMemberIds = Object.keys(members).filter(id => !originalMembers[id]);
+  
+    const batch = writeBatch(db);
+    batch.update(docRef, { members, updatedAt: serverTimestamp() });
+  
+    // Log activity for newly added members
+    if (newMemberIds.length > 0) {
+      const activityRef = doc(collection(db, 'users', user.id, 'activity'));
+      batch.set(activityRef, {
+        type: 'SHARE_DOCUMENT',
+        timestamp: serverTimestamp(),
+        details: {
+          documentId: id,
+          documentTitle: docSnap.data().title,
+          sharedWith: members[newMemberIds[0]].name, // Just log the first new member for simplicity
+        }
+      });
+    }
+  
+    await batch.commit();
+
+    // Optimistically update local state
+    const optimisticDocuments = documents.map(doc => 
+      doc.id === id ? { ...doc, members, updatedAt: new Date().toISOString() } : doc
+    );
+    setDocuments(optimisticDocuments);
   };
   
   const findUserByEmail = async (email: string): Promise<User | null> => {

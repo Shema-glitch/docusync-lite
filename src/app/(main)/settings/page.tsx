@@ -17,9 +17,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { cn } from '@/lib/utils';
 
 
+type Accent = 'default' | 'violet' | 'orange';
+
 export default function SettingsPage() {
     const { user, updateUserProfile } = useAuth();
-    const { theme, setTheme, resolvedTheme } = useTheme();
+    const { theme, setTheme } = useTheme();
     const { toast } = useToast();
 
     const [name, setName] = useState('');
@@ -34,8 +36,7 @@ export default function SettingsPage() {
     const [fontSize, setFontSize] = useState(16);
     const [isHighContrast, setIsHighContrast] = useState(false);
 
-    const [baseTheme, setBaseTheme] = useState('system');
-    const [accent, setAccent] = useState('default');
+    const [accent, setAccent] = useState<Accent>('default');
 
     useEffect(() => {
         if (user) {
@@ -46,12 +47,18 @@ export default function SettingsPage() {
     }, [user]);
 
     useEffect(() => {
-        if (resolvedTheme) {
-          const [resolvedBase, resolvedAccent] = resolvedTheme.split('-');
-          setBaseTheme(resolvedBase === 'dark' ? 'dark' : 'light');
-          setAccent(resolvedAccent || 'default');
+      const currentAccent = localStorage.getItem('theme-accent') as Accent | null;
+      if (currentAccent) {
+        setAccent(currentAccent);
+        document.documentElement.classList.forEach(c => {
+          if (c.startsWith('theme-')) document.documentElement.classList.remove(c);
+        });
+        if (currentAccent !== 'default') {
+          document.documentElement.classList.add(`theme-${currentAccent}`);
         }
-    }, [resolvedTheme]);
+      }
+    }, []);
+
 
     useEffect(() => {
       document.documentElement.style.fontSize = `${fontSize}px`;
@@ -66,21 +73,17 @@ export default function SettingsPage() {
       return () => document.body.classList.remove('high-contrast');
     }, [isHighContrast]);
 
-    const handleSetBaseTheme = (newBaseTheme: 'light' | 'dark' | 'system') => {
-        if (accent === 'default') {
-            setTheme(newBaseTheme);
-        } else {
-            setTheme(`${newBaseTheme}-${accent}`);
+    const handleSetAccent = (newAccent: Accent) => {
+        setAccent(newAccent);
+        localStorage.setItem('theme-accent', newAccent);
+        document.documentElement.classList.forEach(c => {
+            if (c.startsWith('theme-')) document.documentElement.classList.remove(c);
+        });
+        if (newAccent !== 'default') {
+            document.documentElement.classList.add(`theme-${newAccent}`);
         }
-    }
+    };
     
-    const handleSetAccent = (newAccent: 'default' | 'violet' | 'orange') => {
-        if (newAccent === 'default') {
-            setTheme(baseTheme);
-        } else {
-            setTheme(`${baseTheme}-${newAccent}`);
-        }
-    }
 
     const hasChanges = name !== (user?.name ?? '') || avatar !== (user?.avatar ?? '') || organizationName !== (user?.organizationName ?? '');
 
@@ -179,9 +182,9 @@ export default function SettingsPage() {
                     <p className="text-sm text-muted-foreground">Select the overall color scheme for the app.</p>
                 </div>
                 <div className="flex space-x-2">
-                    <Button variant={baseTheme === 'light' ? 'default' : 'outline'} onClick={() => handleSetBaseTheme('light')}>Light</Button>
-                    <Button variant={baseTheme === 'dark' ? 'default' : 'outline'} onClick={() => handleSetBaseTheme('dark')}>Dark</Button>
-                    <Button variant={theme === 'system' ? 'default' : 'outline'} onClick={() => handleSetBaseTheme('system')}>System</Button>
+                    <Button variant={theme === 'light' ? 'default' : 'outline'} onClick={() => setTheme('light')}>Light</Button>
+                    <Button variant={theme === 'dark' ? 'default' : 'outline'} onClick={() => setTheme('dark')}>Dark</Button>
+                    <Button variant={theme === 'system' ? 'default' : 'outline'} onClick={() => setTheme('system')}>System</Button>
                 </div>
 
                 <div className="space-y-2 pt-4">

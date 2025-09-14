@@ -4,11 +4,10 @@
 import { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/hooks/use-auth';
-import { Loader2, Zap } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import Link from 'next/link';
 
 const GoogleIcon = () => (
@@ -92,95 +91,81 @@ export default function SignupPage() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-            <div className="flex justify-center items-center mb-4">
-                <Zap className="h-8 w-8 text-primary" />
+      <div className="w-full max-w-sm space-y-6">
+        <div className="text-center">
+            <h1 className="text-3xl font-bold">Create your account</h1>
+        </div>
+        <form onSubmit={handleSignup} className="space-y-4">
+            <div className="space-y-2">
+            <Label htmlFor="name" className='text-xs uppercase text-muted-foreground'>Name</Label>
+            <Input
+                id="name"
+                type="text"
+                placeholder="John Doe"
+                required
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                disabled={anyLoading}
+                className='bg-background text-base'
+            />
             </div>
-          <CardTitle className="text-2xl font-bold">Create an account</CardTitle>
-          <CardDescription>Get started in seconds. No credit card required.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <form onSubmit={handleSignup} className="space-y-4">
-                <div className="space-y-2">
-                <Label htmlFor="name">Name</Label>
-                <Input
-                    id="name"
-                    type="text"
-                    placeholder="John Doe"
-                    required
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    disabled={anyLoading}
-                />
-                </div>
-                <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                    id="email"
-                    type="email"
-                    placeholder="m@example.com"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    disabled={anyLoading}
-                />
-                </div>
-                <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
-                <Input
-                    id="password"
-                    type="password"
-                    required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    disabled={anyLoading}
-                />
-                </div>
-                {error && <p className="text-sm text-destructive">{error}</p>}
-                <Button type="submit" className="w-full" disabled={anyLoading}>
-                {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Create Account'}
-                </Button>
-            </form>
-            <div className="mt-4 text-center text-sm">
-                Already have an account?{' '}
-                <Link href={loginHref} className="underline">
-                Login
-                </Link>
+            <div className="space-y-2">
+            <Label htmlFor="email" className='text-xs uppercase text-muted-foreground'>Email</Label>
+            <Input
+                id="email"
+                type="email"
+                placeholder="m@example.com"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                disabled={anyLoading}
+                className='bg-background text-base'
+            />
             </div>
-             <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                    <span className="w-full border-t" />
-                </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-background px-2 text-muted-foreground">
-                    Or continue with
-                    </span>
-                </div>
+            <div className="space-y-2">
+            <Label htmlFor="password" className='text-xs uppercase text-muted-foreground'>Password</Label>
+            <Input
+                id="password"
+                type="password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                disabled={anyLoading}
+                className='bg-background text-base'
+            />
             </div>
+            {error && <p className="text-sm text-destructive">{error}</p>}
+            <Button type="submit" className="w-full text-base font-bold" disabled={anyLoading}>
+              {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Create Account'}
+            </Button>
+        </form>
+        
+        <div className="grid grid-cols-1 gap-2">
+            <Button variant="secondary" className="w-full justify-center gap-2" onClick={handleGoogleLogin} disabled={anyLoading}>
+                {isGoogleLoading ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                    <GoogleIcon />
+                )}
+                Continue with Google
+            </Button>
+            <Button variant="secondary" className="w-full justify-center gap-2" onClick={handleMicrosoftLogin} disabled={anyLoading}>
+                {isMicrosoftLoading ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                    <MicrosoftIcon />
+                )}
+                Continue with Microsoft
+            </Button>
+        </div>
 
-             <div className="grid grid-cols-2 gap-4">
-                <Button variant="outline" className="w-full" onClick={handleGoogleLogin} disabled={anyLoading}>
-                    {isGoogleLoading ? (
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    ) : (
-                        <GoogleIcon />
-                    )}
-                    Google
-                </Button>
-                <Button variant="outline" className="w-full" onClick={handleMicrosoftLogin} disabled={anyLoading}>
-                    {isMicrosoftLoading ? (
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    ) : (
-                        <MicrosoftIcon />
-                    )}
-                    Microsoft
-                </Button>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+        <div className="mt-4 text-center text-sm">
+            Already have an account?{' '}
+            <Link href={loginHref} className="font-bold text-primary hover:underline">
+            Log in
+            </Link>
+        </div>
+      </div>
     </div>
   );
 }

@@ -11,6 +11,7 @@ import { Loader2, CheckCircle, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
 import { ForgotPasswordDialog } from '@/components/auth/forgot-password-dialog';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { AuthHeader } from '@/components/layout/auth-header';
 
 const GoogleIcon = () => (
     <svg className="h-5 w-5" viewBox="0 0 48 48">
@@ -128,101 +129,104 @@ export default function LoginPage() {
 
   return (
     <>
-    <div className="flex min-h-screen items-center justify-center bg-background p-4">
-      <div className="w-full max-w-sm space-y-6">
-        <div className="text-center">
-          <h1 className="text-3xl font-bold">Log in to your account</h1>
-        </div>
-
-        {error && (
-            <Alert variant="destructive" className='alert-destructive'>
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription>
-                    {error}
-                </AlertDescription>
-            </Alert>
-        )}
-        {success && (
-             <Alert variant="default" className="border-green-500 text-green-700 dark:border-green-400 dark:text-green-400">
-                <CheckCircle className="h-4 w-4 text-green-500 dark:text-green-400" />
-                <AlertDescription>
-                    {success}
-                </AlertDescription>
-            </Alert>
-        )}
-
-
-        <form onSubmit={handleLogin} className="space-y-4">
-            <div className="space-y-2">
-            <Label htmlFor="email" className='text-xs uppercase text-muted-foreground'>Email</Label>
-            <Input
-                id="email"
-                type="email"
-                placeholder="m@example.com"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                disabled={anyLoading}
-                className='bg-background text-base'
-            />
+    <div className="flex flex-col min-h-screen bg-background">
+      <AuthHeader />
+      <main className="flex flex-1 items-center justify-center p-4">
+        <div className="w-full max-w-sm space-y-6">
+            <div className="text-center">
+            <h1 className="text-3xl font-bold">Log in to your account</h1>
             </div>
-            <div className="space-y-2">
-            <Label htmlFor="password" className='text-xs uppercase text-muted-foreground'>Password</Label>
-            <Input
-                id="password"
-                type="password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                disabled={anyLoading}
-                className='bg-background text-base'
-            />
+
+            {error && (
+                <Alert variant="destructive" className='alert-destructive'>
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription>
+                        {error}
+                    </AlertDescription>
+                </Alert>
+            )}
+            {success && (
+                <Alert variant="default" className="border-green-500 text-green-700 dark:border-green-400 dark:text-green-400">
+                    <CheckCircle className="h-4 w-4 text-green-500 dark:text-green-400" />
+                    <AlertDescription>
+                        {success}
+                    </AlertDescription>
+                </Alert>
+            )}
+
+
+            <form onSubmit={handleLogin} className="space-y-4">
+                <div className="space-y-2">
+                <Label htmlFor="email" className='text-xs uppercase text-muted-foreground'>Email</Label>
+                <Input
+                    id="email"
+                    type="email"
+                    placeholder="m@example.com"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    disabled={anyLoading}
+                    className='bg-background text-base'
+                />
+                </div>
+                <div className="space-y-2">
+                <Label htmlFor="password" className='text-xs uppercase text-muted-foreground'>Password</Label>
+                <Input
+                    id="password"
+                    type="password"
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    disabled={anyLoading}
+                    className='bg-background text-base'
+                />
+                </div>
+                
+                <Button type="submit" className="w-full text-base font-bold" disabled={anyLoading || !isFormFilled}>
+                {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Log In'}
+                </Button>
+            </form>
+            <div className="text-center">
+                <Button variant="link" className="p-0 h-auto text-sm text-primary hover:underline" onClick={() => setForgotPassOpen(true)}>
+                    Forgot password?
+                </Button>
             </div>
-            
-            <Button type="submit" className="w-full text-base font-bold" disabled={anyLoading || !isFormFilled}>
-            {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Log In'}
-            </Button>
-        </form>
-        <div className="text-center">
-            <Button variant="link" className="p-0 h-auto text-sm text-primary hover:underline" onClick={() => setForgotPassOpen(true)}>
-                Forgot password?
-            </Button>
-        </div>
 
-        <div className="grid grid-cols-1 gap-2">
-            <Button variant="secondary" className="w-full justify-center gap-2" onClick={handleGoogleLogin} disabled={anyLoading}>
-                {isGoogleLoading ? (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                ) : (
-                    <GoogleIcon />
-                )}
-                Continue with Google
-            </Button>
-            <Button variant="secondary" className="w-full justify-center gap-2" onClick={handleMicrosoftLogin} disabled={anyLoading}>
-                {isMicrosoftLoading ? (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                ) : (
-                    <MicrosoftIcon />
-                )}
-                Continue with Microsoft
-            </Button>
-            <Button variant="secondary" className="w-full justify-center gap-2" onClick={handleFacebookLogin} disabled={anyLoading}>
-                {isFacebookLoading ? (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                ) : (
-                    <FacebookIcon />
-                )}
-                Continue with Facebook
-            </Button>
-        </div>
+            <div className="grid grid-cols-1 gap-2">
+                <Button variant="secondary" className="w-full justify-center gap-2" onClick={handleGoogleLogin} disabled={anyLoading}>
+                    {isGoogleLoading ? (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                        <GoogleIcon />
+                    )}
+                    Continue with Google
+                </Button>
+                <Button variant="secondary" className="w-full justify-center gap-2" onClick={handleMicrosoftLogin} disabled={anyLoading}>
+                    {isMicrosoftLoading ? (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                        <MicrosoftIcon />
+                    )}
+                    Continue with Microsoft
+                </Button>
+                <Button variant="secondary" className="w-full justify-center gap-2" onClick={handleFacebookLogin} disabled={anyLoading}>
+                    {isFacebookLoading ? (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                        <FacebookIcon />
+                    )}
+                    Continue with Facebook
+                </Button>
+            </div>
 
-        <div className="mt-4 text-center text-sm">
-            New to DocuSync?{' '}
-            <Link href={signupHref} className="font-bold text-primary hover:underline">
-            Sign up
-            </Link>
+            <div className="mt-4 text-center text-sm">
+                New to DocuSync?{' '}
+                <Link href={signupHref} className="font-bold text-primary hover:underline">
+                Sign up
+                </Link>
+            </div>
         </div>
-      </div>
+      </main>
     </div>
     <ForgotPasswordDialog isOpen={isForgotPassOpen} onOpenChange={setForgotPassOpen} />
     </>

@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
@@ -79,6 +80,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
         const formattedUser = await formatUser(firebaseUser);
+        localStorage.setItem('lastUserEmail', formattedUser.email);
         setUser(formattedUser);
       } else {
         setUser(null);
@@ -93,6 +95,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setLoading(true);
     try {
         await signInWithEmailAndPassword(auth, email, password);
+        localStorage.setItem('lastLoginProvider', 'password');
         // onAuthStateChanged will handle setting the user
     } catch(error: any) {
         throw new Error(error.message);
@@ -121,6 +124,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             avatar,
         });
 
+        localStorage.setItem('lastLoginProvider', 'password');
         // onAuthStateChanged will handle setting the new user
     } catch (error: any) {
         throw new Error(error.message);
@@ -144,6 +148,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             avatar: firebaseUser.photoURL,
         });
     }
+    localStorage.setItem('lastLoginProvider', provider.providerId);
   };
 
   const loginWithMicrosoft = async (): Promise<void> => {
@@ -161,6 +166,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             avatar: firebaseUser.photoURL,
         });
     }
+     localStorage.setItem('lastLoginProvider', provider.providerId);
   };
 
   const loginWithFacebook = async (): Promise<void> => {
@@ -178,6 +184,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             avatar: firebaseUser.photoURL,
         });
     }
+     localStorage.setItem('lastLoginProvider', provider.providerId);
   };
 
 
@@ -185,6 +192,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
         await signOut(auth);
         setUser(null);
+        // We don't clear lastLoginProvider so the user can easily log back in.
         router.push('/login');
     } catch (error: any) {
         console.error("Logout failed", error);

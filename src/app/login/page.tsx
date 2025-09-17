@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -12,6 +13,8 @@ import Link from 'next/link';
 import { ForgotPasswordDialog } from '@/components/auth/forgot-password-dialog';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AuthHeader } from '@/components/layout/auth-header';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
 
 const GoogleIcon = () => (
     <svg className="h-5 w-5" viewBox="0 0 48 48">
@@ -46,6 +49,7 @@ export default function LoginPage() {
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [isMicrosoftLoading, setIsMicrosoftLoading] = useState(false);
   const [isFacebookLoading, setIsFacebookLoading] = useState(false);
+  const [isRecentLoginLoading, setIsRecentLoginLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const { login, loginWithGoogle, loginWithMicrosoft, loginWithFacebook } = useAuth();
@@ -53,7 +57,11 @@ export default function LoginPage() {
   const searchParams = useSearchParams();
   const [isForgotPassOpen, setForgotPassOpen] = useState(false);
   
-  const anyLoading = isLoading || isGoogleLoading || isMicrosoftLoading || isFacebookLoading;
+  const [lastLoginProvider, setLastLoginProvider] = useState<string | null>(null);
+  const [lastUserEmail, setLastUserEmail] = useState<string | null>(null);
+
+
+  const anyLoading = isLoading || isGoogleLoading || isMicrosoftLoading || isFacebookLoading || isRecentLoginLoading;
   const isFormFilled = email.trim() !== '' && password.trim() !== '';
 
   useEffect(() => {
@@ -61,7 +69,20 @@ export default function LoginPage() {
     if (resetSuccess) {
       setSuccess('Your password has been reset successfully. Please log in with your new password.');
     }
+
+    const lastProvider = localStorage.getItem('lastLoginProvider');
+    const lastEmail = localStorage.getItem('lastUserEmail');
+    if(lastProvider && lastEmail) {
+        setLastLoginProvider(lastProvider);
+        setLastUserEmail(lastEmail);
+    }
+
   }, [searchParams]);
+
+  const handleSuccessfulLogin = () => {
+    const redirect = searchParams.get('redirect');
+    router.push(redirect ? decodeURIComponent(redirect) : '/');
+  }
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -70,8 +91,7 @@ export default function LoginPage() {
     setSuccess(null);
     try {
       await login(email, password);
-      const redirect = searchParams.get('redirect');
-      router.push(redirect ? decodeURIComponent(redirect) : '/');
+      handleSuccessfulLogin();
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -79,66 +99,72 @@ export default function LoginPage() {
     }
   };
 
-  const handleGoogleLogin = async () => {
-    setIsGoogleLoading(true);
+  const handleProviderLogin = async (provider: 'google' | 'microsoft' | 'facebook') => {
+    const setLoading = {
+        google: setIsGoogleLoading,
+        microsoft: setIsMicrosoftLoading,
+        facebook: setIsFacebookLoading,
+    }[provider];
+    const loginFn = {
+        google: loginWithGoogle,
+        microsoft: loginWithMicrosoft,
+        facebook: loginWithFacebook,
+    }[provider];
+
+    setLoading(true);
     setError(null);
     setSuccess(null);
     try {
-        await loginWithGoogle();
-        const redirect = searchParams.get('redirect');
-        router.push(redirect ? decodeURIComponent(redirect) : '/');
+        await loginFn();
+        handleSuccessfulLogin();
     } catch (err: any) {
         if (err.code !== 'auth/popup-closed-by-user') {
             setError(err.message);
         }
     } finally {
-        setIsGoogleLoading(false);
+        setLoading(false);
     }
   }
 
-  const handleMicrosoftLogin = async () => {
-    setIsMicrosoftLoading(true);
-    setError(null);
-    setSuccess(null);
-    try {
-        await loginWithMicrosoft();
-        const redirect = searchParams.get('redirect');
-        router.push(redirect ? decodeURIComponent(redirect) : '/');
-    } catch (err: any) {
-        if (err.code !== 'auth/popup-closed-by-user') {
-            setError(err.message);
-        }
-    } finally {
-        setIsMicrosoftLoading(false);
+  const handleRecentLogin = async () => {
+    if (!lastLoginProvider) return;
+    
+    setIsRecentLoginLoading(true);
+    if (lastLoginProvider === 'password') {
+        setError("Please enter your password to continue.");
+        if (lastUserEmail) setEmail(lastUserEmail);
+    } else if (lastLoginProvider === 'google.com') {
+        await handleProviderLogin('google');
+    } else if (lastLoginProvider === 'facebook.com') {
+        await handleProviderLogin('facebook');
+    } else if (lastLoginProvider.includes('microsoft.com')) {
+        await handleProviderLogin('microsoft');
     }
-  }
-
-  const handleFacebookLogin = async () => {
-    setIsFacebookLoading(true);
-    setError(null);
-    setSuccess(null);
-    try {
-        await loginWithFacebook();
-        const redirect = searchParams.get('redirect');
-        router.push(redirect ? decodeURIComponent(redirect) : '/');
-    } catch (err: any) {
-        if (err.code !== 'auth/popup-closed-by-user') {
-            setError(err.message);
-        }
-    } finally {
-        setIsFacebookLoading(false);
-    }
+    setIsRecentLoginLoading(false);
   }
   
   const redirectParam = searchParams.get('redirect');
   const signupHref = redirectParam ? `/signup?redirect=${redirectParam}` : '/signup';
+
+  const getProviderIcon = (provider: string | null) => {
+    switch (provider) {
+      case 'google.com':
+        return <GoogleIcon />;
+      case 'facebook.com':
+        return <FacebookIcon />;
+      case 'microsoft.com':
+        return <MicrosoftIcon />;
+      default:
+        return null;
+    }
+  }
 
   return (
     <>
     <div className="flex flex-col min-h-screen bg-background">
       <AuthHeader />
       <main className="flex flex-1 items-center justify-center p-4">
-        <div className="w-full max-w-sm space-y-6">
+        <div className="w-full max-w-sm space-y-4">
             <div className="text-center">
             <h1 className="text-3xl font-bold">Log in to your account</h1>
             </div>
@@ -159,6 +185,32 @@ export default function LoginPage() {
                     </AlertDescription>
                 </Alert>
             )}
+
+            {lastLoginProvider && lastUserEmail && !anyLoading && (
+                <Card className="bg-muted/50">
+                    <CardHeader>
+                        <CardDescription>Welcome back!</CardDescription>
+                        <CardTitle className="flex items-center gap-3">
+                            {getProviderIcon(lastLoginProvider)}
+                            {lastUserEmail}
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <Button className="w-full" onClick={handleRecentLogin} disabled={anyLoading}>
+                           {isRecentLoginLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Continue'}
+                        </Button>
+                    </CardContent>
+                </Card>
+            )}
+
+            <div className="relative">
+                <Separator />
+                <div className="absolute inset-0 flex items-center justify-center">
+                    <span className="bg-background px-2 text-xs uppercase text-muted-foreground">
+                        Or
+                    </span>
+                </div>
+            </div>
 
 
             <form onSubmit={handleLogin} className="space-y-4">
@@ -199,7 +251,7 @@ export default function LoginPage() {
             </div>
 
             <div className="grid grid-cols-1 gap-2">
-                <Button variant="secondary" className="w-full justify-center gap-2" onClick={handleGoogleLogin} disabled={anyLoading}>
+                <Button variant="secondary" className="w-full justify-center gap-2" onClick={() => handleProviderLogin('google')} disabled={anyLoading}>
                     {isGoogleLoading ? (
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     ) : (
@@ -207,7 +259,7 @@ export default function LoginPage() {
                     )}
                     Continue with Google
                 </Button>
-                <Button variant="secondary" className="w-full justify-center gap-2" onClick={handleMicrosoftLogin} disabled={anyLoading}>
+                <Button variant="secondary" className="w-full justify-center gap-2" onClick={() => handleProviderLogin('microsoft')} disabled={anyLoading}>
                     {isMicrosoftLoading ? (
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     ) : (
@@ -215,7 +267,7 @@ export default function LoginPage() {
                     )}
                     Continue with Microsoft
                 </Button>
-                <Button variant="secondary" className="w-full justify-center gap-2" onClick={handleFacebookLogin} disabled={anyLoading}>
+                <Button variant="secondary" className="w-full justify-center gap-2" onClick={() => handleProviderLogin('facebook')} disabled={anyLoading}>
                     {isFacebookLoading ? (
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     ) : (

@@ -35,7 +35,7 @@ export default function Home() {
         <div className="flex flex-col items-center gap-4 text-center">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
             <h1 className="text-xl font-semibold">Preparing your workspace...</h1>
-            <p className="max-w-xs text-muted-foreground">
+            <p className="max-w-sm text-muted-foreground">
                 This initial setup ensures a much faster experience for you later. Thanks for your patience!
             </p>
         </div>

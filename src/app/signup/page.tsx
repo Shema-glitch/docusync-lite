@@ -73,55 +73,31 @@ export default function SignupPage() {
       setIsLoading(false);
     }
   };
+  
+  const handleProviderLogin = async (provider: 'google' | 'microsoft' | 'facebook') => {
+    const setLoading = {
+        google: setIsGoogleLoading,
+        microsoft: setIsMicrosoftLoading,
+        facebook: setIsFacebookLoading,
+    }[provider];
+    const loginFn = {
+        google: loginWithGoogle,
+        microsoft: loginWithMicrosoft,
+        facebook: loginWithFacebook,
+    }[provider];
 
-  const handleGoogleLogin = async () => {
-    setIsGoogleLoading(true);
+    setLoading(true);
     setError(null);
     setSuccess(null);
     try {
-        await loginWithGoogle();
+        await loginFn();
         const redirect = searchParams.get('redirect');
         router.push(redirect ? decodeURIComponent(redirect) : '/');
     } catch (err: any) {
         if (err.code !== 'auth/popup-closed-by-user') {
             setError(err.message);
         }
-    } finally {
-        setIsGoogleLoading(false);
-    }
-  }
-
-  const handleMicrosoftLogin = async () => {
-    setIsMicrosoftLoading(true);
-    setError(null);
-    setSuccess(null);
-    try {
-        await loginWithMicrosoft();
-        const redirect = searchParams.get('redirect');
-        router.push(redirect ? decodeURIComponent(redirect) : '/');
-    } catch (err: any) {
-        if (err.code !== 'auth/popup-closed-by-user') {
-            setError(err.message);
-        }
-    } finally {
-        setIsMicrosoftLoading(false);
-    }
-  }
-
-  const handleFacebookLogin = async () => {
-    setIsFacebookLoading(true);
-    setError(null);
-    setSuccess(null);
-    try {
-        await loginWithFacebook();
-        const redirect = searchParams.get('redirect');
-        router.push(redirect ? decodeURIComponent(redirect) : '/');
-    } catch (err: any) {
-        if (err.code !== 'auth/popup-closed-by-user') {
-            setError(err.message);
-        }
-    } finally {
-        setIsFacebookLoading(false);
+        setLoading(false);
     }
   }
   
@@ -155,7 +131,7 @@ export default function SignupPage() {
             )}
 
             <div className="grid grid-cols-1 gap-2">
-                <Button variant="secondary" className="w-full justify-center gap-2" onClick={handleGoogleLogin} disabled={anyLoading}>
+                <Button variant="secondary" className="w-full justify-center gap-2" onClick={() => handleProviderLogin('google')} disabled={anyLoading}>
                     {isGoogleLoading ? (
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     ) : (
@@ -163,7 +139,7 @@ export default function SignupPage() {
                     )}
                     Continue with Google
                 </Button>
-                <Button variant="secondary" className="w-full justify-center gap-2" onClick={handleMicrosoftLogin} disabled={anyLoading}>
+                <Button variant="secondary" className="w-full justify-center gap-2" onClick={() => handleProviderLogin('microsoft')} disabled={anyLoading}>
                     {isMicrosoftLoading ? (
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     ) : (
@@ -171,7 +147,7 @@ export default function SignupPage() {
                     )}
                     Continue with Microsoft
                 </Button>
-                <Button variant="secondary" className="w-full justify-center gap-2" onClick={handleFacebookLogin} disabled={anyLoading}>
+                <Button variant="secondary" className="w-full justify-center gap-2" onClick={() => handleProviderLogin('facebook')} disabled={anyLoading}>
                     {isFacebookLoading ? (
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     ) : (

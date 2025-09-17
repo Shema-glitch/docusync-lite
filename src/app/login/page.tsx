@@ -121,8 +121,7 @@ export default function LoginPage() {
         if (err.code !== 'auth/popup-closed-by-user') {
             setError(err.message);
         }
-    } finally {
-        setLoading(false);
+        setLoading(false); // only set loading false on error
     }
   }
 

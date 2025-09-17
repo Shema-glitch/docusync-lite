@@ -8,11 +8,20 @@ import { adminStorage, adminDb } from '@/lib/firebase-admin';
 import { db } from '@/lib/firebase';
 import { doc, deleteDoc, setDoc, getDoc, serverTimestamp, updateDoc } from 'firebase/firestore';
 import { v4 as uuidv4 } from 'uuid';
-import { Resend } from 'resend';
 import { customAlphabet } from 'nanoid'
+import nodemailer from 'nodemailer';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
 const nanoid = customAlphabet('1234567890', 6);
+
+const transporter = nodemailer.createTransport({
+  host: process.env.SMTP_HOST,
+  port: Number(process.env.SMTP_PORT),
+  secure: true,
+  auth: {
+    user: process.env.SMTP_USER,
+    pass: process.env.RESEND_API_KEY,
+  },
+});
 
 export async function getAiSuggestions(data: SuggestTagsInput) {
   try {
@@ -104,7 +113,7 @@ export async function permanentlyDeleteFile(document: { id: string; storagePath?
 
 export async function sendWelcomeEmail(to: string, name: string): Promise<{ error: string | null }> {
     try {
-        await resend.emails.send({
+        await transporter.sendMail({
             from: 'DocuSync Lite <onboarding@resend.dev>',
             to,
             subject: 'Welcome to DocuSync Lite!',
@@ -186,13 +195,11 @@ export async function send2faCode(userId: string): Promise<{ error: string | nul
         const expires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
         await userDocRef.update({
-            '2fa': {
-                code: code,
-                expires: expires,
-            }
+            '2fa.code': code,
+            '2fa.expires': expires,
         });
 
-        await resend.emails.send({
+        await transporter.sendMail({
             from: 'DocuSync Lite Security <security@resend.dev>',
             to: email,
             subject: 'Your DocuSync Lite Verification Code',

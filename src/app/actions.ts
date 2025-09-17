@@ -186,8 +186,10 @@ export async function send2faCode(userId: string): Promise<{ error: string | nul
         const expires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
         await userDocRef.update({
-            '2fa.code': code,
-            '2fa.expires': expires,
+            '2fa': {
+                code: code,
+                expires: expires,
+            }
         });
 
         await resend.emails.send({

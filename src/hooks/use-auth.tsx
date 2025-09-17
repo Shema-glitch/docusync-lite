@@ -189,7 +189,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
      // 4. User enters code. Verify it.
      // 5. If correct, NOW set the user state.
      
-     // This is what I will implement. I will refactor login.
+    // This is what I will implement. I will refactor login.
      
     // Refactored `login` handles this.
   };
@@ -226,35 +226,41 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
   
   const handleProviderLogin = async (provider: GoogleAuthProvider | FacebookAuthProvider | OAuthProvider) => {
-    const result = await signInWithPopup(auth, provider);
-    const firebaseUser = result.user;
+    try {
+      const result = await signInWithPopup(auth, provider);
+      const firebaseUser = result.user;
 
-    const userDocRef = doc(db, 'users', firebaseUser.uid);
-    const userDoc = await getDoc(userDocRef);
+      const userDocRef = doc(db, 'users', firebaseUser.uid);
+      const userDoc = await getDoc(userDocRef);
 
-    if (!userDoc.exists()) {
-        await setDoc(userDocRef, {
-            name: firebaseUser.displayName,
-            email: firebaseUser.email,
-            avatar: firebaseUser.photoURL,
-            is2faEnabled: false,
-        });
-        await sendWelcomeEmail(firebaseUser.email!, firebaseUser.displayName!);
-    } else {
-        // If user exists, check for 2FA (for future-proofing social logins with 2FA)
-        if (userDoc.data().is2faEnabled) {
-            await signOut(auth); // Sign out immediately
-            setUserIdFor2fa(firebaseUser.uid);
-            setIs2faVerificationRequired(true);
-            await send2faCode(firebaseUser.uid);
-            // This will show the 2FA dialog, user needs to re-login via email/pass after this
-            throw new Error("This social account has 2FA enabled. Please log in with your email and password.");
+      if (!userDoc.exists()) {
+          await setDoc(userDocRef, {
+              name: firebaseUser.displayName,
+              email: firebaseUser.email,
+              avatar: firebaseUser.photoURL,
+              is2faEnabled: false,
+          });
+          await sendWelcomeEmail(firebaseUser.email!, firebaseUser.displayName!);
+      } else {
+          // If user exists, check for 2FA (for future-proofing social logins with 2FA)
+          if (userDoc.data().is2faEnabled) {
+              await signOut(auth); // Sign out immediately
+              setUserIdFor2fa(firebaseUser.uid);
+              setIs2faVerificationRequired(true);
+              await send2faCode(firebaseUser.uid);
+              // This will show the 2FA dialog, user needs to re-login via email/pass after this
+              throw new Error("This social account has 2FA enabled. Please log in with your email and password.");
+          }
+      }
+      
+      // @ts-ignore
+      localStorage.setItem('lastLoginProvider', provider.providerId);
+      // onAuthStateChanged will set the user
+    } catch (error: any) {
+       if (error.code !== 'auth/popup-closed-by-user') {
+            throw error;
         }
     }
-    
-    // @ts-ignore
-    localStorage.setItem('lastLoginProvider', provider.providerId);
-    // onAuthStateChanged will set the user
   }
 
   const loginWithGoogle = async (): Promise<void> => {
@@ -340,8 +346,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     await updateDoc(userDocRef, {
       is2faEnabled: true,
-      '2fa.code': null, // Clear the code
-      '2fa.expires': null,
+      '2fa': null, // Clear the 2fa object
     });
     
     setUser(prev => prev ? ({ ...prev, is2faEnabled: true }) : null);

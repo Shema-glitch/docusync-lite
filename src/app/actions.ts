@@ -8,6 +8,9 @@ import { adminStorage } from '@/lib/firebase-admin';
 import { db } from '@/lib/firebase';
 import { doc, deleteDoc } from 'firebase/firestore';
 import { v4 as uuidv4 } from 'uuid';
+import { Resend } from 'resend';
+
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function getAiSuggestions(data: SuggestTagsInput) {
   try {
@@ -93,5 +96,34 @@ export async function permanentlyDeleteFile(document: { id: string; storagePath?
     } catch (error: any) {
         console.error("Error deleting document from firestore: ", error);
         return { error: 'Failed to delete document record.' };
+    }
+}
+
+
+export async function sendWelcomeEmail(to: string, name: string): Promise<{ error: string | null }> {
+    try {
+        await resend.emails.send({
+            from: 'DocuSync Lite <onboarding@resend.dev>',
+            to,
+            subject: 'Welcome to DocuSync Lite!',
+            html: `
+                <h1>Welcome aboard, ${name}!</h1>
+                <p>We're thrilled to have you join DocuSync Lite.</p>
+                <p>You can now start uploading and managing your documents with ease. Here are a few things you can do to get started:</p>
+                <ul>
+                    <li>Upload your first document</li>
+                    <li>Organize files into categories</li>
+                    <li>Use AI to summarize and tag your files</li>
+                </ul>
+                <p>If you have any questions, just reply to this email.</p>
+                <p>Best,<br/>The DocuSync Team</p>
+            `,
+        });
+        return { error: null };
+    } catch (error) {
+        console.error("Failed to send welcome email:", error);
+        // We don't want to block the user's signup flow if the email fails.
+        // In a real app, this would be logged to a monitoring service.
+        return { error: 'Failed to send welcome email.' };
     }
 }

@@ -8,12 +8,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/hooks/use-auth';
-import { Loader2, CheckCircle, AlertCircle } from 'lucide-react';
+import { Loader2, CheckCircle, AlertCircle, LogIn } from 'lucide-react';
 import Link from 'next/link';
 import { ForgotPasswordDialog } from '@/components/auth/forgot-password-dialog';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AuthHeader } from '@/components/layout/auth-header';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 
 const GoogleIcon = () => (
@@ -58,8 +58,8 @@ export default function LoginPage() {
   const [isForgotPassOpen, setForgotPassOpen] = useState(false);
   
   const [lastLoginProvider, setLastLoginProvider] = useState<string | null>(null);
-  const [lastUserEmail, setLastUserEmail] = useState<string | null>(null);
-
+  const [lastUserName, setLastUserName] = useState<string | null>(null);
+  const [showManualForm, setShowManualForm] = useState(false);
 
   const anyLoading = isLoading || isGoogleLoading || isMicrosoftLoading || isFacebookLoading || isRecentLoginLoading;
   const isFormFilled = email.trim() !== '' && password.trim() !== '';
@@ -71,10 +71,13 @@ export default function LoginPage() {
     }
 
     const lastProvider = localStorage.getItem('lastLoginProvider');
-    const lastEmail = localStorage.getItem('lastUserEmail');
-    if(lastProvider && lastEmail) {
+    const lastName = localStorage.getItem('lastUserName');
+    if(lastProvider && lastName) {
         setLastLoginProvider(lastProvider);
-        setLastUserEmail(lastEmail);
+        setLastUserName(lastName);
+        setShowManualForm(false);
+    } else {
+        setShowManualForm(true);
     }
 
   }, [searchParams]);
@@ -94,7 +97,6 @@ export default function LoginPage() {
       handleSuccessfulLogin();
     } catch (err: any) {
       setError(err.message);
-    } finally {
       setIsLoading(false);
     }
   };
@@ -121,8 +123,8 @@ export default function LoginPage() {
         if (err.code !== 'auth/popup-closed-by-user') {
             setError(err.message);
         }
+        setLoading(false);
     }
-    setLoading(false);
   }
 
   const handleRecentLogin = async () => {
@@ -131,7 +133,11 @@ export default function LoginPage() {
     setIsRecentLoginLoading(true);
     if (lastLoginProvider === 'password') {
         setError("Please enter your password to continue.");
-        if (lastUserEmail) setEmail(lastUserEmail);
+        if (lastUserName) {
+          const lastEmail = localStorage.getItem('lastUserEmail');
+          if (lastEmail) setEmail(lastEmail);
+        }
+        setShowManualForm(true);
     } else if (lastLoginProvider === 'google.com') {
         await handleProviderLogin('google');
     } else if (lastLoginProvider === 'facebook.com') {
@@ -154,7 +160,7 @@ export default function LoginPage() {
       case 'microsoft.com':
         return <MicrosoftIcon />;
       default:
-        return null;
+        return <LogIn className="h-5 w-5 text-muted-foreground" />;
     }
   }
 
@@ -185,14 +191,14 @@ export default function LoginPage() {
                 </Alert>
             )}
 
-            {lastLoginProvider && lastUserEmail && !anyLoading && (
+            {lastLoginProvider && lastUserName && !showManualForm && (
                 <>
                 <Card className="bg-muted/50">
                     <CardHeader>
                         <CardDescription>Welcome back!</CardDescription>
                         <CardTitle className="flex items-center gap-3">
                             {getProviderIcon(lastLoginProvider)}
-                            {lastUserEmail}
+                            {lastUserName}
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
@@ -200,6 +206,11 @@ export default function LoginPage() {
                            {isRecentLoginLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Continue'}
                         </Button>
                     </CardContent>
+                    <CardFooter>
+                        <Button variant="link" className="p-0 h-auto text-sm text-primary hover:underline w-full" onClick={() => setShowManualForm(true)}>
+                            Not you? Log in with a different account
+                        </Button>
+                    </CardFooter>
                 </Card>
                 <div className="relative">
                     <Separator />
@@ -212,51 +223,55 @@ export default function LoginPage() {
                 </>
             )}
 
-            <form onSubmit={handleLogin} className="space-y-4">
-                <div className="space-y-2">
-                <Label htmlFor="email" className='text-xs uppercase text-muted-foreground'>Email</Label>
-                <Input
-                    id="email"
-                    type="email"
-                    placeholder="m@example.com"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    disabled={anyLoading}
-                    className='bg-background text-base'
-                />
+            {showManualForm && (
+              <>
+                <form onSubmit={handleLogin} className="space-y-4">
+                    <div className="space-y-2">
+                    <Label htmlFor="email" className='text-xs uppercase text-muted-foreground'>Email</Label>
+                    <Input
+                        id="email"
+                        type="email"
+                        placeholder="m@example.com"
+                        required
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        disabled={anyLoading}
+                        className='bg-background text-base'
+                    />
+                    </div>
+                    <div className="space-y-2">
+                    <Label htmlFor="password" className='text-xs uppercase text-muted-foreground'>Password</Label>
+                    <Input
+                        id="password"
+                        type="password"
+                        required
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        disabled={anyLoading}
+                        className='bg-background text-base'
+                    />
+                    </div>
+                    
+                    <Button type="submit" className="w-full text-base font-bold" disabled={anyLoading || !isFormFilled}>
+                    {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Log In'}
+                    </Button>
+                </form>
+                <div className="text-center">
+                    <Button variant="link" className="p-0 h-auto text-sm text-primary hover:underline" onClick={() => setForgotPassOpen(true)}>
+                        Forgot password?
+                    </Button>
                 </div>
-                <div className="space-y-2">
-                <Label htmlFor="password" className='text-xs uppercase text-muted-foreground'>Password</Label>
-                <Input
-                    id="password"
-                    type="password"
-                    required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    disabled={anyLoading}
-                    className='bg-background text-base'
-                />
+              
+                <div className="relative">
+                    <Separator />
+                    <div className="absolute inset-0 flex items-center justify-center">
+                        <span className="bg-background px-2 text-xs uppercase text-muted-foreground">
+                            Or
+                        </span>
+                    </div>
                 </div>
-                
-                <Button type="submit" className="w-full text-base font-bold" disabled={anyLoading || !isFormFilled}>
-                {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Log In'}
-                </Button>
-            </form>
-            <div className="text-center">
-                <Button variant="link" className="p-0 h-auto text-sm text-primary hover:underline" onClick={() => setForgotPassOpen(true)}>
-                    Forgot password?
-                </Button>
-            </div>
-            
-            <div className="relative">
-                <Separator />
-                <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="bg-background px-2 text-xs uppercase text-muted-foreground">
-                        Or
-                    </span>
-                </div>
-            </div>
+              </>
+            )}
 
             <div className="grid grid-cols-1 gap-2">
                 <Button variant="secondary" className="w-full justify-center gap-2" onClick={() => handleProviderLogin('google')} disabled={anyLoading}>

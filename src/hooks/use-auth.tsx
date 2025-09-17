@@ -20,6 +20,7 @@ import {
 } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase';
 import { doc, getDoc, setDoc, writeBatch, collection, getDocs, query, where } from 'firebase/firestore';
+import { sendWelcomeEmail } from '@/app/actions';
 
 
 export interface User {
@@ -81,6 +82,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (firebaseUser) {
         const formattedUser = await formatUser(firebaseUser);
         localStorage.setItem('lastUserEmail', formattedUser.email);
+        localStorage.setItem('lastUserName', formattedUser.name);
         setUser(formattedUser);
       } else {
         setUser(null);
@@ -123,13 +125,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             email,
             avatar,
         });
+        
+        // Send welcome email
+        await sendWelcomeEmail(email, name);
 
         localStorage.setItem('lastLoginProvider', 'password');
         // onAuthStateChanged will handle setting the new user
     } catch (error: any) {
         throw new Error(error.message);
-    } finally {
-        setLoading(false);
     }
   };
 
@@ -147,6 +150,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             email: firebaseUser.email,
             avatar: firebaseUser.photoURL,
         });
+        await sendWelcomeEmail(firebaseUser.email!, firebaseUser.displayName!);
     }
     localStorage.setItem('lastLoginProvider', provider.providerId);
   };
@@ -165,6 +169,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             email: firebaseUser.email,
             avatar: firebaseUser.photoURL,
         });
+        await sendWelcomeEmail(firebaseUser.email!, firebaseUser.displayName!);
     }
      localStorage.setItem('lastLoginProvider', provider.providerId);
   };
@@ -183,6 +188,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             email: firebaseUser.email,
             avatar: firebaseUser.photoURL,
         });
+        await sendWelcomeEmail(firebaseUser.email!, firebaseUser.displayName!);
     }
      localStorage.setItem('lastLoginProvider', provider.providerId);
   };

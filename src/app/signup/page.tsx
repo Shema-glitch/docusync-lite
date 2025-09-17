@@ -143,7 +143,7 @@ export default function SignupPage() {
 
         <div className="relative">
             <Separator />
-            <div className="absolute inset-0 flex items-center">
+            <div className="absolute inset-0 flex items-center justify-center">
                 <span className="bg-background px-2 text-xs uppercase text-muted-foreground">
                     Or
                 </span>

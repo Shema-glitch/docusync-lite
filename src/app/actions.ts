@@ -107,16 +107,54 @@ export async function sendWelcomeEmail(to: string, name: string): Promise<{ erro
             to,
             subject: 'Welcome to DocuSync Lite!',
             html: `
-                <h1>Welcome aboard, ${name}!</h1>
-                <p>We're thrilled to have you join DocuSync Lite.</p>
-                <p>You can now start uploading and managing your documents with ease. Here are a few things you can do to get started:</p>
-                <ul>
-                    <li>Upload your first document</li>
-                    <li>Organize files into categories</li>
-                    <li>Use AI to summarize and tag your files</li>
-                </ul>
-                <p>If you have any questions, just reply to this email.</p>
-                <p>Best,<br/>The DocuSync Team</p>
+                <!DOCTYPE html>
+                <html lang="en">
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <style>
+                        body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif; background-color: #f4f4f7; color: #1a1a1a; }
+                        .container { max-width: 600px; margin: 40px auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+                        .header { background-color: #FA6002; color: #ffffff; padding: 40px; text-align: center; }
+                        .header h1 { margin: 0; font-size: 28px; }
+                        .content { padding: 40px; }
+                        .content h2 { font-size: 22px; color: #333333; margin-top: 0; }
+                        .content p { line-height: 1.6; color: #555555; }
+                        .list { list-style-type: none; padding: 0; margin: 20px 0; }
+                        .list li { padding: 12px 0; border-bottom: 1px solid #eeeeee; display: flex; align-items: center; }
+                        .list li:last-child { border-bottom: none; }
+                        .list li::before { content: '✓'; color: #FA6002; font-weight: bold; margin-right: 15px; font-size: 18px; }
+                        .button-container { text-align: center; margin-top: 30px; }
+                        .button { background-color: #FA6002; color: #ffffff; padding: 15px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 16px; display: inline-block; }
+                        .footer { background-color: #262626; color: #aaaaaa; padding: 20px; text-align: center; font-size: 12px; }
+                        .footer a { color: #FA6002; text-decoration: none; }
+                    </style>
+                </head>
+                <body>
+                    <div class="container">
+                        <div class="header">
+                            <h1>Welcome, ${name}!</h1>
+                        </div>
+                        <div class="content">
+                            <h2>Your journey to effortless document management begins now.</h2>
+                            <p>We're thrilled to have you join DocuSync Lite. You're all set to start uploading, organizing, and collaborating on your documents with our powerful AI-driven features.</p>
+                            <p>Here are a few things you can do to get started:</p>
+                            <ul class="list">
+                                <li><strong>Upload Your First Document:</strong> Securely add files to your new digital vault.</li>
+                                <li><strong>Organize with AI:</strong> Let our AI summarize and suggest tags for your documents.</li>
+                                <li><strong>Collaborate with Ease:</strong> Share files and manage permissions with your team.</li>
+                            </ul>
+                            <div class="button-container">
+                                <a href="https://docusync.site" class="button">Go to Your Dashboard</a>
+                            </div>
+                        </div>
+                        <div class="footer">
+                            <p>You received this email because you signed up for DocuSync Lite.</p>
+                            <p>&copy; 2024 DocuSync Lite. All Rights Reserved.</p>
+                        </div>
+                    </div>
+                </body>
+                </html>
             `,
         });
         return { error: null };

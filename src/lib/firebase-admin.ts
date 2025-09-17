@@ -1,12 +1,14 @@
 
 import admin from 'firebase-admin';
+import { config } from 'dotenv';
+config();
 
 // Initialize Firebase Admin SDK
 if (!admin.apps.length) {
   try {
     admin.initializeApp({
       credential: admin.credential.applicationDefault(),
-      storageBucket: 'docusync-lite-4254f.appspot.com',
+      storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
     });
   } catch (error) {
     console.error('Firebase admin initialization error', error);

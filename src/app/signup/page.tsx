@@ -24,7 +24,6 @@ const GoogleIcon = () => (
 
 const MicrosoftIcon = () => (
     <svg className="h-5 w-5" viewBox="0 0 23 23">
-        <path fill="#f3f3f3" d="M0 0H23V23H0z" />
         <path fill="#F25022" d="M1 1h10v10H1z" />
         <path fill="#00A4EF" d="M1 12h10v10H1z" />
         <path fill="#7FBA00" d="M12 1h10v10H12z" />
@@ -223,7 +222,7 @@ export default function SignupPage() {
                 />
                 </div>
                 
-                <Button type="submit" className="w-full text-base font-bold" disabled={anyLoading}>
+                <Button type="submit" className="w-full text-base font-bold" disabled={anyLoading || !name || !email || !password}>
                   {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Create Account'}
                 </Button>
             </form>

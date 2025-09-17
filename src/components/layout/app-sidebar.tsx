@@ -25,7 +25,7 @@ import { Button } from '@/components/ui/button';
 import { UploadButton } from '../upload-button';
 import { useAuth } from '@/hooks/use-auth';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '../ui/collapsible';
-import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -37,7 +37,8 @@ import {
 import { useState } from 'react';
 import { useDocuments } from '@/hooks/use-documents.tsx';
 import { useOnboarding } from '@/hooks/use-onboarding';
-import { Progress } from '../ui/progress';
+import { Progress } from '@/components/ui/progress';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
 
 const navItems = [
@@ -112,10 +113,27 @@ export function AppSidebar() {
                                 <FileText className="h-4 w-4" />
                                 Templates
                             </Button>
-                             <Button variant="ghost" className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary justify-start" disabled>
-                                <UploadCloud className="h-4 w-4" />
-                                Upload Queue
-                            </Button>
+                            <Popover>
+                                <PopoverTrigger asChild>
+                                    <Button variant="ghost" className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary justify-start">
+                                        <UploadCloud className="h-4 w-4" />
+                                        Upload Queue
+                                    </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-80 ml-4" align="start">
+                                    <div className="grid gap-4">
+                                        <div className="space-y-2">
+                                            <h4 className="font-medium leading-none">Upload Queue</h4>
+                                            <p className="text-sm text-muted-foreground">
+                                                Files currently being uploaded.
+                                            </p>
+                                        </div>
+                                        <div className="text-center text-sm text-muted-foreground py-4">
+                                            No active uploads.
+                                        </div>
+                                    </div>
+                                </PopoverContent>
+                            </Popover>
                         </CollapsibleContent>
                     </Collapsible>
                 </div>
@@ -193,3 +211,5 @@ export function AppSidebar() {
     </aside>
   );
 }
+
+    

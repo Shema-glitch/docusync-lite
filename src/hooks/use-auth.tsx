@@ -130,92 +130,53 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const loginWithGoogle = async (): Promise<void> => {
-    setLoading(true);
-    try {
-        const provider = new GoogleAuthProvider();
-        const result = await signInWithPopup(auth, provider);
-        const firebaseUser = result.user;
+    const provider = new GoogleAuthProvider();
+    const result = await signInWithPopup(auth, provider);
+    const firebaseUser = result.user;
 
-        // Check if user exists in Firestore, if not create a new doc
-        const userDocRef = doc(db, 'users', firebaseUser.uid);
-        const userDoc = await getDoc(userDocRef);
+    const userDocRef = doc(db, 'users', firebaseUser.uid);
+    const userDoc = await getDoc(userDocRef);
 
-        if (!userDoc.exists()) {
-             await setDoc(userDocRef, {
-                name: firebaseUser.displayName,
-                email: firebaseUser.email,
-                avatar: firebaseUser.photoURL,
-            });
-        }
-        // onAuthStateChanged will handle setting the user state
-    } catch (error: any) {
-         if (error.code === 'auth/popup-closed-by-user') {
-            // Silently fail if the user closes the popup
-            return;
-        }
-        throw new Error(error.message);
-    } finally {
-        setLoading(false);
+    if (!userDoc.exists()) {
+        await setDoc(userDocRef, {
+            name: firebaseUser.displayName,
+            email: firebaseUser.email,
+            avatar: firebaseUser.photoURL,
+        });
     }
   };
 
   const loginWithMicrosoft = async (): Promise<void> => {
-    setLoading(true);
-    try {
-        const provider = new OAuthProvider('microsoft.com');
-        const result = await signInWithPopup(auth, provider);
-        const firebaseUser = result.user;
+    const provider = new OAuthProvider('microsoft.com');
+    const result = await signInWithPopup(auth, provider);
+    const firebaseUser = result.user;
 
-        // Check if user exists in Firestore, if not create a new doc
-        const userDocRef = doc(db, 'users', firebaseUser.uid);
-        const userDoc = await getDoc(userDocRef);
+    const userDocRef = doc(db, 'users', firebaseUser.uid);
+    const userDoc = await getDoc(userDocRef);
 
-        if (!userDoc.exists()) {
-             await setDoc(userDocRef, {
-                name: firebaseUser.displayName,
-                email: firebaseUser.email,
-                avatar: firebaseUser.photoURL,
-            });
-        }
-        // onAuthStateChanged will handle setting the user state
-    } catch (error: any) {
-         if (error.code === 'auth/popup-closed-by-user') {
-            // Silently fail if the user closes the popup
-            return;
-        }
-        throw new Error(error.message);
-    } finally {
-        setLoading(false);
+    if (!userDoc.exists()) {
+        await setDoc(userDocRef, {
+            name: firebaseUser.displayName,
+            email: firebaseUser.email,
+            avatar: firebaseUser.photoURL,
+        });
     }
   };
 
   const loginWithFacebook = async (): Promise<void> => {
-    setLoading(true);
-    try {
-        const provider = new FacebookAuthProvider();
-        const result = await signInWithPopup(auth, provider);
-        const firebaseUser = result.user;
+    const provider = new FacebookAuthProvider();
+    const result = await signInWithPopup(auth, provider);
+    const firebaseUser = result.user;
 
-        // Check if user exists in Firestore, if not create a new doc
-        const userDocRef = doc(db, 'users', firebaseUser.uid);
-        const userDoc = await getDoc(userDocRef);
+    const userDocRef = doc(db, 'users', firebaseUser.uid);
+    const userDoc = await getDoc(userDocRef);
 
-        if (!userDoc.exists()) {
-             await setDoc(userDocRef, {
-                name: firebaseUser.displayName,
-                email: firebaseUser.email,
-                avatar: firebaseUser.photoURL,
-            });
-        }
-        // onAuthStateChanged will handle setting the user state
-    } catch (error: any) {
-         if (error.code === 'auth/popup-closed-by-user') {
-            // Silently fail if the user closes the popup
-            return;
-        }
-        throw new Error(error.message);
-    } finally {
-        setLoading(false);
+    if (!userDoc.exists()) {
+        await setDoc(userDocRef, {
+            name: firebaseUser.displayName,
+            email: firebaseUser.email,
+            avatar: firebaseUser.photoURL,
+        });
     }
   };
 

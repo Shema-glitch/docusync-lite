@@ -83,7 +83,9 @@ export default function SignupPage() {
         const redirect = searchParams.get('redirect');
         router.push(redirect ? decodeURIComponent(redirect) : '/');
     } catch (err: any) {
-        setError(err.message);
+        if (err.code !== 'auth/popup-closed-by-user') {
+            setError(err.message);
+        }
     } finally {
         setIsGoogleLoading(false);
     }
@@ -98,7 +100,9 @@ export default function SignupPage() {
         const redirect = searchParams.get('redirect');
         router.push(redirect ? decodeURIComponent(redirect) : '/');
     } catch (err: any) {
-        setError(err.message);
+        if (err.code !== 'auth/popup-closed-by-user') {
+            setError(err.message);
+        }
     } finally {
         setIsMicrosoftLoading(false);
     }
@@ -113,7 +117,9 @@ export default function SignupPage() {
         const redirect = searchParams.get('redirect');
         router.push(redirect ? decodeURIComponent(redirect) : '/');
     } catch (err: any) {
-        setError(err.message);
+        if (err.code !== 'auth/popup-closed-by-user') {
+            setError(err.message);
+        }
     } finally {
         setIsFacebookLoading(false);
     }

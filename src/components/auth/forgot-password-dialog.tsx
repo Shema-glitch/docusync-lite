@@ -16,6 +16,7 @@ import { Label } from '@/components/ui/label';
 import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 interface ForgotPasswordDialogProps {
   isOpen: boolean;
@@ -27,6 +28,7 @@ export function ForgotPasswordDialog({ isOpen, onOpenChange }: ForgotPasswordDia
   const [isLoading, setIsLoading] = useState(false);
   const { sendPasswordReset } = useAuth();
   const { toast } = useToast();
+  const router = useRouter();
 
   const handleSendLink = async () => {
     if (!email) {
@@ -41,12 +43,9 @@ export function ForgotPasswordDialog({ isOpen, onOpenChange }: ForgotPasswordDia
     setIsLoading(true);
     try {
       await sendPasswordReset(email);
-      toast({
-        title: 'Check Your Email',
-        description: `A password reset link has been sent to ${email}.`,
-      });
       onOpenChange(false);
       setEmail('');
+      router.push('/login?reset_success=true');
     } catch (error: any) {
       toast({
         variant: 'destructive',

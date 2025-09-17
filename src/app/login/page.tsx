@@ -1,15 +1,16 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/hooks/use-auth';
-import { Loader2 } from 'lucide-react';
+import { Loader2, CheckCircle, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
 import { ForgotPasswordDialog } from '@/components/auth/forgot-password-dialog';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 const GoogleIcon = () => (
     <svg className="h-5 w-5" viewBox="0 0 24 24">
@@ -37,6 +38,7 @@ export default function LoginPage() {
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [isMicrosoftLoading, setIsMicrosoftLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
   const { login, loginWithGoogle, loginWithMicrosoft } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -44,10 +46,18 @@ export default function LoginPage() {
   
   const anyLoading = isLoading || isGoogleLoading || isMicrosoftLoading;
 
+  useEffect(() => {
+    const resetSuccess = searchParams.get('reset_success');
+    if (resetSuccess) {
+      setSuccess('Your password has been reset successfully. Please log in with your new password.');
+    }
+  }, [searchParams]);
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
+    setSuccess(null);
     try {
       await login(email, password);
       const redirect = searchParams.get('redirect');
@@ -62,6 +72,7 @@ export default function LoginPage() {
   const handleGoogleLogin = async () => {
     setIsGoogleLoading(true);
     setError(null);
+    setSuccess(null);
     try {
         await loginWithGoogle();
         const redirect = searchParams.get('redirect');
@@ -76,6 +87,7 @@ export default function LoginPage() {
   const handleMicrosoftLogin = async () => {
     setIsMicrosoftLoading(true);
     setError(null);
+    setSuccess(null);
     try {
         await loginWithMicrosoft();
         const redirect = searchParams.get('redirect');
@@ -97,6 +109,25 @@ export default function LoginPage() {
         <div className="text-center">
           <h1 className="text-3xl font-bold">Log in to your account</h1>
         </div>
+
+        {error && (
+            <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>
+                    {error}
+                </AlertDescription>
+            </Alert>
+        )}
+        {success && (
+             <Alert variant="default" className="border-green-500 text-green-700 dark:border-green-400 dark:text-green-400">
+                <CheckCircle className="h-4 w-4 text-green-500 dark:text-green-400" />
+                <AlertDescription>
+                    {success}
+                </AlertDescription>
+            </Alert>
+        )}
+
+
         <form onSubmit={handleLogin} className="space-y-4">
             <div className="space-y-2">
             <Label htmlFor="email" className='text-xs uppercase text-muted-foreground'>Email</Label>
@@ -123,7 +154,7 @@ export default function LoginPage() {
                 className='bg-background text-base'
             />
             </div>
-            {error && <p className="text-sm text-destructive">{error}</p>}
+            
             <Button type="submit" className="w-full text-base font-bold" disabled={anyLoading}>
             {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Log In'}
             </Button>

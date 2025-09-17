@@ -7,8 +7,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/hooks/use-auth';
-import { Loader2 } from 'lucide-react';
+import { Loader2, AlertCircle, CheckCircle } from 'lucide-react';
 import Link from 'next/link';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 const GoogleIcon = () => (
     <svg className="h-5 w-5" viewBox="0 0 24 24">
@@ -37,6 +38,7 @@ export default function SignupPage() {
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [isMicrosoftLoading, setIsMicrosoftLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
   const { signup, loginWithGoogle, loginWithMicrosoft } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -47,13 +49,16 @@ export default function SignupPage() {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
+    setSuccess(null);
     try {
       await signup(name, email, password);
-      const redirect = searchParams.get('redirect');
-      router.push(redirect ? decodeURIComponent(redirect) : '/');
+      setSuccess("Account created successfully! Redirecting...");
+      setTimeout(() => {
+        const redirect = searchParams.get('redirect');
+        router.push(redirect ? decodeURIComponent(redirect) : '/');
+      }, 2000);
     } catch (err: any) {
       setError(err.message);
-    } finally {
       setIsLoading(false);
     }
   };
@@ -61,6 +66,7 @@ export default function SignupPage() {
   const handleGoogleLogin = async () => {
     setIsGoogleLoading(true);
     setError(null);
+    setSuccess(null);
     try {
         await loginWithGoogle();
         const redirect = searchParams.get('redirect');
@@ -75,6 +81,7 @@ export default function SignupPage() {
   const handleMicrosoftLogin = async () => {
     setIsMicrosoftLoading(true);
     setError(null);
+    setSuccess(null);
     try {
         await loginWithMicrosoft();
         const redirect = searchParams.get('redirect');
@@ -95,6 +102,24 @@ export default function SignupPage() {
         <div className="text-center">
             <h1 className="text-3xl font-bold">Create your account</h1>
         </div>
+
+        {error && (
+            <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>
+                    {error}
+                </AlertDescription>
+            </Alert>
+        )}
+        {success && (
+            <Alert variant="default" className="border-green-500 text-green-700 dark:border-green-400 dark:text-green-400">
+                <CheckCircle className="h-4 w-4 text-green-500 dark:text-green-400" />
+                <AlertDescription>
+                    {success}
+                </AlertDescription>
+            </Alert>
+        )}
+
         <form onSubmit={handleSignup} className="space-y-4">
             <div className="space-y-2">
             <Label htmlFor="name" className='text-xs uppercase text-muted-foreground'>Name</Label>
@@ -134,7 +159,7 @@ export default function SignupPage() {
                 className='bg-background text-base'
             />
             </div>
-            {error && <p className="text-sm text-destructive">{error}</p>}
+            
             <Button type="submit" className="w-full text-base font-bold" disabled={anyLoading}>
               {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Create Account'}
             </Button>

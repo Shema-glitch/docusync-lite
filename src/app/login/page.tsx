@@ -121,8 +121,8 @@ export default function LoginPage() {
         if (err.code !== 'auth/popup-closed-by-user') {
             setError(err.message);
         }
-        setLoading(false); // only set loading false on error
     }
+    setLoading(false);
   }
 
   const handleRecentLogin = async () => {
@@ -186,6 +186,7 @@ export default function LoginPage() {
             )}
 
             {lastLoginProvider && lastUserEmail && !anyLoading && (
+                <>
                 <Card className="bg-muted/50">
                     <CardHeader>
                         <CardDescription>Welcome back!</CardDescription>
@@ -200,17 +201,16 @@ export default function LoginPage() {
                         </Button>
                     </CardContent>
                 </Card>
-            )}
-
-            <div className="relative">
-                <Separator />
-                <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="bg-background px-2 text-xs uppercase text-muted-foreground">
-                        Or
-                    </span>
+                <div className="relative">
+                    <Separator />
+                    <div className="absolute inset-0 flex items-center justify-center">
+                        <span className="bg-background px-2 text-xs uppercase text-muted-foreground">
+                            Or
+                        </span>
+                    </div>
                 </div>
-            </div>
-
+                </>
+            )}
 
             <form onSubmit={handleLogin} className="space-y-4">
                 <div className="space-y-2">
@@ -247,6 +247,15 @@ export default function LoginPage() {
                 <Button variant="link" className="p-0 h-auto text-sm text-primary hover:underline" onClick={() => setForgotPassOpen(true)}>
                     Forgot password?
                 </Button>
+            </div>
+            
+            <div className="relative">
+                <Separator />
+                <div className="absolute inset-0 flex items-center justify-center">
+                    <span className="bg-background px-2 text-xs uppercase text-muted-foreground">
+                        Or
+                    </span>
+                </div>
             </div>
 
             <div className="grid grid-cols-1 gap-2">

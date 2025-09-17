@@ -4,7 +4,7 @@
 import { useOnboarding } from "@/hooks/use-onboarding";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "./ui/dialog";
 import { Button } from "./ui/button";
-import { ArrowLeft, ArrowRight, Check, Upload, Search, Star, Zap } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, Upload, Search, Star, Zap, ShieldCheck } from "lucide-react";
 import { Progress } from "./ui/progress";
 
 const steps = [
@@ -27,6 +27,11 @@ const steps = [
         title: "Star Your Favorites",
         description: "Hover over any document and click the star icon to pin it for quick access. Your favorite documents will appear on the dashboard and in the 'Favorites' section.",
         icon: Star,
+    },
+    {
+        title: "Secure Your Account",
+        description: "Head to Settings > Security to enable Two-Factor Authentication (2FA). It adds an extra layer of protection to keep your documents safe.",
+        icon: ShieldCheck,
     },
     {
         title: "You're All Set!",

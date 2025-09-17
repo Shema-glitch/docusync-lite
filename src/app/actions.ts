@@ -4,13 +4,15 @@
 import { suggestTags, type SuggestTagsInput } from '@/ai/flows/suggest-tags';
 import { summarizeDoc, type SummarizeDocInput } from '@/ai/flows/summarize-doc';
 import { explainDoc, type ExplainDocInput } from '@/ai/flows/explain-doc';
-import { adminStorage } from '@/lib/firebase-admin';
+import { adminStorage, adminDb } from '@/lib/firebase-admin';
 import { db } from '@/lib/firebase';
-import { doc, deleteDoc } from 'firebase/firestore';
+import { doc, deleteDoc, setDoc, getDoc, serverTimestamp, updateDoc } from 'firebase/firestore';
 import { v4 as uuidv4 } from 'uuid';
 import { Resend } from 'resend';
+import { customAlphabet } from 'nanoid'
 
 const resend = new Resend(process.env.RESEND_API_KEY);
+const nanoid = customAlphabet('1234567890', 6);
 
 export async function getAiSuggestions(data: SuggestTagsInput) {
   try {
@@ -163,5 +165,41 @@ export async function sendWelcomeEmail(to: string, name: string): Promise<{ erro
         // We don't want to block the user's signup flow if the email fails.
         // In a real app, this would be logged to a monitoring service.
         return { error: 'Failed to send welcome email.' };
+    }
+}
+
+
+export async function send2faCode(userId: string): Promise<{ error: string | null }> {
+    try {
+        const userDocRef = doc(adminDb, 'users', userId);
+        const userDoc = await userDocRef.get();
+
+        if (!userDoc.exists()) {
+            return { error: 'User not found.' };
+        }
+        
+        const userData = userDoc.data();
+        const email = userData.email;
+        const name = userData.name;
+
+        const code = nanoid();
+        const expires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
+        await userDocRef.update({
+            '2fa.code': code,
+            '2fa.expires': expires,
+        });
+
+        await resend.emails.send({
+            from: 'DocuSync Lite Security <security@resend.dev>',
+            to: email,
+            subject: 'Your DocuSync Lite Verification Code',
+            html: `Your 2FA code is: <strong>${code}</strong>. It expires in 10 minutes.`
+        });
+        
+        return { error: null };
+    } catch (e: any) {
+        console.error("Failed to send 2FA code:", e);
+        return { error: 'Could not send verification code. Please try again.' };
     }
 }

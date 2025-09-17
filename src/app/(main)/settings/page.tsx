@@ -10,11 +10,10 @@ import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
 import { useTheme } from 'next-themes';
 import { useState, useEffect } from 'react';
-import { Loader2 } from 'lucide-react';
+import { Loader2, ShieldCheck, ShieldOff } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { Slider } from '@/components/ui/slider';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { cn } from '@/lib/utils';
+import { TwoFactorAuthDialog } from '@/components/auth/two-factor-auth-dialog';
 
 
 type Accent = 'default' | 'violet' | 'orange';
@@ -35,6 +34,8 @@ export default function SettingsPage() {
 
     const [fontSize, setFontSize] = useState(16);
     const [isHighContrast, setIsHighContrast] = useState(false);
+
+    const [is2faDialogOpen, setIs2faDialogOpen] = useState(false);
 
     useEffect(() => {
         if (user) {
@@ -96,20 +97,36 @@ export default function SettingsPage() {
             setIsSaving(false);
         }
     };
+    
+    const handleToggle2FA = () => {
+        if (!user?.is2faEnabled) {
+            setIs2faDialogOpen(true);
+        } else {
+            // Here you would typically have another dialog to confirm disabling 2FA
+            // For simplicity, we'll just disable it directly
+             toast({
+                variant: 'destructive',
+                title: '2FA Not Yet Disableable',
+                description: 'Disabling 2FA is not supported in this version.',
+            });
+        }
+    }
 
 
   return (
+    <>
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
         <p className="text-muted-foreground">Manage your account settings, preferences, and more.</p>
       </div>
       <Tabs defaultValue="profile" className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="profile">Profile</TabsTrigger>
           <TabsTrigger value="appearance">Appearance</TabsTrigger>
           <TabsTrigger value="notifications">Notifications</TabsTrigger>
           <TabsTrigger value="accessibility">Accessibility</TabsTrigger>
+          <TabsTrigger value="security">Security</TabsTrigger>
         </TabsList>
         <TabsContent value="profile">
           <Card>
@@ -225,7 +242,33 @@ export default function SettingsPage() {
             </CardContent>
           </Card>
         </TabsContent>
+         <TabsContent value="security">
+          <Card>
+            <CardHeader>
+              <CardTitle>Security</CardTitle>
+              <CardDescription>
+                Manage your account's security settings.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+                <div className="flex items-center justify-between rounded-lg border p-4">
+                    <div>
+                        <Label htmlFor="2fa" className='flex items-center gap-2'>
+                           {user?.is2faEnabled ? <ShieldCheck className="h-5 w-5 text-green-500" /> : <ShieldOff className="h-5 w-5 text-destructive" />}
+                           Two-Factor Authentication
+                        </Label>
+                        <p className="text-sm text-muted-foreground">Add an extra layer of security to your account.</p>
+                    </div>
+                    <Button variant="outline" onClick={handleToggle2FA}>
+                        {user?.is2faEnabled ? 'Disable' : 'Enable'}
+                    </Button>
+                </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
       </Tabs>
     </div>
+    <TwoFactorAuthDialog isOpen={is2faDialogOpen} onOpenChange={setIs2faDialogOpen} />
+    </>
   );
 }

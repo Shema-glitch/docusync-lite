@@ -45,6 +45,7 @@ export default function LoginPage() {
   const [isForgotPassOpen, setForgotPassOpen] = useState(false);
   
   const anyLoading = isLoading || isGoogleLoading || isMicrosoftLoading;
+  const isFormFilled = email.trim() !== '' && password.trim() !== '';
 
   useEffect(() => {
     const resetSuccess = searchParams.get('reset_success');
@@ -111,7 +112,7 @@ export default function LoginPage() {
         </div>
 
         {error && (
-            <Alert variant="destructive">
+            <Alert variant="destructive" className='alert-destructive'>
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription>
                     {error}
@@ -155,7 +156,7 @@ export default function LoginPage() {
             />
             </div>
             
-            <Button type="submit" className="w-full text-base font-bold" disabled={anyLoading}>
+            <Button type="submit" className="w-full text-base font-bold" disabled={anyLoading || !isFormFilled}>
             {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Log In'}
             </Button>
         </form>

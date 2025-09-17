@@ -7,9 +7,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/hooks/use-auth';
-import { Loader2, AlertCircle, CheckCircle } from 'lucide-react';
+import { Loader2, AlertCircle, CheckCircle, Mail } from 'lucide-react';
 import Link from 'next/link';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Separator } from '@/components/ui/separator';
 
 const GoogleIcon = () => (
     <svg className="h-5 w-5" viewBox="0 0 24 24">
@@ -42,6 +43,7 @@ export default function SignupPage() {
   const { signup, loginWithGoogle, loginWithMicrosoft } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const [showEmailForm, setShowEmailForm] = useState(false);
 
   const anyLoading = isLoading || isGoogleLoading || isMicrosoftLoading;
 
@@ -100,11 +102,11 @@ export default function SignupPage() {
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
       <div className="w-full max-w-sm space-y-6">
         <div className="text-center">
-            <h1 className="text-3xl font-bold">Create your account</h1>
+            <h1 className="text-3xl font-bold">Create an account</h1>
         </div>
 
         {error && (
-            <Alert variant="destructive">
+            <Alert variant="destructive" className='alert-destructive'>
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription>
                     {error}
@@ -120,51 +122,6 @@ export default function SignupPage() {
             </Alert>
         )}
 
-        <form onSubmit={handleSignup} className="space-y-4">
-            <div className="space-y-2">
-            <Label htmlFor="name" className='text-xs uppercase text-muted-foreground'>Name</Label>
-            <Input
-                id="name"
-                type="text"
-                placeholder="John Doe"
-                required
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                disabled={anyLoading}
-                className='bg-background text-base'
-            />
-            </div>
-            <div className="space-y-2">
-            <Label htmlFor="email" className='text-xs uppercase text-muted-foreground'>Email</Label>
-            <Input
-                id="email"
-                type="email"
-                placeholder="m@example.com"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                disabled={anyLoading}
-                className='bg-background text-base'
-            />
-            </div>
-            <div className="space-y-2">
-            <Label htmlFor="password" className='text-xs uppercase text-muted-foreground'>Password</Label>
-            <Input
-                id="password"
-                type="password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                disabled={anyLoading}
-                className='bg-background text-base'
-            />
-            </div>
-            
-            <Button type="submit" className="w-full text-base font-bold" disabled={anyLoading}>
-              {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Create Account'}
-            </Button>
-        </form>
-        
         <div className="grid grid-cols-1 gap-2">
             <Button variant="secondary" className="w-full justify-center gap-2" onClick={handleGoogleLogin} disabled={anyLoading}>
                 {isGoogleLoading ? (
@@ -183,6 +140,67 @@ export default function SignupPage() {
                 Continue with Microsoft
             </Button>
         </div>
+
+        <div className="relative">
+            <Separator />
+            <div className="absolute inset-0 flex items-center">
+                <span className="bg-background px-2 text-xs uppercase text-muted-foreground">
+                    Or
+                </span>
+            </div>
+        </div>
+        
+        {showEmailForm ? (
+            <form onSubmit={handleSignup} className="space-y-4">
+                <div className="space-y-2">
+                <Label htmlFor="name" className='text-xs uppercase text-muted-foreground'>Name</Label>
+                <Input
+                    id="name"
+                    type="text"
+                    placeholder="John Doe"
+                    required
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    disabled={anyLoading}
+                    className='bg-background text-base'
+                />
+                </div>
+                <div className="space-y-2">
+                <Label htmlFor="email" className='text-xs uppercase text-muted-foreground'>Email</Label>
+                <Input
+                    id="email"
+                    type="email"
+                    placeholder="m@example.com"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    disabled={anyLoading}
+                    className='bg-background text-base'
+                />
+                </div>
+                <div className="space-y-2">
+                <Label htmlFor="password" className='text-xs uppercase text-muted-foreground'>Password</Label>
+                <Input
+                    id="password"
+                    type="password"
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    disabled={anyLoading}
+                    className='bg-background text-base'
+                />
+                </div>
+                
+                <Button type="submit" className="w-full text-base font-bold" disabled={anyLoading}>
+                  {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Create Account'}
+                </Button>
+            </form>
+        ) : (
+             <Button variant="secondary" className="w-full" onClick={() => setShowEmailForm(true)} disabled={anyLoading}>
+                <Mail className="mr-2 h-4 w-4"/>
+                Continue with Email & Password
+             </Button>
+        )}
 
         <div className="mt-4 text-center text-sm">
             Already have an account?{' '}

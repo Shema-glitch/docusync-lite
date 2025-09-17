@@ -108,3 +108,13 @@
     @apply bg-background text-foreground;
   }
 }
+
+@layer utilities {
+  .alert-destructive {
+      @apply border-destructive/50 text-destructive dark:border-destructive;
+      background-color: hsl(var(--destructive) / 0.1);
+  }
+  .alert-destructive > svg {
+      @apply text-destructive;
+  }
+}

@@ -11,6 +11,7 @@ import {
     signOut,
     updateProfile,
     GoogleAuthProvider,
+    FacebookAuthProvider,
     signInWithPopup,
     OAuthProvider,
     sendPasswordResetEmail,
@@ -37,6 +38,7 @@ interface AuthContextType {
   updateUserProfile: (updates: Partial<Pick<User, 'name' | 'avatar' | 'organizationName'>>) => Promise<void>;
   loginWithGoogle: () => Promise<void>;
   loginWithMicrosoft: () => Promise<void>;
+  loginWithFacebook: () => Promise<void>;
   sendPasswordReset: (email: string) => Promise<void>;
 }
 
@@ -187,6 +189,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const loginWithFacebook = async (): Promise<void> => {
+    setLoading(true);
+    try {
+        const provider = new FacebookAuthProvider();
+        const result = await signInWithPopup(auth, provider);
+        const firebaseUser = result.user;
+
+        // Check if user exists in Firestore, if not create a new doc
+        const userDocRef = doc(db, 'users', firebaseUser.uid);
+        const userDoc = await getDoc(userDocRef);
+
+        if (!userDoc.exists()) {
+             await setDoc(userDocRef, {
+                name: firebaseUser.displayName,
+                email: firebaseUser.email,
+                avatar: firebaseUser.photoURL,
+            });
+        }
+        // onAuthStateChanged will handle setting the user state
+    } catch (error: any) {
+         if (error.code === 'auth/popup-closed-by-user') {
+            // Silently fail if the user closes the popup
+            return;
+        }
+        throw new Error(error.message);
+    } finally {
+        setLoading(false);
+    }
+  };
+
 
   const logout = async () => {
     try {
@@ -243,7 +275,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  const value = { user, loading, login, signup, logout, updateUserProfile, loginWithGoogle, loginWithMicrosoft, sendPasswordReset };
+  const value = { user, loading, login, signup, logout, updateUserProfile, loginWithGoogle, loginWithMicrosoft, loginWithFacebook, sendPasswordReset };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

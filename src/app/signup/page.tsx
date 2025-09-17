@@ -32,6 +32,12 @@ const MicrosoftIcon = () => (
     </svg>
 );
 
+const FacebookIcon = () => (
+    <svg className="h-5 w-5" viewBox="0 0 24 24" fill="#1877F2">
+        <path d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.84 3.44 8.87 8 9.8V15H8v-3h2V9.5C10 7.57 11.57 6 13.5 6H16v3h-1.5c-1.1 0-1.5.52-1.5 1.45V12h3l-.5 3h-2.5v6.8c4.56-.93 8-4.96 8-9.8z"/>
+    </svg>
+);
+
 
 export default function SignupPage() {
   const [name, setName] = useState('');
@@ -40,14 +46,15 @@ export default function SignupPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [isMicrosoftLoading, setIsMicrosoftLoading] = useState(false);
+  const [isFacebookLoading, setIsFacebookLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  const { signup, loginWithGoogle, loginWithMicrosoft } = useAuth();
+  const { signup, loginWithGoogle, loginWithMicrosoft, loginWithFacebook } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [showEmailForm, setShowEmailForm] = useState(false);
 
-  const anyLoading = isLoading || isGoogleLoading || isMicrosoftLoading;
+  const anyLoading = isLoading || isGoogleLoading || isMicrosoftLoading || isFacebookLoading;
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -96,6 +103,21 @@ export default function SignupPage() {
         setIsMicrosoftLoading(false);
     }
   }
+
+  const handleFacebookLogin = async () => {
+    setIsFacebookLoading(true);
+    setError(null);
+    setSuccess(null);
+    try {
+        await loginWithFacebook();
+        const redirect = searchParams.get('redirect');
+        router.push(redirect ? decodeURIComponent(redirect) : '/');
+    } catch (err: any) {
+        setError(err.message);
+    } finally {
+        setIsFacebookLoading(false);
+    }
+  }
   
   const redirectParam = searchParams.get('redirect');
   const loginHref = redirectParam ? `/login?redirect=${redirectParam}` : '/login';
@@ -140,6 +162,14 @@ export default function SignupPage() {
                     <MicrosoftIcon />
                 )}
                 Continue with Microsoft
+            </Button>
+            <Button variant="secondary" className="w-full justify-center gap-2" onClick={handleFacebookLogin} disabled={anyLoading}>
+                {isFacebookLoading ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                    <FacebookIcon />
+                )}
+                Continue with Facebook
             </Button>
         </div>
 

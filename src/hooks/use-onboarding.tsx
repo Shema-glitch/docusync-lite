@@ -1,12 +1,13 @@
 
 'use client';
 
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode, Dispatch, SetStateAction } from 'react';
 
 const ONBOARDING_STORAGE_KEY = 'docusync-onboarding-complete';
 
 interface OnboardingContextType {
   isFirstTime: boolean;
+  setIsFirstTime: Dispatch<SetStateAction<boolean>>;
   currentStep: number;
   nextStep: () => void;
   prevStep: () => void;
@@ -43,6 +44,7 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
 
   const value = {
     isFirstTime,
+    setIsFirstTime,
     currentStep,
     nextStep,
     prevStep,

@@ -36,7 +36,7 @@ const steps = [
 ];
 
 export function OnboardingGuide() {
-    const { isFirstTime, currentStep, nextStep, prevStep, completeOnboarding } = useOnboarding();
+    const { isFirstTime, setIsFirstTime, currentStep, nextStep, prevStep, completeOnboarding } = useOnboarding();
 
     if (!isFirstTime) {
         return null;
@@ -46,7 +46,7 @@ export function OnboardingGuide() {
     const progress = ((currentStep + 1) / steps.length) * 100;
 
     return (
-        <Dialog open={isFirstTime} onOpenChange={(open) => !open && completeOnboarding()}>
+        <Dialog open={isFirstTime} onOpenChange={setIsFirstTime}>
             <DialogContent className="sm:max-w-md">
                 <DialogHeader>
                     <div className="flex justify-center items-center mb-4 bg-primary/10 rounded-full h-16 w-16 mx-auto">

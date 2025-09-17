@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -38,12 +38,11 @@ export function TwoFactorAuthDialog({ isOpen, onOpenChange }: TwoFactorAuthDialo
     onOpenChange(open);
   }
 
-  // Automatically send code when dialog opens
-  useState(() => {
+  useEffect(() => {
     if (isOpen && user) {
         handleSendCode();
     }
-  });
+  }, [isOpen, user]);
 
 
   const handleSendCode = async () => {

@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
@@ -333,21 +332,44 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
   
   const enable2FA = async (code: string) => {
-    if (!user) throw new Error("Not authenticated");
+    console.log(`[2FA DEBUG] Starting enable2FA with code: ${code}`);
+    if (!user) {
+        console.error('[2FA DEBUG] No user authenticated.');
+        throw new Error("Not authenticated");
+    }
+
     const userDocRef = doc(db, 'users', user.id);
     const userDoc = await getDoc(userDocRef);
     
-    if (!userDoc.exists()) throw new Error("User not found");
-    const twoFaData = userDoc.data()['2fa'];
-
-    if (!twoFaData || twoFaData.code !== code || new Date() > twoFaData.expires.toDate()) {
-      throw new Error("Invalid or expired verification code.");
+    if (!userDoc.exists()) {
+        console.error('[2FA DEBUG] User document not found in Firestore.');
+        throw new Error("User not found");
     }
 
+    const twoFaData = userDoc.data()['2fa'];
+    console.log('[2FA DEBUG] Fetched 2FA data from Firestore:', twoFaData);
+
+    if (!twoFaData || !twoFaData.code) {
+        console.error('[2FA DEBUG] No 2FA code found in the database to compare against.');
+        throw new Error("Verification code not found. Please try sending a new one.");
+    }
+    
+    if (new Date() > twoFaData.expires.toDate()) {
+        console.error('[2FA DEBUG] Expired code.');
+        throw new Error("Verification code has expired. Please request a new one.");
+    }
+
+    if (twoFaData.code !== code) {
+        console.error(`[2FA DEBUG] Code mismatch. User entered: ${code}, DB code: ${twoFaData.code}`);
+        throw new Error("Invalid verification code.");
+    }
+    
+    console.log('[2FA DEBUG] Code verified successfully. Updating Firestore document...');
     await updateDoc(userDocRef, {
       is2faEnabled: true,
       '2fa': null, // Clear the 2fa object
     });
+    console.log('[2FA DEBUG] Firestore document updated. 2FA is now enabled.');
     
     setUser(prev => prev ? ({ ...prev, is2faEnabled: true }) : null);
   };

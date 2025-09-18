@@ -179,11 +179,13 @@ export async function sendWelcomeEmail(to: string, name: string): Promise<{ erro
 
 
 export async function send2faCode(userId: string): Promise<{ error: string | null }> {
+    console.log(`[2FA DEBUG] Starting send2faCode for user: ${userId}`);
     try {
         const userDocRef = doc(adminDb, 'users', userId);
         const userDoc = await userDocRef.get();
 
         if (!userDoc.exists()) {
+            console.error(`[2FA DEBUG] User not found: ${userId}`);
             return { error: 'User not found.' };
         }
         
@@ -192,27 +194,27 @@ export async function send2faCode(userId: string): Promise<{ error: string | nul
         const name = userData.name;
 
         const code = nanoid();
+        console.log(`[2FA DEBUG] Generated code: ${code}`);
         const expires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
+        console.log(`[2FA DEBUG] Attempting to save code to Firestore...`);
         await userDocRef.update({
-            '2fa': {
-                code,
-                expires,
-            }
+            '2fa': { code, expires }
         });
+        console.log(`[2FA DEBUG] Successfully saved code to Firestore.`);
 
+        console.log(`[2FA DEBUG] Attempting to send email to ${email}...`);
         await transporter.sendMail({
             from: `"DocuSync Lite Security" <${process.env.GMAIL_USER}>`,
             to: email,
             subject: 'Your DocuSync Lite Verification Code',
             html: `Your 2FA code is: <strong>${code}</strong>. It expires in 10 minutes.`
         });
+        console.log(`[2FA DEBUG] Successfully sent email.`);
         
         return { error: null };
     } catch (e: any) {
-        console.error("Failed to send 2FA code:", e);
+        console.error("[2FA DEBUG] CRITICAL ERROR in send2faCode:", e);
         return { error: 'Could not send verification code. Please try again.' };
     }
 }
-
-

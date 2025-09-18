@@ -19,7 +19,7 @@ import {
 } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase';
 import { doc, getDoc, setDoc, writeBatch, collection, getDocs, query, where, updateDoc } from 'firebase/firestore';
-import { sendWelcomeEmail, send2faCode } from '@/app/actions';
+import { send2faCode } from '@/app/actions';
 import { Verify2faDialog } from '@/components/auth/verify-2fa-dialog';
 
 
@@ -214,9 +214,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             is2faEnabled: false,
         });
         
-        // Send welcome email
-        await sendWelcomeEmail(email, name);
-
         localStorage.setItem('lastLoginProvider', 'password');
         // onAuthStateChanged will handle setting the new user
     } catch (error: any) {
@@ -239,7 +236,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               avatar: firebaseUser.photoURL,
               is2faEnabled: false,
           });
-          await sendWelcomeEmail(firebaseUser.email!, firebaseUser.displayName!);
       } else {
           // If user exists, check for 2FA (for future-proofing social logins with 2FA)
           if (userDoc.data().is2faEnabled) {

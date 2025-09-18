@@ -14,12 +14,12 @@ import nodemailer from 'nodemailer';
 const nanoid = customAlphabet('1234567890', 6);
 
 const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST,
-  port: Number(process.env.SMTP_PORT),
+  host: "smtp.gmail.com",
+  port: 465,
   secure: true,
   auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.RESEND_API_KEY,
+    user: process.env.GMAIL_USER,
+    pass: process.env.GMAIL_APP_PASSWORD,
   },
 });
 
@@ -114,14 +114,14 @@ export async function permanentlyDeleteFile(document: { id: string; storagePath?
 export async function sendWelcomeEmail(to: string, name: string): Promise<{ error: string | null }> {
     try {
         await transporter.sendMail({
-            from: 'DocuSync Lite <onboarding@resend.dev>',
+            from: `"DocuSync Lite" <${process.env.GMAIL_USER}>`,
             to,
             subject: 'Welcome to DocuSync Lite!',
             html: `
                 <!DOCTYPE html>
                 <html lang="en">
                 <head>
-                    <meta charset="UTF-8">
+                    <meta charset="UTF-g">
                     <meta name="viewport" content="width=device-width, initial-scale=1.0">
                     <style>
                         body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif; background-color: #f4f4f7; color: #1a1a1a; }
@@ -195,12 +195,14 @@ export async function send2faCode(userId: string): Promise<{ error: string | nul
         const expires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
         await userDocRef.update({
-            '2fa.code': code,
-            '2fa.expires': expires,
+            '2fa': {
+                code,
+                expires,
+            }
         });
 
         await transporter.sendMail({
-            from: 'DocuSync Lite Security <security@resend.dev>',
+            from: `"DocuSync Lite Security" <${process.env.GMAIL_USER}>`,
             to: email,
             subject: 'Your DocuSync Lite Verification Code',
             html: `Your 2FA code is: <strong>${code}</strong>. It expires in 10 minutes.`
@@ -212,3 +214,4 @@ export async function send2faCode(userId: string): Promise<{ error: string | nul
         return { error: 'Could not send verification code. Please try again.' };
     }
 }
+

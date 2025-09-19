@@ -113,15 +113,19 @@ export async function permanentlyDeleteFile(document: { id: string; storagePath?
 export async function send2faCode(userId: string): Promise<{ error: string | null }> {
     console.log(`[2FA DEBUG] Starting send2faCode for user: ${userId}`);
     try {
-        const userDocRef = doc(adminDb, 'users', userId);
+        const userDocRef = adminDb.collection('users').doc(userId);
         const userDoc = await userDocRef.get();
 
-        if (!userDoc.exists()) {
+        if (!userDoc.exists) {
             console.error(`[2FA DEBUG] User not found: ${userId}`);
             return { error: 'User not found.' };
         }
         
         const userData = userDoc.data();
+        if (!userData) {
+            console.error(`[2FA DEBUG] User data is empty for user: ${userId}`);
+            return { error: 'User data not found.' };
+        }
         const email = userData.email;
 
         // Verify SMTP connection
@@ -142,7 +146,7 @@ export async function send2faCode(userId: string): Promise<{ error: string | nul
         const expires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
         console.log(`[2FA DEBUG] Attempting to save code to Firestore...`);
-        await updateDoc(userDocRef, {
+        await userDocRef.update({
             '2fa': { code, expires }
         });
         console.log(`[2FA DEBUG] Successfully saved code to Firestore.`);
@@ -162,3 +166,53 @@ export async function send2faCode(userId: string): Promise<{ error: string | nul
         return { error: e.message || 'Could not send verification code. Please try again.' };
     }
 }
+
+export async function verifyAndEnable2FA(userId: string, code: string): Promise<{ success: boolean; error: string | null }> {
+    console.log(`[2FA DEBUG] Starting enable2FA with code: ${code} for user ${userId}`);
+    if (!userId) {
+        console.error('[2FA DEBUG] No user ID provided.');
+        return { success: false, error: "Not authenticated" };
+    }
+
+    try {
+        const userDocRef = adminDb.collection('users').doc(userId);
+        const userDoc = await userDocRef.get();
+        
+        if (!userDoc.exists) {
+            console.error('[2FA DEBUG] User document not found in Firestore.');
+            return { success: false, error: "User not found" };
+        }
+
+        const twoFaData = userDoc.data()?.['2fa'];
+        console.log('[2FA DEBUG] Fetched 2FA data from Firestore:', twoFaData);
+
+        if (!twoFaData || !twoFaData.code) {
+            console.error('[2FA DEBUG] No 2FA code found in the database to compare against.');
+            return { success: false, error: "Verification code not found. Please try sending a new one." };
+        }
+        
+        if (new Date() > twoFaData.expires.toDate()) {
+            console.error('[2FA DEBUG] Expired code.');
+            return { success: false, error: "Verification code has expired. Please request a new one." };
+        }
+
+        if (twoFaData.code !== code) {
+            console.error(`[2FA DEBUG] Code mismatch. User entered: ${code}, DB code: ${twoFaData.code}`);
+            return { success: false, error: "Invalid verification code." };
+        }
+        
+        console.log('[2FA DEBUG] Code verified successfully. Updating Firestore document...');
+        await userDocRef.update({
+            is2faEnabled: true,
+            '2fa': null, // Clear the 2fa object
+        });
+        console.log('[2FA DEBUG] Firestore document updated. 2FA is now enabled.');
+        
+        return { success: true, error: null };
+
+    } catch(e: any) {
+        console.error('[2FA DEBUG] CRITICAL ERROR in verifyAndEnable2FA:', e);
+        return { success: false, error: e.message || "An unexpected error occurred." };
+    }
+}
+

@@ -39,9 +39,14 @@ export function TwoFactorAuthDialog({ isOpen, onOpenChange }: TwoFactorAuthDialo
   }
 
   useEffect(() => {
+    // Automatically send the code when the dialog opens for the first time.
     if (isOpen && user) {
         handleSendCode();
     }
+    // The empty dependency array and the check for `user` ensures this only runs once
+    // when the dialog opens with a valid user session. We disable the exhaustive-deps
+    // lint rule because we intentionally do not want this to re-run on every property change.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, user]);
 
 

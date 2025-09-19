@@ -124,6 +124,19 @@ export async function send2faCode(userId: string): Promise<{ error: string | nul
         const userData = userDoc.data();
         const email = userData.email;
 
+        // Verify SMTP connection
+        await new Promise((resolve, reject) => {
+            transporter.verify(function (error, success) {
+                if (error) {
+                    console.error("[SMTP DEBUG] Connection verification failed:", error);
+                    reject(new Error("SMTP connection failed. Check credentials in .env file."));
+                } else {
+                    console.log("[SMTP DEBUG] Server is ready to take our messages");
+                    resolve(success);
+                }
+            });
+        });
+
         const code = nanoid();
         console.log(`[2FA DEBUG] Generated code: ${code}`);
         const expires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
@@ -146,6 +159,6 @@ export async function send2faCode(userId: string): Promise<{ error: string | nul
         return { error: null };
     } catch (e: any) {
         console.error("[2FA DEBUG] CRITICAL ERROR in send2faCode:", e);
-        return { error: 'Could not send verification code. Please try again.' };
+        return { error: e.message || 'Could not send verification code. Please try again.' };
     }
 }

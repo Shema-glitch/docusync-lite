@@ -1,3 +1,4 @@
+
 // This file uses server-side code.
 'use server';
 
@@ -33,6 +34,7 @@ const suggestTagsPrompt = ai.definePrompt({
   name: 'suggestTagsPrompt',
   input: {schema: SuggestTagsInputSchema},
   output: {schema: SuggestTagsOutputSchema},
+  model: 'gemini-1.5-flash-latest',
   prompt: `You are a document tagging assistant. Given the content, title, and description of a document, you will suggest relevant tags to help users organize their files.
 
 Consider the following:

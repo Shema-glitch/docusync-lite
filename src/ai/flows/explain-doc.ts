@@ -1,3 +1,4 @@
+
 // This file uses server-side code.
 'use server';
 
@@ -32,6 +33,7 @@ const explainDocPrompt = ai.definePrompt({
   name: 'explainDocPrompt',
   input: {schema: ExplainDocInputSchema},
   output: {schema: ExplainDocOutputSchema},
+  model: 'gemini-1.5-flash-latest',
   prompt: `You are an expert document analyst. Your task is to explain the provided document in simple terms.
 
 Assume the user has no prior knowledge of the subject matter.

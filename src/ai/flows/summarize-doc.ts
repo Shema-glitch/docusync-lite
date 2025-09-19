@@ -1,3 +1,4 @@
+
 // This file uses server-side code.
 'use server';
 
@@ -32,6 +33,7 @@ const summarizeDocPrompt = ai.definePrompt({
   name: 'summarizeDocPrompt',
   input: {schema: SummarizeDocInputSchema},
   output: {schema: SummarizeDocOutputSchema},
+  model: 'gemini-1.5-flash-latest',
   prompt: `You are a document analysis assistant. Your task is to provide a clear and concise summary of the provided document text.
 
 Present the summary as 3 to 5 key bullet points.

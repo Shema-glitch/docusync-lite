@@ -1,3 +1,4 @@
+import '@/lib/server-init';
 import { config } from 'dotenv';
 config();
 

@@ -1,5 +1,6 @@
 
 'use server';
+import '@/lib/server-init';
 
 import { suggestTags, type SuggestTagsInput } from '@/ai/flows/suggest-tags';
 import { summarizeDoc, type SummarizeDocInput } from '@/ai/flows/summarize-doc';
@@ -215,4 +216,3 @@ export async function verifyAndEnable2FA(userId: string, code: string): Promise<
         return { success: false, error: e.message || "An unexpected error occurred." };
     }
 }
-

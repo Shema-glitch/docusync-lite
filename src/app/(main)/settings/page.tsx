@@ -10,10 +10,11 @@ import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
 import { useTheme } from 'next-themes';
 import { useState, useEffect } from 'react';
-import { Loader2, ShieldCheck, ShieldOff } from 'lucide-react';
+import { Loader2, ShieldCheck, ShieldOff, LifeBuoy } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { Slider } from '@/components/ui/slider';
 import { TwoFactorAuthDialog } from '@/components/auth/two-factor-auth-dialog';
+import { useOnboarding } from '@/hooks/use-onboarding';
 
 
 type Accent = 'default' | 'violet' | 'orange';
@@ -22,6 +23,7 @@ export default function SettingsPage() {
     const { user, updateUserProfile } = useAuth();
     const { theme, setTheme } = useTheme();
     const { toast } = useToast();
+    const { startOnboarding } = useOnboarding();
 
     const [name, setName] = useState('');
     const [avatar, setAvatar] = useState('');
@@ -127,6 +129,7 @@ export default function SettingsPage() {
           <TabsTrigger value="notifications">Notifications</TabsTrigger>
           <TabsTrigger value="accessibility">Accessibility</TabsTrigger>
           <TabsTrigger value="security">Security</TabsTrigger>
+          <TabsTrigger value="help">Help</TabsTrigger>
         </TabsList>
         <TabsContent value="profile">
           <Card>
@@ -262,6 +265,37 @@ export default function SettingsPage() {
                     <Button variant="outline" onClick={handleToggle2FA}>
                         {user?.is2faEnabled ? 'Disable' : 'Enable'}
                     </Button>
+                </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        <TabsContent value="help">
+          <Card>
+            <CardHeader>
+              <CardTitle>Help & Support</CardTitle>
+              <CardDescription>
+                Need assistance? Find resources here.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+                <div className="flex items-center justify-between rounded-lg border p-4">
+                    <div>
+                        <Label htmlFor="onboarding">Onboarding Guide</Label>
+                        <p className="text-sm text-muted-foreground">Restart the initial tutorial to get a tour of the app's features.</p>
+                    </div>
+                    <Button variant="outline" onClick={startOnboarding}>
+                        Restart Tutorial
+                    </Button>
+                </div>
+                 <div className="flex items-center justify-between rounded-lg border p-4">
+                    <div>
+                        <Label htmlFor="support" className='flex items-center gap-2'>
+                           <LifeBuoy className="h-5 w-5 text-primary" />
+                           Contact Support
+                        </Label>
+                        <p className="text-sm text-muted-foreground">Have a question or problem? Our team is here to help.</p>
+                    </div>
+                    <Button>Contact Us</Button>
                 </div>
             </CardContent>
           </Card>

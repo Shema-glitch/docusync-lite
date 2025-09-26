@@ -48,6 +48,7 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
   };
   
   const startOnboarding = () => {
+    localStorage.removeItem(ONBOARDING_STORAGE_KEY_COMPLETE);
     updateStep(0);
     setIsGuideVisible(true);
   }

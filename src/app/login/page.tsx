@@ -59,6 +59,7 @@ export default function LoginPage() {
   
   const [lastLoginProvider, setLastLoginProvider] = useState<string | null>(null);
   const [lastUserName, setLastUserName] = useState<string | null>(null);
+  const [lastUserEmail, setLastUserEmail] = useState<string | null>(null);
   const [showManualForm, setShowManualForm] = useState(false);
 
   const anyLoading = isLoading || isGoogleLoading || isMicrosoftLoading || isFacebookLoading || isRecentLoginLoading;
@@ -72,9 +73,14 @@ export default function LoginPage() {
 
     const lastProvider = localStorage.getItem('lastLoginProvider');
     const lastName = localStorage.getItem('lastUserName');
+    const lastEmail = localStorage.getItem('lastUserEmail');
+
     if(lastProvider && lastName) {
         setLastLoginProvider(lastProvider);
         setLastUserName(lastName);
+        if(lastEmail) {
+            setLastUserEmail(lastEmail);
+        }
         setShowManualForm(false);
     } else {
         setShowManualForm(true);
@@ -274,13 +280,18 @@ export default function LoginPage() {
             )}
 
             <div className="grid grid-cols-1 gap-2">
-                <Button variant="secondary" className="w-full justify-center gap-2" onClick={() => handleProviderLogin('google')} disabled={anyLoading}>
-                    {isGoogleLoading ? (
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    ) : (
-                        <GoogleIcon />
+                <Button variant="secondary" className="w-full justify-start gap-2 text-left h-auto py-2 flex-col items-start" onClick={() => handleProviderLogin('google')} disabled={anyLoading}>
+                    <div className='flex items-center gap-2'>
+                        {isGoogleLoading ? (
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        ) : (
+                            <GoogleIcon />
+                        )}
+                        <span className="font-semibold">Continue with Google</span>
+                    </div>
+                    {lastUserEmail && lastLoginProvider === 'google.com' && !showManualForm && (
+                        <span className="text-xs text-muted-foreground pl-7">{lastUserEmail}</span>
                     )}
-                    Continue with Google
                 </Button>
                 <Button variant="secondary" className="w-full justify-center gap-2" onClick={() => handleProviderLogin('microsoft')} disabled={anyLoading}>
                     {isMicrosoftLoading ? (

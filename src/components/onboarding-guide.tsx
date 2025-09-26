@@ -59,6 +59,7 @@ export function OnboardingGuide() {
     const { isGuideVisible, setIsGuideVisible, currentStep, nextStep, prevStep, completeOnboarding } = useOnboarding();
     const [targetElement, setTargetElement] = useState<HTMLElement | null>(null);
     const [isMounted, setIsMounted] = useState(false);
+    const [isVisible, setIsVisible] = useState(false);
     const router = useRouter();
     const previousRouteRef = useRef<string | null>(null);
 
@@ -70,34 +71,40 @@ export function OnboardingGuide() {
     }, []);
 
     useEffect(() => {
-      if (isGuideVisible && isMounted) {
-          const currentStepInfo = steps[currentStep];
+        if (isGuideVisible && isMounted) {
+            const currentStepInfo = steps[currentStep];
 
-          if (currentStepInfo.route && window.location.pathname !== currentStepInfo.route) {
-              previousRouteRef.current = window.location.pathname;
-              router.push(currentStepInfo.route);
-          }
-          
-          let element: HTMLElement | null = null;
-          if (currentStepInfo.targetId) {
-              const findElement = () => {
-                  const found = document.querySelector<HTMLElement>(`[data-onboarding-id="${currentStepInfo.targetId}"]`);
-                  if (found) {
-                      setTargetElement(found);
-                      clearInterval(intervalId);
-                  }
-              }
-              const intervalId = setInterval(findElement, 100);
-              return () => clearInterval(intervalId);
-          } else {
-              setTargetElement(null);
-          }
-      }
+            if (currentStepInfo.route && window.location.pathname !== currentStepInfo.route) {
+                previousRouteRef.current = window.location.pathname;
+                router.push(currentStepInfo.route);
+            }
+            
+            // Hide popover while we find the element
+            setIsVisible(false);
+
+            if (currentStepInfo.targetId) {
+                const findElement = () => {
+                    const found = document.querySelector<HTMLElement>(`[data-onboarding-id="${currentStepInfo.targetId}"]`);
+                    if (found) {
+                        setTargetElement(found);
+                        setIsVisible(true); // Show popover now that element is found
+                        clearInterval(intervalId);
+                    }
+                }
+                const intervalId = setInterval(findElement, 100);
+                return () => clearInterval(intervalId);
+            } else {
+                setTargetElement(null);
+                setIsVisible(true); // Show for non-targeted steps (like the intro)
+            }
+        } else {
+            setIsVisible(false);
+        }
     }, [isGuideVisible, isMounted, currentStep, router]);
     
 
     const handleNext = () => {
-        if (currentStep < totalSteps -1) {
+        if (currentStep < totalSteps - 1) {
             nextStep();
         } else {
             completeOnboarding();
@@ -123,7 +130,7 @@ export function OnboardingGuide() {
         <div className="fixed inset-0 bg-background/60 backdrop-blur-sm z-40" />
 
         {/* Highlighter */}
-        {targetElement && (
+        {isVisible && targetElement && (
             <div 
                 className="fixed rounded-md z-50 border-2 border-primary border-dashed animate-pulse"
                 style={{
@@ -135,7 +142,7 @@ export function OnboardingGuide() {
             />
         )}
         
-        <Popover open={isGuideVisible} onOpenChange={handleOpenChange}>
+        <Popover open={isVisible} onOpenChange={handleOpenChange}>
             <PopoverAnchor>
                 {/* This is a virtual anchor, we position the popover based on screen or element */}
                 <div 

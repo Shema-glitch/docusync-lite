@@ -5,9 +5,10 @@ import { DocumentTable } from '@/components/document-table';
 import { useDocuments } from '@/hooks/use-documents.tsx';
 import { useAuth } from '@/hooks/use-auth';
 import { Users } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function SharedPage() {
-  const { documents } = useDocuments();
+  const { documents, loading } = useDocuments();
   const { user } = useAuth();
   
   const sharedDocuments = documents.filter((doc) => {
@@ -19,7 +20,13 @@ export default function SharedPage() {
   return (
     <div className="flex flex-col h-full">
         <h1 className="text-3xl font-bold tracking-tight mb-4">Shared with Me</h1>
-         {sharedDocuments.length === 0 ? (
+         {loading ? (
+            <div className="space-y-2">
+                <Skeleton className="h-12 w-full" />
+                <Skeleton className="h-12 w-full" />
+                <Skeleton className="h-12 w-full" />
+            </div>
+         ) : sharedDocuments.length === 0 ? (
             <div className="flex flex-1 flex-col items-center justify-center rounded-lg border-2 border-dashed p-12 text-center">
                 <Users className="h-12 w-12 text-muted-foreground mb-4" />
                 <h3 className="text-xl font-semibold">No documents have been shared with you</h3>

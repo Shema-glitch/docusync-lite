@@ -4,15 +4,22 @@
 import { DocumentTable } from '@/components/document-table';
 import { useDocuments } from '@/hooks/use-documents.tsx';
 import { Star } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function FavoritesPage() {
-  const { documents } = useDocuments();
+  const { documents, loading } = useDocuments();
   const favoriteDocuments = documents.filter((doc) => doc.status === 'active' && doc.isFavorite);
 
   return (
     <div className="flex flex-col h-full">
         <h1 className="text-3xl font-bold tracking-tight mb-4">Favorites</h1>
-         {favoriteDocuments.length === 0 ? (
+         {loading ? (
+            <div className="space-y-2">
+                <Skeleton className="h-12 w-full" />
+                <Skeleton className="h-12 w-full" />
+                <Skeleton className="h-12 w-full" />
+            </div>
+         ) : favoriteDocuments.length === 0 ? (
             <div className="flex flex-1 flex-col items-center justify-center rounded-lg border-2 border-dashed p-12 text-center">
                 <Star className="h-12 w-12 text-muted-foreground mb-4" />
                 <h3 className="text-xl font-semibold">No favorite documents yet</h3>

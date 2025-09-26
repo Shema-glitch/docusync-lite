@@ -8,10 +8,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/hooks/use-auth';
-import { Loader2, CheckCircle, AlertCircle, LogIn } from 'lucide-react';
+import { Loader2, CheckCircle, AlertCircle, LogIn, Info } from 'lucide-react';
 import Link from 'next/link';
 import { ForgotPasswordDialog } from '@/components/auth/forgot-password-dialog';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AuthHeader } from '@/components/layout/auth-header';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
@@ -52,6 +52,7 @@ export default function LoginPage() {
   const [isFacebookLoading, setIsFacebookLoading] = useState(false);
   const [isRecentLoginLoading, setIsRecentLoginLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const { login, loginWithGoogle, loginWithMicrosoft, loginWithFacebook } = useAuth();
   const router = useRouter();
@@ -96,9 +97,16 @@ export default function LoginPage() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
     setError(null);
     setSuccess(null);
+    setNotice(null);
+
+    if (!isFormFilled) {
+        setNotice("Please fill in all fields.");
+        return;
+    }
+
+    setIsLoading(true);
     try {
       await login(email, password);
       handleSuccessfulLogin();
@@ -123,6 +131,8 @@ export default function LoginPage() {
     setLoading(true);
     setError(null);
     setSuccess(null);
+    setNotice(null);
+
     try {
         await loginFn();
         handleSuccessfulLogin();
@@ -182,23 +192,36 @@ export default function LoginPage() {
             <div className="text-center">
             <h1 className="text-3xl font-bold">Log in to your account</h1>
             </div>
-
-            {error && (
-                <Alert variant="destructive" className='alert-destructive'>
-                    <AlertCircle className="h-4 w-4" />
-                    <AlertDescription>
-                        {error}
-                    </AlertDescription>
-                </Alert>
-            )}
-            {success && (
-                <Alert variant="default" className="border-green-500 text-green-700 dark:border-green-400 dark:text-green-400">
-                    <CheckCircle className="h-4 w-4 text-green-500 dark:text-green-400" />
-                    <AlertDescription>
-                        {success}
-                    </AlertDescription>
-                </Alert>
-            )}
+            
+            <div className="space-y-2">
+                {error && (
+                    <Alert variant="destructive">
+                        <AlertCircle className="h-4 w-4" />
+                        <AlertTitle>Error</AlertTitle>
+                        <AlertDescription>
+                            {error}
+                        </AlertDescription>
+                    </Alert>
+                )}
+                {success && (
+                    <Alert variant="success">
+                        <CheckCircle className="h-4 w-4" />
+                        <AlertTitle>Success</AlertTitle>
+                        <AlertDescription>
+                            {success}
+                        </AlertDescription>
+                    </Alert>
+                )}
+                {notice && (
+                    <Alert variant="info">
+                        <Info className="h-4 w-4" />
+                        <AlertTitle>Notice</AlertTitle>
+                        <AlertDescription>
+                            {notice}
+                        </AlertDescription>
+                    </Alert>
+                )}
+            </div>
 
             {lastLoginProvider && lastUserName && !showManualForm && (
                 <>
@@ -261,7 +284,7 @@ export default function LoginPage() {
                     />
                     </div>
                     
-                    <Button type="submit" className="w-full text-base font-bold" disabled={anyLoading || !isFormFilled}>
+                    <Button type="submit" className="w-full text-base font-bold" disabled={anyLoading}>
                     {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Log In'}
                     </Button>
                 </form>
@@ -335,4 +358,3 @@ export default function LoginPage() {
     </>
   );
 }
-

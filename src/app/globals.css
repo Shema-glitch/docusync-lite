@@ -111,10 +111,21 @@
 
 @layer utilities {
   .alert-destructive {
-      @apply border-destructive/50 text-destructive dark:border-destructive;
-      background-color: hsl(var(--destructive) / 0.1);
+    @apply border-red-500/50 bg-red-500/10 text-red-700 dark:border-red-500/50 dark:bg-red-900/20 dark:text-red-400;
   }
   .alert-destructive > svg {
-      @apply text-destructive;
+      @apply text-red-500 dark:text-red-400;
+  }
+  .alert-success {
+      @apply border-green-500/50 bg-green-500/10 text-green-700 dark:border-green-500/50 dark:bg-green-900/20 dark:text-green-400;
+  }
+  .alert-success > svg {
+      @apply text-green-500 dark:text-green-400;
+  }
+  .alert-info {
+    @apply border-blue-500/50 bg-blue-500/10 text-blue-700 dark:border-blue-500/50 dark:bg-blue-900/20 dark:text-blue-400;
+  }
+  .alert-info > svg {
+      @apply text-blue-500 dark:text-blue-400;
   }
 }

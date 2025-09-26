@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { useAuth } from '@/hooks/use-auth';
 import { Loader2, AlertCircle, CheckCircle, Mail } from 'lucide-react';
 import Link from 'next/link';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
 import { AuthHeader } from '@/components/layout/auth-header';
 
@@ -113,22 +113,26 @@ export default function SignupPage() {
                 <h1 className="text-3xl font-bold">Create an account</h1>
             </div>
 
-            {error && (
-                <Alert variant="destructive" className='alert-destructive'>
-                    <AlertCircle className="h-4 w-4" />
-                    <AlertDescription>
-                        {error}
-                    </AlertDescription>
-                </Alert>
-            )}
-            {success && (
-                <Alert variant="default" className="border-green-500 text-green-700 dark:border-green-400 dark:text-green-400">
-                    <CheckCircle className="h-4 w-4 text-green-500 dark:text-green-400" />
-                    <AlertDescription>
-                        {success}
-                    </AlertDescription>
-                </Alert>
-            )}
+            <div className="space-y-2">
+                {error && (
+                    <Alert variant="destructive">
+                        <AlertCircle className="h-4 w-4" />
+                        <AlertTitle>Error</AlertTitle>
+                        <AlertDescription>
+                            {error}
+                        </AlertDescription>
+                    </Alert>
+                )}
+                {success && (
+                    <Alert variant="success">
+                        <CheckCircle className="h-4 w-4" />
+                        <AlertTitle>Success</AlertTitle>
+                        <AlertDescription>
+                            {success}
+                        </AlertDescription>
+                    </Alert>
+                )}
+            </div>
 
             <div className="grid grid-cols-1 gap-2">
                 <Button variant="secondary" className="w-full justify-center gap-2" onClick={() => handleProviderLogin('google')} disabled={anyLoading}>

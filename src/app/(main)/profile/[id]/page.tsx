@@ -9,7 +9,8 @@ import { Loader2, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 
-export default function ProfilePage({ params: { id } }: { params: { id: string } }) {
+export default function ProfilePage({ params }: { params: { id: string } }) {
+  const { id } = params;
   const { findUserById } = useDocuments();
   const [profileUser, setProfileUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);

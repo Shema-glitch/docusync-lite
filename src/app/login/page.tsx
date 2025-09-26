@@ -15,6 +15,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AuthHeader } from '@/components/layout/auth-header';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
+import { cn } from '@/lib/utils';
 
 const GoogleIcon = () => (
     <svg className="h-5 w-5" viewBox="0 0 48 48">
@@ -170,6 +171,8 @@ export default function LoginPage() {
     }
   }
 
+  const showGoogleContext = lastUserEmail && lastLoginProvider === 'google.com' && !showManualForm;
+
   return (
     <>
     <div className="flex flex-col min-h-screen bg-background">
@@ -280,8 +283,16 @@ export default function LoginPage() {
             )}
 
             <div className="grid grid-cols-1 gap-2">
-                <Button variant="secondary" className="w-full justify-start gap-2 text-left h-auto py-2 flex-col items-start" onClick={() => handleProviderLogin('google')} disabled={anyLoading}>
-                    <div className='flex items-center gap-2'>
+                <Button 
+                    variant="secondary"
+                    className={cn(
+                        "w-full justify-center gap-2",
+                        showGoogleContext && "h-auto py-2 flex-col items-start"
+                    )}
+                    onClick={() => handleProviderLogin('google')}
+                    disabled={anyLoading}
+                >
+                    <div className={cn("flex items-center gap-2", showGoogleContext ? "" : "w-full justify-center")}>
                         {isGoogleLoading ? (
                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                         ) : (
@@ -289,7 +300,7 @@ export default function LoginPage() {
                         )}
                         <span className="font-semibold">Continue with Google</span>
                     </div>
-                    {lastUserEmail && lastLoginProvider === 'google.com' && !showManualForm && (
+                    {showGoogleContext && (
                         <span className="text-xs text-muted-foreground pl-7">{lastUserEmail}</span>
                     )}
                 </Button>
@@ -324,3 +335,4 @@ export default function LoginPage() {
     </>
   );
 }
+

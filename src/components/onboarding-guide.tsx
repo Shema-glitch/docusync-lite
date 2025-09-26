@@ -124,6 +124,9 @@ export function OnboardingGuide() {
     const isCentered = step.position === 'center';
     const CurrentIcon = step.icon;
 
+    const side = isCentered ? undefined : (step.position.includes('-') ? step.position.split('-')[0] as any : step.position);
+    const align = isCentered ? undefined : (step.position.includes('-') ? step.position.split('-')[1] as any : 'center');
+
     return (
         <>
         {/* Overlay */}
@@ -156,8 +159,8 @@ export function OnboardingGuide() {
                 />
             </PopoverAnchor>
             <PopoverContent 
-                side={step.position.includes('-') ? step.position.split('-')[0] as any : step.position}
-                align={step.position.includes('-') ? step.position.split('-')[1] as any : 'center'}
+                side={side}
+                align={align}
                 className={cn("z-50 w-80", isCentered && "fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2")}
                 onEscapeKeyDown={() => setIsGuideVisible(false)}
             >

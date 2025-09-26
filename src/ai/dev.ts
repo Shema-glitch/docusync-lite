@@ -1,3 +1,5 @@
+
+/*
 import '@/lib/server-init';
 import { config } from 'dotenv';
 config();
@@ -5,3 +7,4 @@ config();
 import '@/ai/flows/suggest-tags.ts';
 import '@/ai/flows/summarize-doc.ts';
 import '@/ai/flows/explain-doc.ts';
+*/

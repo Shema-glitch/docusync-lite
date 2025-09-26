@@ -2,15 +2,19 @@
 'use server';
 import '@/lib/server-init';
 
-import { suggestTags, type SuggestTagsInput } from '@/ai/flows/suggest-tags';
-import { summarizeDoc, type SummarizeDocInput } from '@/ai/flows/summarize-doc';
-import { explainDoc, type ExplainDocInput } from '@/ai/flows/explain-doc';
+// import { suggestTags, type SuggestTagsInput } from '@/ai/flows/suggest-tags';
+// import { summarizeDoc, type SummarizeDocInput } from '@/ai/flows/summarize-doc';
+// import { explainDoc, type ExplainDocInput } from '@/ai/flows/explain-doc';
 import { adminStorage, adminDb } from '@/lib/firebase-admin';
 import { db } from '@/lib/firebase';
 import { doc, deleteDoc, setDoc, getDoc, serverTimestamp, updateDoc } from 'firebase/firestore';
 import { v4 as uuidv4 } from 'uuid';
 import { customAlphabet } from 'nanoid'
 import nodemailer from 'nodemailer';
+
+type SuggestTagsInput = any;
+type SummarizeDocInput = any;
+type ExplainDocInput = any;
 
 const nanoid = customAlphabet('1234567890', 6);
 
@@ -25,34 +29,18 @@ const transporter = nodemailer.createTransport({
 });
 
 export async function getAiSuggestions(data: SuggestTagsInput) {
-  try {
-    const result = await suggestTags(data);
-    return { tags: result.tags, error: null };
-  } catch (e) {
-    console.error(e);
-    // In a real app, you'd want to log this error to a monitoring service
-    return { tags: [], error: 'Failed to get AI suggestions. Please try again.' };
-  }
+  console.log("AI features are currently disabled.");
+  return { tags: [], error: 'AI features are currently disabled.' };
 }
 
 export async function getAiSummary(data: SummarizeDocInput) {
-  try {
-    const result = await summarizeDoc(data);
-    return { summary: result.summary, error: null };
-  } catch (e) {
-    console.error(e);
-    return { summary: '', error: 'Failed to generate summary. The document may be too long or in an unsupported format.' };
-  }
+    console.log("AI features are currently disabled.");
+  return { summary: '', error: 'AI features are currently disabled.' };
 }
 
 export async function getAiExplanation(data: ExplainDocInput) {
-  try {
-    const result = await explainDoc(data);
-    return { explanation: result.explanation, error: null };
-  } catch (e) {
-    console.error(e);
-    return { explanation: '', error: 'Failed to generate explanation. The document may be too long or in an unsupported format.' };
-  }
+    console.log("AI features are currently disabled.");
+  return { explanation: '', error: 'AI features are currently disabled.' };
 }
 
 export async function uploadFile(formData: FormData): Promise<{ downloadURL: string; storagePath: string; error: string | null; }> {

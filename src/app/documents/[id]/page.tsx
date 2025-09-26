@@ -15,7 +15,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { Members } from '@/components/document/members';
 import { ShareDialog } from '@/components/document/share-dialog';
 import { useToast } from '@/hooks/use-toast';
-import { getAiSummary, getAiExplanation } from '@/app/actions';
+// import { getAiSummary, getAiExplanation } from '@/app/actions';
 import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter } from '@/components/ui/alert-dialog';
 import { AlertDialogCancel } from '@radix-ui/react-alert-dialog';
 import { Input } from '@/components/ui/input';
@@ -110,58 +110,12 @@ export default function DocumentDetailsPage({ params }: { params: { id: string }
   }
 
   const handleAiFeature = async (type: 'summarize' | 'explain') => {
-    if (!document || !documentText) {
-       toast({
+    toast({
         variant: 'destructive',
-        title: 'Content Not Loaded',
-        description: 'The document content is not available for this action.',
-      });
-      return;
-    };
-  
-    if (document.fileType !== 'text/plain') {
-      const featureName = type === 'summarize' ? 'AI summary' : 'AI explanation';
-      toast({
-        variant: 'destructive',
-        title: `Unsupported for ${type === 'summarize' ? 'Summarization' : 'Explanation'}`,
-        description: `${featureName} is currently only available for plain text (.txt) files.`,
-      });
-      return;
-    }
-  
-    if (type === 'summarize') setIsSummaryLoading(true);
-    if (type === 'explain') setIsExplainLoading(true);
-  
-    try {
-      const commonPayload = {
-        documentText: documentText.slice(0, 15000), // Truncate for performance & cost
-        documentTitle: document.title,
-      };
-  
-      if (type === 'summarize') {
-        const result = await getAiSummary(commonPayload);
-        if (result.error) {
-          toast({ variant: 'destructive', title: 'Summarization Failed', description: result.error });
-        } else {
-          setSummary(result.summary);
-          setIsSummaryDialogOpen(true);
-        }
-      } else if (type === 'explain') {
-        const result = await getAiExplanation(commonPayload);
-        if (result.error) {
-          toast({ variant: 'destructive', title: 'Explanation Failed', description: result.error });
-        } else {
-          setExplanation(result.explanation);
-          setIsExplainDialogOpen(true);
-        }
-      }
-  
-    } catch (e: any) {
-      toast({ variant: 'destructive', title: 'Error', description: e.message || 'Failed to generate response.' });
-    } finally {
-      if (type === 'summarize') setIsSummaryLoading(false);
-      if (type === 'explain') setIsExplainLoading(false);
-    }
+        title: 'AI Features Disabled',
+        description: 'AI features are currently unavailable. Please try again later.',
+    });
+    return;
   };
 
 
@@ -263,20 +217,12 @@ export default function DocumentDetailsPage({ params }: { params: { id: string }
                     Back
             </Button>
             <div className='flex items-center gap-2'>
-                <Button variant="outline" onClick={() => handleAiFeature('explain')} disabled={isExplainLoading}>
-                    {isExplainLoading ? (
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin"/>
-                    ) : (
-                        <BookOpen className="mr-2 h-4 w-4"/>
-                    )}
+                <Button variant="outline" onClick={() => handleAiFeature('explain')} disabled>
+                    <BookOpen className="mr-2 h-4 w-4"/>
                     Explain
                 </Button>
-                <Button variant="outline" onClick={() => handleAiFeature('summarize')} disabled={isSummaryLoading}>
-                    {isSummaryLoading ? (
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin"/>
-                    ) : (
-                        <Sparkles className="mr-2 h-4 w-4"/>
-                    )}
+                <Button variant="outline" onClick={() => handleAiFeature('summarize')} disabled>
+                    <Sparkles className="mr-2 h-4 w-4"/>
                     Summarize
                 </Button>
                 <Button variant="outline" onClick={copyShareLink}>
@@ -396,6 +342,3 @@ export default function DocumentDetailsPage({ params }: { params: { id: string }
     </>
   );
 }
-
-
-    

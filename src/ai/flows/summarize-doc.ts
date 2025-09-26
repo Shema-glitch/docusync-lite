@@ -10,7 +10,7 @@
  * - `SummarizeDocInput`: The input type for the summarizeDoc function.
  * - `SummarizeDocOutput`: The return type for the summarizeDoc function.
  */
-
+/*
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
@@ -59,3 +59,5 @@ const summarizeDocFlow = ai.defineFlow(
     return output!;
   }
 );
+*/
+export {}; // Add this to make it a module

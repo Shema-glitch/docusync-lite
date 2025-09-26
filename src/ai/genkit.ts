@@ -1,4 +1,3 @@
-
 /*
 import {genkit} from 'genkit';
 import {googleAI} from '@genkit-ai/googleai';
@@ -10,5 +9,3 @@ export const ai = genkit({
   enableTracingAndMetrics: true,
 });
 */
-
-export const ai = {}; // Mock ai object

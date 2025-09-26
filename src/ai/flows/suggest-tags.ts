@@ -10,7 +10,7 @@
  * - `SuggestTagsInput`: The input type for the suggestTags function.
  * - `SuggestTagsOutput`: The return type for the suggestTags function.
  */
-
+/*
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
@@ -59,3 +59,5 @@ const suggestTagsFlow = ai.defineFlow(
     return output!;
   }
 );
+*/
+export {}; // Add this to make it a module

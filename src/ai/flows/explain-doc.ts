@@ -10,7 +10,7 @@
  * - `ExplainDocInput`: The input type for the explainDoc function.
  * - `ExplainDocOutput`: The return type for the explainDoc function.
  */
-
+/*
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
@@ -64,3 +64,5 @@ const explainDocFlow = ai.defineFlow(
     return output!;
   }
 );
+*/
+export {}; // Add this to make it a module

@@ -2,7 +2,7 @@
 'use client';
 
 import { useOnboarding } from "@/hooks/use-onboarding";
-import { Popover, PopoverContent } from "./ui/popover";
+import { Popover, PopoverContent, PopoverAnchor } from "./ui/popover";
 import { Button } from "./ui/button";
 import { ArrowLeft, ArrowRight, Check, Upload, Search, Star, Zap, ShieldCheck } from "lucide-react";
 import { Progress } from "./ui/progress";
@@ -109,7 +109,7 @@ export function OnboardingGuide() {
         }
     }
 
-    if (!isGuideVisible || !isMounted) {
+    if (!isGuideVisible || !isMounted || !isVisible) {
         return null;
     }
 
@@ -165,7 +165,7 @@ export function OnboardingGuide() {
         <div className="fixed inset-0 bg-background/60 backdrop-blur-sm z-[100]" />
 
         {/* Highlighter */}
-        {isVisible && targetElement && (
+        {targetElement && (
             <div 
                 className="fixed rounded-md z-[101] border-2 border-primary border-dashed animate-pulse"
                 style={{
@@ -177,7 +177,7 @@ export function OnboardingGuide() {
             />
         )}
         
-        <Popover open={isVisible} onOpenChange={handleOpenChange}>
+        <Popover open onOpenChange={handleOpenChange}>
             {/* The PopoverTrigger is virtual and not rendered */}
             {popoverContent}
         </Popover>

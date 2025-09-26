@@ -149,7 +149,7 @@ export function OnboardingGuide() {
             <PopoverAnchor>
                 {/* This is a virtual anchor, we position the popover based on screen or element */}
                 <div 
-                    className={cn(isCentered ? "fixed inset-0 flex items-center justify-center" : "fixed")}
+                    className={cn(isCentered ? "fixed inset-0" : "fixed")}
                     style={!isCentered && targetElement ? {
                        top: targetElement.getBoundingClientRect().top,
                        left: targetElement.getBoundingClientRect().left,
@@ -161,7 +161,10 @@ export function OnboardingGuide() {
             <PopoverContent 
                 side={side}
                 align={align}
-                className={cn("z-50 w-80", isCentered && "fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2")}
+                className={cn(
+                    "z-50 w-80",
+                    isCentered && "fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
+                )}
                 onEscapeKeyDown={() => setIsGuideVisible(false)}
             >
                 <div className="grid gap-4">

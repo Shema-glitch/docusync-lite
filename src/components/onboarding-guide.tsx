@@ -161,10 +161,13 @@ export function OnboardingGuide() {
             <PopoverContent 
                 side={side}
                 align={align}
-                className={cn(
-                    "z-50 w-80",
-                    isCentered && "fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
-                )}
+                className="z-50 w-80"
+                style={isCentered ? {
+                    position: 'fixed',
+                    top: '50%',
+                    left: '50%',
+                    transform: 'translate(-50%, -50%)',
+                } : {}}
                 onEscapeKeyDown={() => setIsGuideVisible(false)}
             >
                 <div className="grid gap-4">

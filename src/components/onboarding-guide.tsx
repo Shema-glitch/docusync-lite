@@ -9,6 +9,7 @@ import { Progress } from "./ui/progress";
 import { useEffect, useState, useRef } from "react";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
+import { DialogTitle } from "./ui/dialog";
 
 const steps = [
     {
@@ -130,12 +131,12 @@ export function OnboardingGuide() {
     return (
         <>
         {/* Overlay */}
-        <div className="fixed inset-0 bg-background/60 backdrop-blur-sm z-40" />
+        <div className="fixed inset-0 bg-background/60 backdrop-blur-sm z-[100]" />
 
         {/* Highlighter */}
         {isVisible && targetElement && (
             <div 
-                className="fixed rounded-md z-50 border-2 border-primary border-dashed animate-pulse"
+                className="fixed rounded-md z-[101] border-2 border-primary border-dashed animate-pulse"
                 style={{
                     top: targetElement.getBoundingClientRect().top - 4,
                     left: targetElement.getBoundingClientRect().left - 4,
@@ -161,7 +162,7 @@ export function OnboardingGuide() {
             <PopoverContent 
                 side={side}
                 align={align}
-                className="z-50 w-80"
+                className="z-[102] w-80"
                 style={isCentered ? {
                     position: 'fixed',
                     top: '50%',
@@ -175,7 +176,9 @@ export function OnboardingGuide() {
                         <div className="flex justify-center items-center mb-4 bg-primary/10 rounded-full h-12 w-12 mx-auto">
                             <CurrentIcon className="h-6 w-6 text-primary" />
                         </div>
-                        <h4 className="font-medium leading-none">{step.title}</h4>
+                        <DialogTitle asChild>
+                            <h4 className="font-medium leading-none">{step.title}</h4>
+                        </DialogTitle>
                         <p className="text-sm text-muted-foreground">
                             {step.description}
                         </p>

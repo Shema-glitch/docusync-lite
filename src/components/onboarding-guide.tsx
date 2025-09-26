@@ -9,7 +9,6 @@ import { Progress } from "./ui/progress";
 import { useEffect, useState, useRef } from "react";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
-import { DialogTitle } from "./ui/dialog";
 
 const steps = [
     {
@@ -66,6 +65,7 @@ export function OnboardingGuide() {
 
     const step = steps[currentStep];
     const progress = ((currentStep + 1) / totalSteps) * 100;
+    const titleId = `onboarding-title-${currentStep}`;
     
     useEffect(() => {
         setIsMounted(true);
@@ -150,7 +150,7 @@ export function OnboardingGuide() {
             <PopoverAnchor>
                 {/* This is a virtual anchor, we position the popover based on screen or element */}
                 <div 
-                    className={cn(isCentered ? "fixed inset-0" : "fixed")}
+                    className={cn(!isCentered && "fixed")}
                     style={!isCentered && targetElement ? {
                        top: targetElement.getBoundingClientRect().top,
                        left: targetElement.getBoundingClientRect().left,
@@ -170,15 +170,14 @@ export function OnboardingGuide() {
                     transform: 'translate(-50%, -50%)',
                 } : {}}
                 onEscapeKeyDown={() => setIsGuideVisible(false)}
+                aria-labelledby={titleId}
             >
                 <div className="grid gap-4">
                     <div className="space-y-2 text-center">
                         <div className="flex justify-center items-center mb-4 bg-primary/10 rounded-full h-12 w-12 mx-auto">
                             <CurrentIcon className="h-6 w-6 text-primary" />
                         </div>
-                        <DialogTitle asChild>
-                            <h4 className="font-medium leading-none">{step.title}</h4>
-                        </DialogTitle>
+                        <h4 id={titleId} className="font-medium leading-none">{step.title}</h4>
                         <p className="text-sm text-muted-foreground">
                             {step.description}
                         </p>

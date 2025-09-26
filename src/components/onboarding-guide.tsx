@@ -2,7 +2,7 @@
 'use client';
 
 import { useOnboarding } from "@/hooks/use-onboarding";
-import { Popover, PopoverContent, PopoverAnchor } from "./ui/popover";
+import { Popover, PopoverContent } from "./ui/popover";
 import { Button } from "./ui/button";
 import { ArrowLeft, ArrowRight, Check, Upload, Search, Star, Zap, ShieldCheck } from "lucide-react";
 import { Progress } from "./ui/progress";
@@ -128,6 +128,50 @@ export function OnboardingGuide() {
     const side = isCentered ? undefined : (step.position.includes('-') ? step.position.split('-')[0] as any : step.position);
     const align = isCentered ? undefined : (step.position.includes('-') ? step.position.split('-')[1] as any : 'center');
 
+    const popoverContent = (
+         <PopoverContent 
+            side={side}
+            align={align}
+            className="z-[102] w-80"
+            style={isCentered ? {
+                position: 'fixed',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+            } : {}}
+            onEscapeKeyDown={() => setIsGuideVisible(false)}
+            aria-labelledby={titleId}
+        >
+            <div className="grid gap-4">
+                <div className="space-y-2 text-center">
+                    <div className="flex justify-center items-center mb-4 bg-primary/10 rounded-full h-12 w-12 mx-auto">
+                        <CurrentIcon className="h-6 w-6 text-primary" />
+                    </div>
+                    <h4 id={titleId} className="font-medium leading-none">{step.title}</h4>
+                    <p className="text-sm text-muted-foreground">
+                        {step.description}
+                    </p>
+                </div>
+
+                <Progress value={progress} className="w-full my-2" />
+
+                <div className="flex justify-between w-full">
+                    {currentStep > 0 ? (
+                        <Button variant="ghost" size="sm" onClick={prevStep}>
+                            <ArrowLeft className="mr-2 h-4 w-4" /> Previous
+                        </Button>
+                    ) : <div />}
+
+                    <Button size="sm" onClick={handleNext}>
+                        {currentStep < totalSteps - 1 ? 'Next' : 'Finish'}
+                        <ArrowRight className={cn("ml-2 h-4 w-4", currentStep === totalSteps - 1 && "hidden")} />
+                        <Check className={cn("ml-2 h-4 w-4", currentStep < totalSteps - 1 && "hidden")} />
+                    </Button>
+                </div>
+            </div>
+        </PopoverContent>
+    );
+
     return (
         <>
         {/* Overlay */}
@@ -147,59 +191,24 @@ export function OnboardingGuide() {
         )}
         
         <Popover open={isVisible} onOpenChange={handleOpenChange}>
-            <PopoverAnchor>
-                {/* This is a virtual anchor, we position the popover based on screen or element */}
+            {/* 
+              This is a virtual anchor that we position based on the target element.
+              The PopoverContent will then position itself relative to this anchor.
+              For the centered "welcome" step, this div is not rendered, and we use
+              fixed positioning on the PopoverContent itself.
+            */}
+            {!isCentered && targetElement && (
                 <div 
-                    className={cn(!isCentered && "fixed")}
-                    style={!isCentered && targetElement ? {
+                    style={{
+                       position: 'fixed',
                        top: targetElement.getBoundingClientRect().top,
                        left: targetElement.getBoundingClientRect().left,
                        width: targetElement.getBoundingClientRect().width,
                        height: targetElement.getBoundingClientRect().height,
-                    } : {}}
+                    }}
                 />
-            </PopoverAnchor>
-            <PopoverContent 
-                side={side}
-                align={align}
-                className="z-[102] w-80"
-                style={isCentered ? {
-                    position: 'fixed',
-                    top: '50%',
-                    left: '50%',
-                    transform: 'translate(-50%, -50%)',
-                } : {}}
-                onEscapeKeyDown={() => setIsGuideVisible(false)}
-                aria-labelledby={titleId}
-            >
-                <div className="grid gap-4">
-                    <div className="space-y-2 text-center">
-                        <div className="flex justify-center items-center mb-4 bg-primary/10 rounded-full h-12 w-12 mx-auto">
-                            <CurrentIcon className="h-6 w-6 text-primary" />
-                        </div>
-                        <h4 id={titleId} className="font-medium leading-none">{step.title}</h4>
-                        <p className="text-sm text-muted-foreground">
-                            {step.description}
-                        </p>
-                    </div>
-
-                    <Progress value={progress} className="w-full my-2" />
-
-                    <div className="flex justify-between w-full">
-                        {currentStep > 0 ? (
-                            <Button variant="ghost" size="sm" onClick={prevStep}>
-                                <ArrowLeft className="mr-2 h-4 w-4" /> Previous
-                            </Button>
-                        ) : <div />}
-
-                        <Button size="sm" onClick={handleNext}>
-                            {currentStep < totalSteps - 1 ? 'Next' : 'Finish'}
-                            <ArrowRight className={cn("ml-2 h-4 w-4", currentStep === totalSteps - 1 && "hidden")} />
-                            <Check className={cn("ml-2 h-4 w-4", currentStep < totalSteps - 1 && "hidden")} />
-                        </Button>
-                    </div>
-                </div>
-            </PopoverContent>
+            )}
+            {popoverContent}
         </Popover>
         </>
     );

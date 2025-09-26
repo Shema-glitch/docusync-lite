@@ -108,14 +108,14 @@ export function AppHeader() {
               ))}
             </nav>
             <div className="mt-auto">
-              <UploadButton />
+              <UploadButton data-onboarding-id="step-1-upload" />
             </div>
           </SheetContent>
         </Sheet>
       )}
       <div className="w-full flex-1">
         <form onSubmit={handleSearchSubmit}>
-            <div className="relative">
+            <div className="relative" data-onboarding-id="step-2-search">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
               type="search"
@@ -128,12 +128,12 @@ export function AppHeader() {
         </form>
       </div>
       <div className="hidden md:block">
-        <UploadButton />
+        <UploadButton data-onboarding-id="step-1-upload" />
       </div>
       <HeaderSuggestions />
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-        <Button variant="secondary" size="icon" className="rounded-full">
+        <Button variant="secondary" size="icon" className="rounded-full" data-onboarding-id="step-4-security">
             <Avatar className="h-8 w-8">
                 <AvatarImage src={user?.avatar} alt={user?.name ?? ''} data-ai-hint="profile picture" />
                 <AvatarFallback>{user?.name?.charAt(0)}</AvatarFallback>

@@ -167,7 +167,9 @@ export function DocumentCard({ document }: DocumentCardProps) {
     }
   }
   
-  const toggleFavorite = () => {
+  const toggleFavorite = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
     updateDocument(document.id, { isFavorite: !document.isFavorite });
      toast({
         title: document.isFavorite ? 'Removed from Favorites' : 'Added to Favorites',
@@ -252,7 +254,10 @@ export function DocumentCard({ document }: DocumentCardProps) {
 
   return (
     <>
-    <Card className="flex flex-col h-full overflow-hidden transition-transform duration-200 ease-in-out hover:-translate-y-1 hover:shadow-xl bg-card">
+    <Card 
+      className="flex flex-col h-full overflow-hidden transition-transform duration-200 ease-in-out hover:-translate-y-1 hover:shadow-xl bg-card"
+      data-onboarding-id="step-3-favorite"
+    >
       <CardHeader className="flex-row items-start gap-4 p-4">
         <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary shrink-0">
           <Icon className="h-6 w-6" />

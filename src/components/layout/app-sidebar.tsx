@@ -54,11 +54,12 @@ export function AppSidebar() {
   const pathname = usePathname();
   const { user, logout } = useAuth();
   const { tags: allTags } = useDocuments();
-  const { isFirstTime: showOnboarding, currentStep } = useOnboarding();
+  const { isGuideVisible, currentStep, completeOnboarding } = useOnboarding();
   const [isWorkflowOpen, setIsWorkflowOpen] = useState(true);
   const [isTagsOpen, setIsTagsOpen] = useState(true);
 
-  const onboardingProgress = showOnboarding ? ((currentStep + 1) / 5) * 100 : 0;
+  const totalSteps = 5;
+  const onboardingProgress = isGuideVisible ? ((currentStep + 1) / totalSteps) * 100 : 0;
 
   return (
     <aside className="hidden border-r bg-muted/40 md:block">
@@ -170,11 +171,16 @@ export function AppSidebar() {
                 </div>
             </div>
              <div className="mt-auto p-4 space-y-4">
-                <UploadButton />
+                <div data-onboarding-id="step-1-upload">
+                    <UploadButton />
+                </div>
                 <div className="border-t pt-4">
-                   {showOnboarding && (
+                   {isGuideVisible && (
                        <div className="mb-4 space-y-2">
-                           <p className="text-xs text-muted-foreground">Onboarding Progress</p>
+                           <div className="flex justify-between items-center">
+                             <p className="text-xs text-muted-foreground">Onboarding Progress</p>
+                             <Button variant="link" size="sm" className="h-auto p-0 text-xs" onClick={completeOnboarding}>Skip</Button>
+                           </div>
                            <Progress value={onboardingProgress} className="h-2" />
                        </div>
                    )}

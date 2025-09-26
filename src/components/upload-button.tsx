@@ -9,9 +9,10 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/t
 
 interface UploadButtonProps {
     isIcon?: boolean;
+    "data-onboarding-id"?: string;
 }
 
-export function UploadButton({ isIcon = false }: UploadButtonProps) {
+export function UploadButton({ isIcon = false, ...props }: UploadButtonProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   if (isIcon) {
@@ -24,6 +25,7 @@ export function UploadButton({ isIcon = false }: UploadButtonProps) {
                             size="icon"
                             className="rounded-full h-10 w-10 bg-primary text-primary-foreground"
                             onClick={() => setIsDialogOpen(true)}
+                            {...props}
                         >
                             <Plus className="h-6 w-6" />
                         </Button>
@@ -38,7 +40,7 @@ export function UploadButton({ isIcon = false }: UploadButtonProps) {
 
   return (
     <>
-      <Button onClick={() => setIsDialogOpen(true)} className="w-full">
+      <Button onClick={() => setIsDialogOpen(true)} className="w-full" {...props}>
         <Upload className="mr-2 h-4 w-4" />
         <span>Upload Document</span>
       </Button>

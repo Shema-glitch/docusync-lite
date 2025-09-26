@@ -16,15 +16,12 @@ const steps = [
         description: "This quick tour will show you the key features to get you started. You'll learn how to upload, find, and organize your documents.",
         icon: Zap,
         targetId: null,
-        position: 'center' as const,
-        route: null,
     },
     {
         title: "Upload Your First Document",
         description: "Click here to upload files. You can drag and drop or browse your computer. It's the first step to building your digital vault.",
         icon: Upload,
         targetId: 'step-1-upload',
-        position: 'bottom' as const,
         route: null,
     },
     {
@@ -32,7 +29,6 @@ const steps = [
         description: "Use the search bar to instantly find documents by title, content, or tags. Never lose a file again.",
         icon: Search,
         targetId: 'step-2-search',
-        position: 'bottom' as const,
         route: null,
     },
     {
@@ -40,7 +36,6 @@ const steps = [
         description: "Hover over any document and click the star icon to pin it for quick access from your dashboard.",
         icon: Star,
         targetId: 'step-3-favorite',
-        position: 'bottom' as const,
         route: '/documents',
     },
     {
@@ -48,7 +43,6 @@ const steps = [
         description: "Head to Settings > Security to enable Two-Factor Authentication (2FA). It adds an extra layer of protection.",
         icon: ShieldCheck,
         targetId: 'step-4-security',
-        position: 'bottom-end' as const,
         route: '/settings',
     },
 ];
@@ -61,7 +55,6 @@ export function OnboardingGuide() {
     const [isMounted, setIsMounted] = useState(false);
     const [isVisible, setIsVisible] = useState(false);
     const router = useRouter();
-    const previousRouteRef = useRef<string | null>(null);
 
     const step = steps[currentStep];
     const progress = ((currentStep + 1) / totalSteps) * 100;
@@ -76,11 +69,9 @@ export function OnboardingGuide() {
             const currentStepInfo = steps[currentStep];
 
             if (currentStepInfo.route && window.location.pathname !== currentStepInfo.route) {
-                previousRouteRef.current = window.location.pathname;
                 router.push(currentStepInfo.route);
             }
             
-            // Hide popover while we find the element
             setIsVisible(false);
 
             if (currentStepInfo.targetId) {
@@ -88,7 +79,7 @@ export function OnboardingGuide() {
                     const found = document.querySelector<HTMLElement>(`[data-onboarding-id="${currentStepInfo.targetId}"]`);
                     if (found) {
                         setTargetElement(found);
-                        setIsVisible(true); // Show popover now that element is found
+                        setIsVisible(true);
                         clearInterval(intervalId);
                     }
                 }
@@ -96,7 +87,7 @@ export function OnboardingGuide() {
                 return () => clearInterval(intervalId);
             } else {
                 setTargetElement(null);
-                setIsVisible(true); // Show for non-targeted steps (like the intro)
+                setIsVisible(true);
             }
         } else {
             setIsVisible(false);
@@ -122,23 +113,19 @@ export function OnboardingGuide() {
         return null;
     }
 
-    const isCentered = step.position === 'center';
     const CurrentIcon = step.icon;
-
-    const side = isCentered ? undefined : (step.position.includes('-') ? step.position.split('-')[0] as any : step.position);
-    const align = isCentered ? undefined : (step.position.includes('-') ? step.position.split('-')[1] as any : 'center');
 
     const popoverContent = (
          <PopoverContent 
-            side={side}
-            align={align}
+            side="bottom"
+            align="center"
             className="z-[102] w-80"
-            style={isCentered ? {
+            style={{
                 position: 'fixed',
                 top: '50%',
                 left: '50%',
                 transform: 'translate(-50%, -50%)',
-            } : {}}
+            }}
             onEscapeKeyDown={() => setIsGuideVisible(false)}
             aria-labelledby={titleId}
         >
@@ -191,23 +178,7 @@ export function OnboardingGuide() {
         )}
         
         <Popover open={isVisible} onOpenChange={handleOpenChange}>
-            {/* 
-              This is a virtual anchor that we position based on the target element.
-              The PopoverContent will then position itself relative to this anchor.
-              For the centered "welcome" step, this div is not rendered, and we use
-              fixed positioning on the PopoverContent itself.
-            */}
-            {!isCentered && targetElement && (
-                <div 
-                    style={{
-                       position: 'fixed',
-                       top: targetElement.getBoundingClientRect().top,
-                       left: targetElement.getBoundingClientRect().left,
-                       width: targetElement.getBoundingClientRect().width,
-                       height: targetElement.getBoundingClientRect().height,
-                    }}
-                />
-            )}
+            {/* The PopoverTrigger is virtual and not rendered */}
             {popoverContent}
         </Popover>
         </>

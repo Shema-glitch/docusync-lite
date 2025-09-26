@@ -8,8 +8,6 @@ import { useState, useMemo } from 'react';
 import type { Document } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useSearchParams } from 'next/navigation';
-import { DocumentCardSkeleton } from '@/components/document-card-skeleton';
-import { Skeleton } from '@/components/ui/skeleton';
 
 export default function DocumentsPage() {
   const { documents, loading } = useDocuments();
@@ -57,17 +55,7 @@ export default function DocumentsPage() {
                 </CardDescription>
             </CardHeader>
             <CardContent>
-                {loading ? (
-                    <div className="space-y-2">
-                        <Skeleton className="h-12 w-full" />
-                        <Skeleton className="h-12 w-full" />
-                        <Skeleton className="h-12 w-full" />
-                        <Skeleton className="h-12 w-full" />
-                        <Skeleton className="h-12 w-full" />
-                    </div>
-                ) : (
-                    <DocumentTable documents={filteredDocuments} />
-                )}
+                <DocumentTable documents={filteredDocuments} />
             </CardContent>
         </Card>
     </div>

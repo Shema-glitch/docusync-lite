@@ -2,7 +2,6 @@
 'use client';
 
 import { UserProfile } from '@/components/user-profile';
-import { useAuth } from '@/hooks/use-auth';
 import { useDocuments } from '@/hooks/use-documents.tsx';
 import { useEffect, useState } from 'react';
 import type { User } from '@/hooks/use-auth';

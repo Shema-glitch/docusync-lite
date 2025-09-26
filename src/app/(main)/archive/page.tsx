@@ -5,10 +5,9 @@ import { DocumentTable } from '@/components/document-table';
 import { useDocuments } from '@/hooks/use-documents.tsx';
 import { Archive } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
 
 export default function ArchivePage() {
-  const { documents, updateDocument, loading } = useDocuments();
+  const { documents, updateDocument } = useDocuments();
   const archivedDocuments = documents.filter((doc) => doc.status === 'archived');
 
   const handleUnarchiveAll = () => {
@@ -28,13 +27,7 @@ export default function ArchivePage() {
             )}
         </div>
       
-        {loading ? (
-            <div className="space-y-2">
-                <Skeleton className="h-12 w-full" />
-                <Skeleton className="h-12 w-full" />
-                <Skeleton className="h-12 w-full" />
-            </div>
-        ) : archivedDocuments.length === 0 ? (
+        {archivedDocuments.length === 0 ? (
             <div className="flex flex-1 flex-col items-center justify-center rounded-lg border-2 border-dashed p-12 text-center">
                 <Archive className="h-12 w-12 text-muted-foreground mb-4" />
                 <h3 className="text-xl font-semibold">Your archive is empty</h3>

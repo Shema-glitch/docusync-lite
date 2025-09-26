@@ -4,6 +4,7 @@
 import { DocumentTable } from '@/components/document-table';
 import { useDocuments } from '@/hooks/use-documents.tsx';
 import { Button } from '@/components/ui/button';
+import { Trash2 } from 'lucide-react';
 
 export default function TrashPage() {
   const { documents, permanentlyDeleteDocument } = useDocuments();
@@ -26,6 +27,7 @@ export default function TrashPage() {
       
         {trashedDocuments.length === 0 ? (
             <div className="flex flex-1 flex-col items-center justify-center rounded-lg border-2 border-dashed p-12 text-center">
+                <Trash2 className="h-12 w-12 text-muted-foreground mb-4" />
                 <h3 className="text-xl font-semibold">The trash is empty</h3>
                 <p className="text-muted-foreground mt-2">Deleted documents will appear here.</p>
             </div>

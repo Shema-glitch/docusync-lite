@@ -39,9 +39,7 @@ import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { Calendar } from './ui/calendar';
 import { cn } from '@/lib/utils';
 import { Checkbox } from './ui/checkbox';
-import { Avatar, AvatarFallback } from './ui/avatar';
 import { UploadButton } from './upload-button';
-import { Card, CardContent } from './ui/card';
 import { useRouter } from 'next/navigation';
 import { Input } from './ui/input';
 

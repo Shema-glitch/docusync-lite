@@ -9,17 +9,32 @@ import {
   ToastTitle,
   ToastViewport,
 } from "@/components/ui/toast"
+import { CheckCircle, AlertCircle, Info, AlertTriangle, LucideIcon } from "lucide-react"
+
+const iconMap: Record<string, LucideIcon> = {
+    success: CheckCircle,
+    destructive: AlertCircle,
+    info: Info,
+    warning: AlertTriangle,
+};
+
 
 export function Toaster() {
   const { toasts } = useToast()
 
   return (
     <ToastProvider>
-      {toasts.map(function ({ id, title, description, action, ...props }) {
+      {toasts.map(function ({ id, title, description, action, variant, ...props }) {
+        const Icon = variant ? iconMap[variant] : null;
         return (
-          <Toast key={id} {...props}>
+          <Toast key={id} variant={variant} {...props}>
             <div className="grid gap-1">
-              {title && <ToastTitle>{title}</ToastTitle>}
+              {title && (
+                <ToastTitle>
+                  {Icon && <Icon className="h-5 w-5" />}
+                  {title}
+                </ToastTitle>
+              )}
               {description && (
                 <ToastDescription>{description}</ToastDescription>
               )}

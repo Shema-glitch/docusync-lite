@@ -2,6 +2,7 @@
 
 // Inspired by react-hot-toast library
 import * as React from "react"
+import { CheckCircle, AlertCircle, Info, AlertTriangle, LucideIcon } from "lucide-react"
 
 import type {
   ToastActionElement,

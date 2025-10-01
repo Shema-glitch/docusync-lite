@@ -23,9 +23,10 @@ interface Verify2faDialogProps {
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
   userId: string | null;
+  userEmail: string | null;
 }
 
-export function Verify2faDialog({ isOpen, onOpenChange, userId }: Verify2faDialogProps) {
+export function Verify2faDialog({ isOpen, onOpenChange, userId, userEmail }: Verify2faDialogProps) {
   const [code, setCode] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isResending, setIsResending] = useState(false);
@@ -43,12 +44,13 @@ export function Verify2faDialog({ isOpen, onOpenChange, userId }: Verify2faDialo
   }
 
   const handleResendCode = async () => {
-    if (!userId) return;
+    if (!userId || !userEmail) return;
     setIsResending(true);
     try {
-      const { error } = await send2faCode(userId);
+      const { error } = await send2faCode(userId, userEmail);
       if (error) throw new Error(error);
       toast({
+        variant: 'info',
         title: 'Code Sent',
         description: 'A new verification code has been sent to your email.',
       });
@@ -64,18 +66,13 @@ export function Verify2faDialog({ isOpen, onOpenChange, userId }: Verify2faDialo
   };
 
   const handleVerifyCode = async () => {
-    if (!code || !userId) return;
+    if (!code || !userId || !userEmail) return;
 
     setIsLoading(true);
     try {
-      await verify2faAndLogin(userId, code);
+      await verify2faAndLogin(userId, userEmail, code);
       // The useAuth hook will handle successful login state change
-      toast({
-        title: 'Login Successful!',
-        className: 'bg-green-500 text-white',
-      });
       handleOpenChange(false);
-      router.push('/dashboard');
 
     } catch (error: any) {
       toast({
@@ -127,4 +124,3 @@ export function Verify2faDialog({ isOpen, onOpenChange, userId }: Verify2faDialo
     </Dialog>
   );
 }
-

@@ -45,7 +45,7 @@ interface AuthContextType {
   loginWithFacebook: () => Promise<void>;
   sendPasswordReset: (email: string) => Promise<void>;
   enable2FA: (code: string) => Promise<void>;
-  verify2faAndLogin: (userId: string, code: string) => Promise<void>;
+  verify2faAndLogin: (userId: string, email: string, code: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -86,6 +86,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const [is2faVerificationRequired, setIs2faVerificationRequired] = useState(false);
   const [userIdFor2fa, setUserIdFor2fa] = useState<string | null>(null);
+  const [userEmailFor2fa, setUserEmailFor2fa] = useState<string | null>(null);
   const [tempFirebaseUser, setTempFirebaseUser] = useState<FirebaseUser | null>(null);
 
   useEffect(() => {
@@ -114,9 +115,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     if (userData?.is2faEnabled) {
       setUserIdFor2fa(firebaseUser.uid);
+      setUserEmailFor2fa(firebaseUser.email);
       setTempFirebaseUser(firebaseUser);
       setIs2faVerificationRequired(true);
-      await send2faCode(firebaseUser.uid);
+      if (firebaseUser.email) {
+        await send2faCode(firebaseUser.uid, firebaseUser.email);
+      }
       // We don't sign out, just wait for verification
     } else {
       // Regular login
@@ -144,7 +148,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const verify2faAndLogin = async (userId: string, code: string) => {
+  const verify2faAndLogin = async (userId: string, email: string, code: string) => {
     if (!tempFirebaseUser || tempFirebaseUser.uid !== userId) {
         throw new Error("User session mismatch during 2FA verification.");
     }
@@ -162,6 +166,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // If code is valid, finalize the login
       setIs2faVerificationRequired(false);
       setUserIdFor2fa(null);
+      setUserEmailFor2fa(null);
       const formattedUser = await formatUser(tempFirebaseUser);
       setUser(formattedUser);
       setTempFirebaseUser(null);
@@ -262,6 +267,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(null);
         setTempFirebaseUser(null);
         setUserIdFor2fa(null);
+        setUserEmailFor2fa(null);
         setIs2faVerificationRequired(false);
         router.push('/login');
     } catch (error: any) {
@@ -340,11 +346,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     // If dialog is closed, cancel the 2FA attempt
                     setIs2faVerificationRequired(false);
                     setUserIdFor2fa(null);
+                    setUserEmailFor2fa(null);
                     setTempFirebaseUser(null);
                     signOut(auth); // Fully sign out
                 }
             }}
             userId={userIdFor2fa}
+            userEmail={userEmailFor2fa}
         />
     </AuthContext.Provider>
   );

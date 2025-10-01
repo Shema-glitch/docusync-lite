@@ -103,24 +103,13 @@ export async function permanentlyDeleteFile(document: { id: string; storagePath?
     }
 }
 
-export async function send2faCode(userId: string): Promise<{ error: string | null }> {
+export async function send2faCode(userId: string, email: string): Promise<{ error: string | null }> {
     console.log(`[2FA DEBUG] Starting send2faCode for user: ${userId}`);
+    if (!email) {
+        return { error: 'Email address is required.' };
+    }
+    
     try {
-        const userDocRef = adminDb.collection('users').doc(userId);
-        const userDoc = await userDocRef.get();
-
-        if (!userDoc.exists) {
-            console.error(`[2FA DEBUG] User not found: ${userId}`);
-            return { error: 'User not found.' };
-        }
-        
-        const userData = userDoc.data();
-        if (!userData) {
-            console.error(`[2FA DEBUG] User data is empty for user: ${userId}`);
-            return { error: 'User data not found.' };
-        }
-        const email = userData.email;
-
         // Verify SMTP connection
         await new Promise((resolve, reject) => {
             transporter.verify(function (error, success) {
@@ -200,3 +189,4 @@ export async function verifyAndEnable2FA(userId: string, code: string): Promise<
         return { success: false, error: e.message || "An unexpected error occurred." };
     }
 }
+

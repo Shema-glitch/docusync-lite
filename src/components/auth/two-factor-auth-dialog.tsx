@@ -38,25 +38,14 @@ export function TwoFactorAuthDialog({ isOpen, onOpenChange }: TwoFactorAuthDialo
     onOpenChange(open);
   }
 
-  useEffect(() => {
-    // Automatically send the code when the dialog opens for the first time.
-    if (isOpen && user) {
-        handleSendCode();
-    }
-    // The empty dependency array and the check for `user` ensures this only runs once
-    // when the dialog opens with a valid user session. We disable the exhaustive-deps
-    // lint rule because we intentionally do not want this to re-run on every property change.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen, user]);
-
-
   const handleSendCode = async () => {
-    if (!user) return;
+    if (!user || !user.email) return;
     setIsResending(true);
     try {
-      const { error } = await send2faCode(user.id);
+      const { error } = await send2faCode(user.id, user.email);
       if (error) throw new Error(error);
       toast({
+        variant: 'info',
         title: 'Code Sent',
         description: 'A verification code has been sent to your email.',
       });
@@ -70,6 +59,18 @@ export function TwoFactorAuthDialog({ isOpen, onOpenChange }: TwoFactorAuthDialo
         setIsResending(false);
     }
   };
+
+
+  useEffect(() => {
+    // Automatically send the code when the dialog opens for the first time.
+    if (isOpen && user) {
+        handleSendCode();
+    }
+    // The empty dependency array and the check for `user` ensures this only runs once
+    // when the dialog opens with a valid user session. We disable the exhaustive-deps
+    // lint rule because we intentionally do not want this to re-run on every property change.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, user]);
 
   const handleVerifyCode = async () => {
     if (!code) {
@@ -85,9 +86,9 @@ export function TwoFactorAuthDialog({ isOpen, onOpenChange }: TwoFactorAuthDialo
     try {
       await enable2FA(code);
       toast({
+        variant: 'success',
         title: 'Success!',
         description: 'Two-Factor Authentication has been enabled.',
-        className: 'bg-green-500 text-white',
       });
       handleOpenChange(false);
     } catch (error: any) {

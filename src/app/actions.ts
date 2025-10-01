@@ -28,6 +28,10 @@ const transporter = nodemailer.createTransport({
   },
 });
 
+// In-memory store for OTPs
+const otpStore: Map<string, { code: string; expires: Date }> = new Map();
+
+
 export async function getAiSuggestions(data: SuggestTagsInput) {
   console.log("AI features are currently disabled.");
   return { tags: [], error: 'AI features are currently disabled.' };
@@ -134,11 +138,9 @@ export async function send2faCode(userId: string): Promise<{ error: string | nul
         console.log(`[2FA DEBUG] Generated code: ${code}`);
         const expires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
-        console.log(`[2FA DEBUG] Attempting to save code to Firestore...`);
-        await userDocRef.update({
-            '2fa': { code, expires }
-        });
-        console.log(`[2FA DEBUG] Successfully saved code to Firestore.`);
+        console.log(`[2FA DEBUG] Attempting to save code to in-memory store...`);
+        otpStore.set(userId, { code, expires });
+        console.log(`[2FA DEBUG] Successfully saved code to in-memory store.`);
 
         console.log(`[2FA DEBUG] Attempting to send email to ${email}...`);
         await transporter.sendMail({
@@ -164,37 +166,31 @@ export async function verifyAndEnable2FA(userId: string, code: string): Promise<
     }
 
     try {
-        const userDocRef = adminDb.collection('users').doc(userId);
-        const userDoc = await userDocRef.get();
-        
-        if (!userDoc.exists) {
-            console.error('[2FA DEBUG] User document not found in Firestore.');
-            return { success: false, error: "User not found" };
-        }
+        const otpData = otpStore.get(userId);
+        console.log('[2FA DEBUG] Fetched 2FA data from in-memory store:', otpData);
 
-        const twoFaData = userDoc.data()?.['2fa'];
-        console.log('[2FA DEBUG] Fetched 2FA data from Firestore:', twoFaData);
-
-        if (!twoFaData || !twoFaData.code) {
-            console.error('[2FA DEBUG] No 2FA code found in the database to compare against.');
+        if (!otpData || !otpData.code) {
+            console.error('[2FA DEBUG] No 2FA code found in the store to compare against.');
             return { success: false, error: "Verification code not found. Please try sending a new one." };
         }
         
-        if (new Date() > twoFaData.expires.toDate()) {
+        if (new Date() > otpData.expires) {
             console.error('[2FA DEBUG] Expired code.');
+            otpStore.delete(userId); // Clean up expired code
             return { success: false, error: "Verification code has expired. Please request a new one." };
         }
 
-        if (twoFaData.code !== code) {
-            console.error(`[2FA DEBUG] Code mismatch. User entered: ${code}, DB code: ${twoFaData.code}`);
+        if (otpData.code !== code) {
+            console.error(`[2FA DEBUG] Code mismatch. User entered: ${code}, DB code: ${otpData.code}`);
             return { success: false, error: "Invalid verification code." };
         }
         
         console.log('[2FA DEBUG] Code verified successfully. Updating Firestore document...');
+        const userDocRef = adminDb.collection('users').doc(userId);
         await userDocRef.update({
             is2faEnabled: true,
-            '2fa': null, // Clear the 2fa object
         });
+        otpStore.delete(userId); // Clean up used code
         console.log('[2FA DEBUG] Firestore document updated. 2FA is now enabled.');
         
         return { success: true, error: null };

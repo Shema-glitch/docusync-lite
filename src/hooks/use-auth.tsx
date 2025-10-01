@@ -21,6 +21,7 @@ import { auth, db } from '@/lib/firebase';
 import { doc, getDoc, setDoc, writeBatch, collection, getDocs, query, where, updateDoc } from 'firebase/firestore';
 import { send2faCode, verifyAndEnable2FA } from '@/app/actions';
 import { Verify2faDialog } from '@/components/auth/verify-2fa-dialog';
+import { useToast } from './use-toast';
 
 
 export interface User {
@@ -81,20 +82,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+  const { toast } = useToast();
 
   const [is2faVerificationRequired, setIs2faVerificationRequired] = useState(false);
   const [userIdFor2fa, setUserIdFor2fa] = useState<string | null>(null);
+  const [tempFirebaseUser, setTempFirebaseUser] = useState<FirebaseUser | null>(null);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
-        // If 2FA verification is pending, don't set user yet.
-        if (is2faVerificationRequired) return;
-
-        const formattedUser = await formatUser(firebaseUser);
-        localStorage.setItem('lastUserEmail', formattedUser.email);
-        localStorage.setItem('lastUserName', formattedUser.name);
-        setUser(formattedUser);
+        if (!is2faVerificationRequired) {
+            const formattedUser = await formatUser(firebaseUser);
+            localStorage.setItem('lastUserEmail', formattedUser.email);
+            localStorage.setItem('lastUserName', formattedUser.name);
+            setUser(formattedUser);
+        }
       } else {
         setUser(null);
       }
@@ -105,22 +107,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [is2faVerificationRequired]);
   
   const handleSuccessfulLogin = useCallback(async (firebaseUser: FirebaseUser) => {
+    setLoading(true);
     const userDocRef = doc(db, 'users', firebaseUser.uid);
     const userDoc = await getDoc(userDocRef);
     const userData = userDoc.data();
 
     if (userData?.is2faEnabled) {
       setUserIdFor2fa(firebaseUser.uid);
+      setTempFirebaseUser(firebaseUser);
       setIs2faVerificationRequired(true);
       await send2faCode(firebaseUser.uid);
-      await signOut(auth); // Sign out temporarily until 2FA is verified
+      // We don't sign out, just wait for verification
     } else {
       // Regular login
       const formattedUser = await formatUser(firebaseUser);
       setUser(formattedUser);
+      const redirect = new URLSearchParams(window.location.search).get('redirect');
+      router.push(redirect ? decodeURIComponent(redirect) : '/dashboard');
     }
     setLoading(false);
-  }, []);
+  }, [router]);
 
 
   const login = async (email: string, password: string): Promise<void> => {
@@ -137,61 +143,37 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         throw new Error(error.message);
     }
   };
-  
-  const completeLogin = async (userId: string) => {
-    // This function will re-authenticate the user silently after 2FA is verified
-    // This is a simplified approach. A more robust solution might use custom tokens.
-    setIs2faVerificationRequired(false);
-    setUserIdFor2fa(null);
-    // The onAuthStateChanged listener will now pick up the user and set the session.
-    // For this example, we assume the user is already logged in again via a separate step.
-    // In a real app, you'd re-validate the session here.
-    const userDocRef = doc(db, 'users', userId);
-    const userDoc = await getDoc(userDocRef);
-    if(auth.currentUser){
-        const formattedUser = await formatUser(auth.currentUser);
-        setUser(formattedUser);
+
+  const verify2faAndLogin = async (userId: string, code: string) => {
+    if (!tempFirebaseUser || tempFirebaseUser.uid !== userId) {
+        throw new Error("User session mismatch during 2FA verification.");
     }
-  };
-  
-   const verify2faAndLogin = async (userId: string, code: string) => {
+    // Using the in-memory store via server action
     const userDocRef = doc(db, 'users', userId);
-    const userDoc = await getDoc(userDocRef);
+    const userDoc = await userDocRef.get();
     if (!userDoc.exists()) throw new Error("User not found");
 
-    const twoFaData = userDoc.data()['2fa'];
-    if (!twoFaData || twoFaData.code !== code || new Date() > twoFaData.expires.toDate()) {
-      throw new Error("Invalid or expired 2FA code.");
+    // This part is now a pseudo-verification as the real check is in the server action
+    // But we need to do it to avoid depending on the server action's response for login flow
+    // In a real app with a dedicated backend, the server action would return a custom token
+    const { success, error } = await verifyAndEnable2FA(userId, code);
+    
+    if (success) {
+      // If code is valid, finalize the login
+      setIs2faVerificationRequired(false);
+      setUserIdFor2fa(null);
+      const formattedUser = await formatUser(tempFirebaseUser);
+      setUser(formattedUser);
+      setTempFirebaseUser(null);
+      toast({
+        variant: 'success',
+        title: 'Login Successful!',
+      });
+      const redirect = new URLSearchParams(window.location.search).get('redirect');
+      router.push(redirect ? decodeURIComponent(redirect) : '/dashboard');
+    } else {
+       throw new Error(error || "Invalid or expired 2FA code.");
     }
-
-    // Code is valid. In a real app, you'd re-authenticate and create a session.
-    // For this simplified flow, we'll just set the state.
-    setIs2faVerificationRequired(false);
-    setUserIdFor2fa(null);
-    // We can't just set the user, as we signed them out.
-    // The user needs to log in again, but this time they will pass the 2FA check.
-    // This is a limitation of not having a full backend with custom tokens.
-    // For the demo, we'll just close the dialog and let them log in again. The `is2faEnabled` flag is now set.
-    // A better approach would be: verify code -> server issues custom token -> client logs in with custom token.
-    // Let's just simulate the final step.
-     
-    // This part is tricky without a backend.
-    // Let's find a way to sign the user in.
-    // Since we can't re-use the password, we'll have to rely on onAuthStateChanged.
-    // We will just close the dialog. The user is technically not logged in.
-    // Let's change the flow. After password, we check for 2FA. If yes, show dialog.
-    // after verification, we can set the user.
-    // The issue is that the firebaseUser object is gone.
-    // Let's NOT sign out the user.
-     
-     // New flow idea:
-     // 1. signInWithEmailAndPassword
-     // 2. get user object, check if 2fa enabled from firestore
-     // 3. if yes, don't set user state yet. Show 2FA modal. Send code.
-     // 4. User enters code. Verify it.
-     // 5. If correct, NOW set the user state.
-     
-    // Refactored `login` handles this.
   };
 
   const signup = async (name: string, email: string, password: string): Promise<void> => {
@@ -206,7 +188,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             photoURL: avatar
         });
         
-        // Also create a user document in Firestore
         const userDocRef = doc(db, 'users', firebaseUser.uid);
         await setDoc(userDocRef, {
             name,
@@ -217,12 +198,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         
         localStorage.setItem('lastLoginProvider', 'password');
         // onAuthStateChanged will handle setting the new user
+        const redirect = new URLSearchParams(window.location.search).get('redirect');
+        router.push(redirect ? decodeURIComponent(redirect) : '/dashboard');
+
     } catch (error: any) {
+        setLoading(false);
         throw new Error(error.message);
     }
   };
   
   const handleProviderLogin = async (provider: GoogleAuthProvider | FacebookAuthProvider | OAuthProvider) => {
+    setLoading(true);
     try {
       const result = await signInWithPopup(auth, provider);
       const firebaseUser = result.user;
@@ -230,32 +216,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const userDocRef = doc(db, 'users', firebaseUser.uid);
       const userDoc = await getDoc(userDocRef);
 
+      let isNewUser = false;
       if (!userDoc.exists()) {
+          isNewUser = true;
           await setDoc(userDocRef, {
               name: firebaseUser.displayName,
               email: firebaseUser.email,
               avatar: firebaseUser.photoURL,
               is2faEnabled: false,
           });
-      } else {
-          // If user exists, check for 2FA (for future-proofing social logins with 2FA)
-          if (userDoc.data().is2faEnabled) {
-              await signOut(auth); // Sign out immediately
-              setUserIdFor2fa(firebaseUser.uid);
-              setIs2faVerificationRequired(true);
-              await send2faCode(firebaseUser.uid);
-              // This will show the 2FA dialog, user needs to re-login via email/pass after this
-              throw new Error("This social account has 2FA enabled. Please log in with your email and password.");
-          }
       }
       
       // @ts-ignore
       localStorage.setItem('lastLoginProvider', provider.providerId);
-      // onAuthStateChanged will set the user
+      const formattedUser = await formatUser(firebaseUser);
+      setUser(formattedUser);
+      const redirect = new URLSearchParams(window.location.search).get('redirect');
+      router.push(redirect ? decodeURIComponent(redirect) : '/dashboard');
+
     } catch (error: any) {
        if (error.code !== 'auth/popup-closed-by-user') {
             throw error;
         }
+    } finally {
+        setLoading(false);
     }
   }
 
@@ -276,7 +260,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
         await signOut(auth);
         setUser(null);
-        // We don't clear lastLoginProvider so the user can easily log back in.
+        setTempFirebaseUser(null);
+        setUserIdFor2fa(null);
+        setIs2faVerificationRequired(false);
         router.push('/login');
     } catch (error: any) {
         console.error("Logout failed", error);
@@ -349,7 +335,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         {children}
         <Verify2faDialog 
             isOpen={is2faVerificationRequired}
-            onOpenChange={setIs2faVerificationRequired}
+            onOpenChange={(isOpen) => {
+                if (!isOpen) {
+                    // If dialog is closed, cancel the 2FA attempt
+                    setIs2faVerificationRequired(false);
+                    setUserIdFor2fa(null);
+                    setTempFirebaseUser(null);
+                    signOut(auth); // Fully sign out
+                }
+            }}
             userId={userIdFor2fa}
         />
     </AuthContext.Provider>

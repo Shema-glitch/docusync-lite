@@ -152,14 +152,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!tempFirebaseUser || tempFirebaseUser.uid !== userId) {
         throw new Error("User session mismatch during 2FA verification.");
     }
-    // Using the in-memory store via server action
-    const userDocRef = doc(db, 'users', userId);
-    const userDoc = await userDocRef.get();
-    if (!userDoc.exists()) throw new Error("User not found");
-
-    // This part is now a pseudo-verification as the real check is in the server action
-    // But we need to do it to avoid depending on the server action's response for login flow
-    // In a real app with a dedicated backend, the server action would return a custom token
+    
     const { success, error } = await verifyAndEnable2FA(userId, code);
     
     if (success) {
@@ -328,6 +321,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const result = await verifyAndEnable2FA(user.id, code);
 
     if (result.success) {
+        const userDocRef = doc(db, 'users', user.id);
+        await updateDoc(userDocRef, { is2faEnabled: true });
         setUser(prev => prev ? ({ ...prev, is2faEnabled: true }) : null);
     } else {
         throw new Error(result.error || "Failed to enable 2FA.");

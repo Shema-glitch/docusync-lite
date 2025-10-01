@@ -174,14 +174,10 @@ export async function verifyAndEnable2FA(userId: string, code: string): Promise<
             return { success: false, error: "Invalid verification code." };
         }
         
-        console.log('[2FA DEBUG] Code verified successfully. Updating Firestore document...');
-        const userDocRef = adminDb.collection('users').doc(userId);
-        await userDocRef.update({
-            is2faEnabled: true,
-        });
+        console.log('[2FA DEBUG] Code verified successfully. Clearing OTP from store.');
         otpStore.delete(userId); // Clean up used code
-        console.log('[2FA DEBUG] Firestore document updated. 2FA is now enabled.');
         
+        // The client will now handle updating the user document.
         return { success: true, error: null };
 
     } catch(e: any) {
@@ -189,4 +185,3 @@ export async function verifyAndEnable2FA(userId: string, code: string): Promise<
         return { success: false, error: e.message || "An unexpected error occurred." };
     }
 }
-

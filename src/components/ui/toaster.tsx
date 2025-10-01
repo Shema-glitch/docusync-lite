@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useToast } from "@/hooks/use-toast"
@@ -28,16 +29,18 @@ export function Toaster() {
         const Icon = variant ? iconMap[variant] : null;
         return (
           <Toast key={id} variant={variant} {...props}>
-            <div className="grid gap-1">
-              {title && (
-                <ToastTitle>
-                  {Icon && <Icon className="h-5 w-5" />}
-                  {title}
-                </ToastTitle>
-              )}
-              {description && (
-                <ToastDescription>{description}</ToastDescription>
-              )}
+            <div className="flex items-start gap-3">
+              {Icon && <Icon className="h-6 w-6 mt-0.5" />}
+              <div className="grid gap-1">
+                {title && (
+                  <ToastTitle>
+                    {title}
+                  </ToastTitle>
+                )}
+                {description && (
+                  <ToastDescription>{description}</ToastDescription>
+                )}
+              </div>
             </div>
             {action}
             <ToastClose />

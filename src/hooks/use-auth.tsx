@@ -131,6 +131,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         await handleSuccessfulLogin(cred.user);
     } catch(error: any) {
         setLoading(false);
+        if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
+          throw new Error('Invalid credentials. Please check your email and password.');
+        }
         throw new Error(error.message);
     }
   };
@@ -187,8 +190,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
      // 3. if yes, don't set user state yet. Show 2FA modal. Send code.
      // 4. User enters code. Verify it.
      // 5. If correct, NOW set the user state.
-     
-    // This is what I will implement. I will refactor login.
      
     // Refactored `login` handles this.
   };

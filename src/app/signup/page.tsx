@@ -62,6 +62,7 @@ export default function SignupPage() {
     try {
       await signup(name, email, password);
       toast({
+        variant: 'success',
         title: 'Success!',
         description: "Account created successfully! Redirecting...",
       });

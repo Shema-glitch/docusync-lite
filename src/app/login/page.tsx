@@ -69,6 +69,7 @@ export default function LoginPage() {
     const resetSuccess = searchParams.get('reset_success');
     if (resetSuccess) {
       toast({
+        variant: 'success',
         title: 'Success',
         description: 'Your password has been reset successfully. Please log in with your new password.',
       });
@@ -101,7 +102,7 @@ export default function LoginPage() {
 
     if (!isFormFilled) {
         toast({
-            variant: "destructive",
+            variant: "info",
             title: "Notice",
             description: "Please fill in all fields.",
         });
@@ -157,7 +158,7 @@ export default function LoginPage() {
     setIsRecentLoginLoading(true);
     if (lastLoginProvider === 'password') {
         toast({
-            variant: "destructive",
+            variant: "info",
             title: "Notice",
             description: "Please enter your password to continue.",
         });

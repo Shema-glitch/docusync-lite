@@ -115,72 +115,67 @@ export function OnboardingGuide() {
 
     const CurrentIcon = step.icon;
 
-    const popoverContent = (
-         <PopoverContent
-            side="bottom"
-            align="center"
-            className="z-[102] w-80"
-            style={!targetElement ? {
-                position: 'fixed',
-                top: '50%',
-                left: '50%',
-                transform: 'translate(-50%, -50%)',
-            } : {}}
-            onEscapeKeyDown={() => setIsGuideVisible(false)}
-            aria-labelledby={titleId}
-        >
-            <div className="grid gap-4">
-                <div className="space-y-2 text-center">
-                    <div className="flex justify-center items-center mb-4 bg-primary/10 rounded-full h-12 w-12 mx-auto">
-                        <CurrentIcon className="h-6 w-6 text-primary" />
-                    </div>
-                    <h4 id={titleId} className="font-medium leading-none">{step.title}</h4>
-                    <p className="text-sm text-muted-foreground">
-                        {step.description}
-                    </p>
-                </div>
-
-                <Progress value={progress} className="w-full my-2" />
-
-                <div className="flex justify-between w-full">
-                    {currentStep > 0 ? (
-                        <Button variant="ghost" size="sm" onClick={prevStep}>
-                            <ArrowLeft className="mr-2 h-4 w-4" /> Previous
-                        </Button>
-                    ) : <div />}
-
-                    <Button size="sm" onClick={handleNext}>
-                        {currentStep < totalSteps - 1 ? 'Next' : 'Finish'}
-                        <ArrowRight className={cn("ml-2 h-4 w-4", currentStep === totalSteps - 1 && "hidden")} />
-                        <Check className={cn("ml-2 h-4 w-4", currentStep < totalSteps - 1 && "hidden")} />
-                    </Button>
-                </div>
-            </div>
-        </PopoverContent>
-    );
-
     return (
         <>
-        {/* Overlay */}
-        <div className="fixed inset-0 bg-background/60 backdrop-blur-sm z-[100]" />
+            {/* Overlay */}
+            <div className="fixed inset-0 bg-background/60 backdrop-blur-sm z-[100]" />
 
-        {/* Highlighter and Popover Anchor */}
-        {targetElement && (
-            <PopoverAnchor
-                className="fixed rounded-md z-[101] border-2 border-primary border-dashed animate-pulse"
-                style={{
-                    top: targetElement.getBoundingClientRect().top - 4,
-                    left: targetElement.getBoundingClientRect().left - 4,
-                    width: targetElement.getBoundingClientRect().width + 8,
-                    height: targetElement.getBoundingClientRect().height + 8,
-                }}
-            />
-        )}
-        
-        <Popover open onOpenChange={handleOpenChange}>
-            {popoverContent}
-        </Popover>
+            <Popover open onOpenChange={handleOpenChange}>
+                {/* Highlighter and Popover Anchor, now correctly inside Popover */}
+                {targetElement && (
+                    <PopoverAnchor
+                        className="fixed rounded-md z-[101] border-2 border-primary border-dashed animate-pulse"
+                        style={{
+                            top: targetElement.getBoundingClientRect().top - 4,
+                            left: targetElement.getBoundingClientRect().left - 4,
+                            width: targetElement.getBoundingClientRect().width + 8,
+                            height: targetElement.getBoundingClientRect().height + 8,
+                        }}
+                    />
+                )}
+
+                <PopoverContent
+                    side="bottom"
+                    align="center"
+                    className="z-[102] w-80"
+                    style={!targetElement ? {
+                        position: 'fixed',
+                        top: '50%',
+                        left: '50%',
+                        transform: 'translate(-50%, -50%)',
+                    } : {}}
+                    onEscapeKeyDown={() => setIsGuideVisible(false)}
+                    aria-labelledby={titleId}
+                >
+                    <div className="grid gap-4">
+                        <div className="space-y-2 text-center">
+                            <div className="flex justify-center items-center mb-4 bg-primary/10 rounded-full h-12 w-12 mx-auto">
+                                <CurrentIcon className="h-6 w-6 text-primary" />
+                            </div>
+                            <h4 id={titleId} className="font-medium leading-none">{step.title}</h4>
+                            <p className="text-sm text-muted-foreground">
+                                {step.description}
+                            </p>
+                        </div>
+
+                        <Progress value={progress} className="w-full my-2" />
+
+                        <div className="flex justify-between w-full">
+                            {currentStep > 0 ? (
+                                <Button variant="ghost" size="sm" onClick={prevStep}>
+                                    <ArrowLeft className="mr-2 h-4 w-4" /> Previous
+                                </Button>
+                            ) : <div />}
+
+                            <Button size="sm" onClick={handleNext}>
+                                {currentStep < totalSteps - 1 ? 'Next' : 'Finish'}
+                                <ArrowRight className={cn("ml-2 h-4 w-4", currentStep === totalSteps - 1 && "hidden")} />
+                                <Check className={cn("ml-2 h-4 w-4", currentStep < totalSteps - 1 && "hidden")} />
+                            </Button>
+                        </div>
+                    </div>
+                </PopoverContent>
+            </Popover>
         </>
     );
 }
-

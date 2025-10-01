@@ -147,41 +147,34 @@ export async function send2faCode(userId: string, email: string): Promise<{ erro
     }
 }
 
-export async function verifyAndEnable2FA(userId: string, code: string): Promise<{ success: boolean; error: string | null }> {
-    console.log(`[2FA DEBUG] Starting enable2FA with code: ${code} for user ${userId}`);
+export async function verify2faCode(userId: string, code: string): Promise<{ success: boolean; error: string | null }> {
+    console.log(`[2FA DEBUG] Starting verify2faCode with code: ${code} for user ${userId}`);
     if (!userId) {
         console.error('[2FA DEBUG] No user ID provided.');
         return { success: false, error: "Not authenticated" };
     }
 
-    try {
-        const otpData = otpStore.get(userId);
-        console.log('[2FA DEBUG] Fetched 2FA data from in-memory store:', otpData);
+    const otpData = otpStore.get(userId);
+    console.log('[2FA DEBUG] Fetched 2FA data from in-memory store:', otpData);
 
-        if (!otpData || !otpData.code) {
-            console.error('[2FA DEBUG] No 2FA code found in the store to compare against.');
-            return { success: false, error: "Verification code not found. Please try sending a new one." };
-        }
-        
-        if (new Date() > otpData.expires) {
-            console.error('[2FA DEBUG] Expired code.');
-            otpStore.delete(userId); // Clean up expired code
-            return { success: false, error: "Verification code has expired. Please request a new one." };
-        }
-
-        if (otpData.code !== code) {
-            console.error(`[2FA DEBUG] Code mismatch. User entered: ${code}, DB code: ${otpData.code}`);
-            return { success: false, error: "Invalid verification code." };
-        }
-        
-        console.log('[2FA DEBUG] Code verified successfully. Clearing OTP from store.');
-        otpStore.delete(userId); // Clean up used code
-        
-        // The client will now handle updating the user document.
-        return { success: true, error: null };
-
-    } catch(e: any) {
-        console.error('[2FA DEBUG] CRITICAL ERROR in verifyAndEnable2FA:', e);
-        return { success: false, error: e.message || "An unexpected error occurred." };
+    if (!otpData || !otpData.code) {
+        console.error('[2FA DEBUG] No 2FA code found in the store to compare against.');
+        return { success: false, error: "Verification code not found. Please try sending a new one." };
     }
+    
+    if (new Date() > otpData.expires) {
+        console.error('[2FA DEBUG] Expired code.');
+        otpStore.delete(userId); // Clean up expired code
+        return { success: false, error: "Verification code has expired. Please request a new one." };
+    }
+
+    if (otpData.code !== code) {
+        console.error(`[2FA DEBUG] Code mismatch. User entered: ${code}, DB code: ${otpData.code}`);
+        return { success: false, error: "Invalid verification code." };
+    }
+    
+    console.log('[2FA DEBUG] Code verified successfully. Clearing OTP from store.');
+    otpStore.delete(userId); // Clean up used code
+    
+    return { success: true, error: null };
 }

@@ -19,7 +19,7 @@ import {
 } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase';
 import { doc, getDoc, setDoc, writeBatch, collection, getDocs, query, where, updateDoc } from 'firebase/firestore';
-import { send2faCode, verifyAndEnable2FA } from '@/app/actions';
+import { send2faCode, verify2faCode } from '@/app/actions';
 import { Verify2faDialog } from '@/components/auth/verify-2fa-dialog';
 import { useToast } from './use-toast';
 
@@ -153,7 +153,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         throw new Error("User session mismatch during 2FA verification.");
     }
     
-    const { success, error } = await verifyAndEnable2FA(userId, code);
+    const { success, error } = await verify2faCode(userId, code);
     
     if (success) {
       // If code is valid, finalize the login
@@ -318,7 +318,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         console.error('[2FA DEBUG] No user authenticated.');
         throw new Error("Not authenticated");
     }
-    const result = await verifyAndEnable2FA(user.id, code);
+    const result = await verify2faCode(user.id, code);
 
     if (result.success) {
         const userDocRef = doc(db, 'users', user.id);

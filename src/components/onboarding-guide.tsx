@@ -22,7 +22,7 @@ const steps = [
         description: "Click here to upload files. You can drag and drop or browse your computer. It's the first step to building your digital vault.",
         icon: Upload,
         targetId: 'step-1-upload',
-        route: null,
+        route: '/dashboard',
     },
     {
         title: "Search Across Everything",
@@ -105,7 +105,7 @@ export function OnboardingGuide() {
 
     const handleOpenChange = (open: boolean) => {
         if (!open) {
-            setIsGuideVisible(false);
+            completeOnboarding();
         }
     }
 
@@ -121,7 +121,6 @@ export function OnboardingGuide() {
             <div className="fixed inset-0 bg-background/60 backdrop-blur-sm z-[100]" />
 
             <Popover open onOpenChange={handleOpenChange}>
-                {/* Highlighter and Popover Anchor, now correctly inside Popover */}
                 {targetElement && (
                     <PopoverAnchor
                         className="fixed rounded-md z-[101] border-2 border-primary border-dashed animate-pulse"
@@ -144,7 +143,7 @@ export function OnboardingGuide() {
                         left: '50%',
                         transform: 'translate(-50%, -50%)',
                     } : {}}
-                    onEscapeKeyDown={() => setIsGuideVisible(false)}
+                    onEscapeKeyDown={completeOnboarding}
                     aria-labelledby={titleId}
                 >
                     <div className="grid gap-4">
@@ -169,8 +168,11 @@ export function OnboardingGuide() {
 
                             <Button size="sm" onClick={handleNext}>
                                 {currentStep < totalSteps - 1 ? 'Next' : 'Finish'}
-                                <ArrowRight className={cn("ml-2 h-4 w-4", currentStep === totalSteps - 1 && "hidden")} />
-                                <Check className={cn("ml-2 h-4 w-4", currentStep < totalSteps - 1 && "hidden")} />
+                                {currentStep < totalSteps - 1 ? (
+                                    <ArrowRight className="ml-2 h-4 w-4" />
+                                ) : (
+                                    <Check className="ml-2 h-4 w-4" />
+                                )}
                             </Button>
                         </div>
                     </div>

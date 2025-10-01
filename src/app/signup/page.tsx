@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState } from 'react';
@@ -9,9 +10,9 @@ import { Label } from '@/components/ui/label';
 import { useAuth } from '@/hooks/use-auth';
 import { Loader2, AlertCircle, CheckCircle, Mail } from 'lucide-react';
 import Link from 'next/link';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
 import { AuthHeader } from '@/components/layout/auth-header';
+import { useToast } from '@/hooks/use-toast';
 
 const GoogleIcon = () => (
     <svg className="h-5 w-5" viewBox="0 0 48 48">
@@ -47,29 +48,33 @@ export default function SignupPage() {
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [isMicrosoftLoading, setIsMicrosoftLoading] = useState(false);
   const [isFacebookLoading, setIsFacebookLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
   const { signup, loginWithGoogle, loginWithMicrosoft, loginWithFacebook } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [showEmailForm, setShowEmailForm] = useState(false);
+  const { toast } = useToast();
 
   const anyLoading = isLoading || isGoogleLoading || isMicrosoftLoading || isFacebookLoading;
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    setError(null);
-    setSuccess(null);
     try {
       await signup(name, email, password);
-      setSuccess("Account created successfully! Redirecting...");
+      toast({
+        title: 'Success!',
+        description: "Account created successfully! Redirecting...",
+      });
       setTimeout(() => {
         const redirect = searchParams.get('redirect');
         router.push(redirect ? decodeURIComponent(redirect) : '/');
       }, 2000);
     } catch (err: any) {
-      setError(err.message);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: err.message,
+      });
       setIsLoading(false);
     }
   };
@@ -87,15 +92,17 @@ export default function SignupPage() {
     }[provider];
 
     setLoading(true);
-    setError(null);
-    setSuccess(null);
     try {
         await loginFn();
         const redirect = searchParams.get('redirect');
         router.push(redirect ? decodeURIComponent(redirect) : '/');
     } catch (err: any) {
         if (err.code !== 'auth/popup-closed-by-user') {
-            setError(err.message);
+            toast({
+              variant: "destructive",
+              title: "Error",
+              description: err.message,
+            });
         }
         setLoading(false);
     }
@@ -111,27 +118,6 @@ export default function SignupPage() {
         <div className="w-full max-w-sm space-y-6">
             <div className="text-center">
                 <h1 className="text-3xl font-bold">Create an account</h1>
-            </div>
-
-            <div className="space-y-2">
-                {error && (
-                    <Alert variant="destructive">
-                        <AlertCircle className="h-4 w-4" />
-                        <AlertTitle>Error</AlertTitle>
-                        <AlertDescription>
-                            {error}
-                        </AlertDescription>
-                    </Alert>
-                )}
-                {success && (
-                    <Alert variant="success">
-                        <CheckCircle className="h-4 w-4" />
-                        <AlertTitle>Success</AlertTitle>
-                        <AlertDescription>
-                            {success}
-                        </AlertDescription>
-                    </Alert>
-                )}
             </div>
 
             <div className="grid grid-cols-1 gap-2">

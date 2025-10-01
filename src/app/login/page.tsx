@@ -11,11 +11,11 @@ import { useAuth } from '@/hooks/use-auth';
 import { Loader2, CheckCircle, AlertCircle, LogIn, Info } from 'lucide-react';
 import Link from 'next/link';
 import { ForgotPasswordDialog } from '@/components/auth/forgot-password-dialog';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AuthHeader } from '@/components/layout/auth-header';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
+import { useToast } from '@/hooks/use-toast';
 
 const GoogleIcon = () => (
     <svg className="h-5 w-5" viewBox="0 0 48 48">
@@ -51,13 +51,11 @@ export default function LoginPage() {
   const [isMicrosoftLoading, setIsMicrosoftLoading] = useState(false);
   const [isFacebookLoading, setIsFacebookLoading] = useState(false);
   const [isRecentLoginLoading, setIsRecentLoginLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [notice, setNotice] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
   const { login, loginWithGoogle, loginWithMicrosoft, loginWithFacebook } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isForgotPassOpen, setForgotPassOpen] = useState(false);
+  const { toast } = useToast();
   
   const [lastLoginProvider, setLastLoginProvider] = useState<string | null>(null);
   const [lastUserName, setLastUserName] = useState<string | null>(null);
@@ -70,7 +68,10 @@ export default function LoginPage() {
   useEffect(() => {
     const resetSuccess = searchParams.get('reset_success');
     if (resetSuccess) {
-      setSuccess('Your password has been reset successfully. Please log in with your new password.');
+      toast({
+        title: 'Success',
+        description: 'Your password has been reset successfully. Please log in with your new password.',
+      });
     }
 
     const lastProvider = localStorage.getItem('lastLoginProvider');
@@ -88,7 +89,7 @@ export default function LoginPage() {
         setShowManualForm(true);
     }
 
-  }, [searchParams]);
+  }, [searchParams, toast]);
 
   const handleSuccessfulLogin = () => {
     const redirect = searchParams.get('redirect');
@@ -97,12 +98,13 @@ export default function LoginPage() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
-    setSuccess(null);
-    setNotice(null);
 
     if (!isFormFilled) {
-        setNotice("Please fill in all fields.");
+        toast({
+            variant: "destructive",
+            title: "Notice",
+            description: "Please fill in all fields.",
+        });
         return;
     }
 
@@ -111,7 +113,11 @@ export default function LoginPage() {
       await login(email, password);
       handleSuccessfulLogin();
     } catch (err: any) {
-      setError(err.message);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: err.message,
+      });
       setIsLoading(false);
     }
   };
@@ -129,16 +135,17 @@ export default function LoginPage() {
     }[provider];
 
     setLoading(true);
-    setError(null);
-    setSuccess(null);
-    setNotice(null);
 
     try {
         await loginFn();
         handleSuccessfulLogin();
     } catch (err: any) {
         if (err.code !== 'auth/popup-closed-by-user') {
-            setError(err.message);
+            toast({
+              variant: "destructive",
+              title: "Error",
+              description: err.message,
+            });
         }
         setLoading(false);
     }
@@ -149,7 +156,11 @@ export default function LoginPage() {
     
     setIsRecentLoginLoading(true);
     if (lastLoginProvider === 'password') {
-        setError("Please enter your password to continue.");
+        toast({
+            variant: "destructive",
+            title: "Notice",
+            description: "Please enter your password to continue.",
+        });
         if (lastUserName) {
           const lastEmail = localStorage.getItem('lastUserEmail');
           if (lastEmail) setEmail(lastEmail);
@@ -191,36 +202,6 @@ export default function LoginPage() {
         <div className="w-full max-w-sm space-y-4">
             <div className="text-center">
             <h1 className="text-3xl font-bold">Log in to your account</h1>
-            </div>
-            
-            <div className="space-y-2">
-                {error && (
-                    <Alert variant="destructive">
-                        <AlertCircle className="h-4 w-4" />
-                        <AlertTitle>Error</AlertTitle>
-                        <AlertDescription>
-                            {error}
-                        </AlertDescription>
-                    </Alert>
-                )}
-                {success && (
-                    <Alert variant="success">
-                        <CheckCircle className="h-4 w-4" />
-                        <AlertTitle>Success</AlertTitle>
-                        <AlertDescription>
-                            {success}
-                        </AlertDescription>
-                    </Alert>
-                )}
-                {notice && (
-                    <Alert variant="info">
-                        <Info className="h-4 w-4" />
-                        <AlertTitle>Notice</AlertTitle>
-                        <AlertDescription>
-                            {notice}
-                        </AlertDescription>
-                    </Alert>
-                )}
             </div>
 
             {lastLoginProvider && lastUserName && !showManualForm && (

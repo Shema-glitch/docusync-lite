@@ -116,16 +116,16 @@ export function OnboardingGuide() {
     const CurrentIcon = step.icon;
 
     const popoverContent = (
-         <PopoverContent 
+         <PopoverContent
             side="bottom"
             align="center"
             className="z-[102] w-80"
-            style={{
+            style={!targetElement ? {
                 position: 'fixed',
                 top: '50%',
                 left: '50%',
                 transform: 'translate(-50%, -50%)',
-            }}
+            } : {}}
             onEscapeKeyDown={() => setIsGuideVisible(false)}
             aria-labelledby={titleId}
         >
@@ -164,9 +164,9 @@ export function OnboardingGuide() {
         {/* Overlay */}
         <div className="fixed inset-0 bg-background/60 backdrop-blur-sm z-[100]" />
 
-        {/* Highlighter */}
+        {/* Highlighter and Popover Anchor */}
         {targetElement && (
-            <div 
+            <PopoverAnchor
                 className="fixed rounded-md z-[101] border-2 border-primary border-dashed animate-pulse"
                 style={{
                     top: targetElement.getBoundingClientRect().top - 4,
@@ -178,9 +178,9 @@ export function OnboardingGuide() {
         )}
         
         <Popover open onOpenChange={handleOpenChange}>
-            {/* The PopoverTrigger is virtual and not rendered */}
             {popoverContent}
         </Popover>
         </>
     );
 }
+

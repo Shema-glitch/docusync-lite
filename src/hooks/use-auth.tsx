@@ -229,9 +229,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       // @ts-ignore
       localStorage.setItem('lastLoginProvider', provider.providerId);
-      // Let the onAuthStateChanged listener handle the rest
-      const redirect = new URLSearchParams(window.location.search).get('redirect');
-      router.push(redirect ? decodeURIComponent(redirect) : '/dashboard');
+      await handleSuccessfulLogin(firebaseUser);
 
     } catch (error: any) {
        if (error.code !== 'auth/popup-closed-by-user') {
@@ -376,5 +374,3 @@ export function useAuth() {
   }
   return context;
 }
-
-    

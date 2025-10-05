@@ -112,7 +112,7 @@ export default function LoginPage() {
     setIsLoading(true);
     try {
       await login(email, password);
-      handleSuccessfulLogin();
+      // handleSuccessfulLogin(); // This is now handled inside useAuth for 2FA
     } catch (err: any) {
       toast({
         variant: "destructive",
@@ -139,7 +139,7 @@ export default function LoginPage() {
 
     try {
         await loginFn();
-        handleSuccessfulLogin();
+        // handleSuccessfulLogin(); // This is now handled inside useAuth for 2FA
     } catch (err: any) {
         if (err.code !== 'auth/popup-closed-by-user') {
             toast({
@@ -162,9 +162,8 @@ export default function LoginPage() {
             title: "Notice",
             description: "Please enter your password to continue.",
         });
-        if (lastUserName) {
-          const lastEmail = localStorage.getItem('lastUserEmail');
-          if (lastEmail) setEmail(lastEmail);
+        if (lastUserEmail) {
+          setEmail(lastUserEmail);
         }
         setShowManualForm(true);
     } else if (lastLoginProvider === 'google.com') {

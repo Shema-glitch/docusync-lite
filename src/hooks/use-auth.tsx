@@ -22,6 +22,8 @@ import { doc, getDoc, setDoc, writeBatch, collection, getDocs, query, where, upd
 import { send2faCode, verify2faCode } from '@/app/actions';
 import { Verify2faDialog } from '@/components/auth/verify-2fa-dialog';
 import { useToast } from './use-toast';
+import { FirestorePermissionError } from '@/firebase/errors';
+import { errorEmitter } from '@/firebase/error-emitter';
 
 
 export interface User {
@@ -321,8 +323,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     if (result.success) {
         const userDocRef = doc(db, 'users', user.id);
-        await updateDoc(userDocRef, { is2faEnabled: true });
-        setUser(prev => prev ? ({ ...prev, is2faEnabled: true }) : null);
+        const updateData = { is2faEnabled: true };
+        
+        updateDoc(userDocRef, updateData)
+            .then(() => {
+                setUser(prev => prev ? ({ ...prev, is2faEnabled: true }) : null);
+            })
+            .catch(serverError => {
+                const permissionError = new FirestorePermissionError({
+                    path: userDocRef.path,
+                    operation: 'update',
+                    requestResourceData: updateData
+                }, serverError);
+                errorEmitter.emit('permission-error', permissionError);
+            });
+
     } else {
         throw new Error(result.error || "Failed to enable 2FA.");
     }

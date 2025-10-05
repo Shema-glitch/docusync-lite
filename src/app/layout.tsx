@@ -7,6 +7,7 @@ import { DocumentsProvider } from '@/hooks/use-documents.tsx';
 import { ThemeProvider } from '@/components/theme-provider';
 import { Inter } from 'next/font/google';
 import { cn } from '@/lib/utils';
+import { FirebaseErrorListener } from '@/components/FirebaseErrorListener';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-sans' });
 
@@ -33,6 +34,7 @@ export default function RootLayout({
               <DocumentsProvider>
                   {children}
                   <Toaster />
+                  <FirebaseErrorListener />
               </DocumentsProvider>
           </AuthProvider>
         </ThemeProvider>

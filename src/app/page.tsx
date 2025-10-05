@@ -214,25 +214,15 @@ const HeroSection = () => {
             className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4"
           >
             <Link href="#waitlist">
-                <MotionButton
-                    size="lg"
-                    className="w-full sm:w-auto text-lg font-semibold shadow-lg shadow-primary/20"
-                    whileHover={{ scale: 1.05, y: -2, boxShadow: "0 10px 20px -10px hsl(var(--primary))" }}
-                    whileTap={{ scale: 0.95 }}
-                >
+                <Button size="lg">
                     Join Waitlist
-                </MotionButton>
+                    <ChevronRight className="ml-2 h-5 w-5" />
+                </Button>
             </Link>
-            <MotionButton
-              size="lg"
-              variant="outline"
-              className="w-full sm:w-auto text-lg font-semibold"
-              whileHover={{ scale: 1.05, y: -2 }}
-              whileTap={{ scale: 0.95 }}
-            >
+            <Button size="lg" variant="outline">
               <PlayCircle className="mr-2" />
               Watch Preview
-            </MotionButton>
+            </Button>
           </motion.div>
         </div>
 

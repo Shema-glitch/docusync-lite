@@ -132,11 +132,34 @@ export async function send2faCode(userId: string, email: string): Promise<{ erro
         console.log(`[2FA DEBUG] Successfully saved code to in-memory store.`);
 
         console.log(`[2FA DEBUG] Attempting to send email to ${email}...`);
+        
+        const emailHtml = `
+            <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: auto; border: 1px solid #ddd; border-radius: 10px; overflow: hidden;">
+                <div style="background-color: #f8f9fa; padding: 20px; text-align: center;">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="height: 40px; width: 40px; color: #ff9800; margin: 0 auto;">
+                        <path d="M12.378 1.602a.75.75 0 00-.756 0L3 7.232V18a1.5 1.5 0 001.5 1.5h15A1.5 1.5 0 0021 18V7.232l-8.622-5.63zM12 7.5a.75.75 0 01.75.75v3.69l3.44-2.293a.75.75 0 01.912 1.214l-4.25 2.833a.75.75 0 01-.912 0L7.898 11.16a.75.75 0 01.912-1.213L11.25 11.94V8.25A.75.75 0 0112 7.5z" />
+                    </svg>
+                    <h1 style="color: #333; margin-top: 10px;">DocuSync Lite</h1>
+                </div>
+                <div style="padding: 30px;">
+                    <h2 style="font-size: 24px; color: #333;">Your Verification Code</h2>
+                    <p style="font-size: 16px; line-height: 1.5;">Please use the following code to complete your verification process. This code is valid for 10 minutes.</p>
+                    <div style="font-size: 36px; font-weight: bold; text-align: center; letter-spacing: 10px; background-color: #f1f1f1; padding: 20px; border-radius: 5px; margin: 20px 0;">
+                        ${code}
+                    </div>
+                    <p style="font-size: 16px; line-height: 1.5;">If you did not request this code, please ignore this email or contact support if you have any concerns.</p>
+                </div>
+                <div style="background-color: #f8f9fa; padding: 20px; text-align: center; font-size: 12px; color: #666;">
+                    <p>&copy; 2025 DocuSync Lite. All rights reserved.</p>
+                </div>
+            </div>
+        `;
+
         await transporter.sendMail({
             from: `"DocuSync Lite Security" <${process.env.GMAIL_USER}>`,
             to: email,
             subject: 'Your DocuSync Lite Verification Code',
-            html: `Your 2FA code is: <strong>${code}</strong>. It expires in 10 minutes.`
+            html: emailHtml
         });
         console.log(`[2FA DEBUG] Successfully sent email.`);
         

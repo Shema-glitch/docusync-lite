@@ -108,7 +108,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [is2faVerificationRequired]);
   
   const handleSuccessfulLogin = useCallback(async (firebaseUser: FirebaseUser) => {
-    setLoading(true);
     const userDocRef = doc(db, 'users', firebaseUser.uid);
     const userDoc = await getDoc(userDocRef);
     const userData = userDoc.data();
@@ -116,20 +115,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (userData?.is2faEnabled) {
       setUserIdFor2fa(firebaseUser.uid);
       setUserEmailFor2fa(firebaseUser.email);
-      setTempFirebaseUser(firebaseUser);
-      setIs2faVerificationRequired(true);
+      setTempFirebaseUser(firebaseUser); // Keep the user object temporarily
+      setIs2faVerificationRequired(true); // This will show the dialog
       if (firebaseUser.email) {
         await send2faCode(firebaseUser.uid, firebaseUser.email);
       }
-      // We don't sign out, just wait for verification
+      setLoading(false); // Stop loading to show the dialog
+      // Crucially, we DO NOT call setUser here. The app state remains "logged out".
     } else {
-      // Regular login
+      // Regular login for non-2FA users
       const formattedUser = await formatUser(firebaseUser);
       setUser(formattedUser);
       const redirect = new URLSearchParams(window.location.search).get('redirect');
       router.push(redirect ? decodeURIComponent(redirect) : '/dashboard');
+      setLoading(false);
     }
-    setLoading(false);
   }, [router]);
 
 
@@ -156,13 +156,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { success, error } = await verify2faCode(userId, code);
     
     if (success) {
-      // If code is valid, finalize the login
-      setIs2faVerificationRequired(false);
+      // If code is valid, now we finalize the login
+      const formattedUser = await formatUser(tempFirebaseUser);
+      setUser(formattedUser); // Officially set the user in the app state
+      setIs2faVerificationRequired(false); // Hide the dialog
+      
+      setTempFirebaseUser(null);
       setUserIdFor2fa(null);
       setUserEmailFor2fa(null);
-      const formattedUser = await formatUser(tempFirebaseUser);
-      setUser(formattedUser);
-      setTempFirebaseUser(null);
+
       toast({
         variant: 'success',
         title: 'Login Successful!',
@@ -214,9 +216,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const userDocRef = doc(db, 'users', firebaseUser.uid);
       const userDoc = await getDoc(userDocRef);
 
-      let isNewUser = false;
       if (!userDoc.exists()) {
-          isNewUser = true;
           await setDoc(userDocRef, {
               name: firebaseUser.displayName,
               email: firebaseUser.email,
@@ -227,8 +227,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       // @ts-ignore
       localStorage.setItem('lastLoginProvider', provider.providerId);
-      const formattedUser = await formatUser(firebaseUser);
-      setUser(formattedUser);
+      // Let the onAuthStateChanged listener handle the rest
       const redirect = new URLSearchParams(window.location.search).get('redirect');
       router.push(redirect ? decodeURIComponent(redirect) : '/dashboard');
 
@@ -338,12 +337,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             isOpen={is2faVerificationRequired}
             onOpenChange={(isOpen) => {
                 if (!isOpen) {
-                    // If dialog is closed, cancel the 2FA attempt
+                    // If dialog is closed by user, cancel the 2FA attempt and fully log out
                     setIs2faVerificationRequired(false);
                     setUserIdFor2fa(null);
                     setUserEmailFor2fa(null);
                     setTempFirebaseUser(null);
-                    signOut(auth); // Fully sign out
+                    if (auth.currentUser) {
+                      signOut(auth);
+                    }
                 }
             }}
             userId={userIdFor2fa}
@@ -360,3 +361,5 @@ export function useAuth() {
   }
   return context;
 }
+
+    

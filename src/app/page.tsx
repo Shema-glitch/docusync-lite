@@ -1,35 +1,37 @@
 
 'use client';
 
-import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence, useScroll, useSpring } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Checkbox } from '@/components/ui/checkbox';
 import Link from 'next/link';
 import {
   FileText,
   Users,
-  Lock,
   Cloud,
   Cpu,
   ShieldCheck,
   ChevronRight,
-  Twitter,
-  Github,
-  Linkedin,
-  Disc,
-  PlayCircle,
   Menu,
   X,
   Heart,
   Mail,
+  PlayCircle,
+  Disc,
+  Twitter,
+  Github,
+  Linkedin,
+  ArrowUp,
+  Moon,
+  Sun
 } from 'lucide-react';
 import { useTheme } from 'next-themes';
-import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
+import { cn } from '@/lib/utils';
+import useEmblaCarousel from 'embla-carousel-react'
 
 const MotionButton = motion(Button);
 const MotionCard = motion(Card);
@@ -38,18 +40,56 @@ const navLinks = [
   { name: 'Features', href: '#features' },
   { name: 'Showcase', href: '#showcase' },
   { name: 'Enterprise', href: '#enterprise' },
+  { name: 'Waitlist', href: '#waitlist' },
 ];
+
+const useActiveSection = (sectionIds: string[]) => {
+    const [activeSection, setActiveSection] = useState<string>(sectionIds[0]);
+    
+    useEffect(() => {
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    setActiveSection(entry.target.id);
+                }
+            });
+        }, { rootMargin: "-50% 0px -50% 0px" });
+
+        sectionIds.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) observer.observe(el);
+        });
+
+        return () => {
+            sectionIds.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) observer.unobserve(el);
+            });
+        };
+    }, [sectionIds]);
+
+    return activeSection;
+}
 
 const Header = () => {
     const [isOpen, setIsOpen] = useState(false);
     const { theme, setTheme } = useTheme();
+    const activeSection = useActiveSection(['hero', 'features', 'showcase', 'enterprise', 'waitlist']);
+
+    const ThemeToggle = () => (
+      <Button variant="ghost" size="icon" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
+          <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+          <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+          <span className="sr-only">Toggle theme</span>
+      </Button>
+    );
 
     return (
         <motion.header
             initial={{ y: -100 }}
             animate={{ y: 0 }}
             transition={{ duration: 0.5 }}
-            className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-lg"
+            className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md"
         >
             <div className="container mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex items-center justify-between h-20">
@@ -63,13 +103,20 @@ const Header = () => {
 
                     <nav className="hidden md:flex items-center gap-6">
                         {navLinks.map((link) => (
-                            <Link key={link.name} href={link.href} className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
+                            <Link key={link.name} href={link.href} className="relative text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
                                 {link.name}
+                                {activeSection === link.href.substring(1) && (
+                                    <motion.div 
+                                      className="absolute bottom-[-6px] left-0 right-0 h-0.5 bg-primary"
+                                      layoutId="underline"
+                                      />
+                                )}
                             </Link>
                         ))}
                     </nav>
 
-                    <div className="hidden md:flex items-center gap-4">
+                    <div className="hidden md:flex items-center gap-2">
+                        <ThemeToggle />
                         <Link href="/login">
                             <Button variant="ghost">Log In</Button>
                         </Link>
@@ -84,7 +131,8 @@ const Header = () => {
                         </Link>
                     </div>
 
-                    <div className="md:hidden">
+                    <div className="md:hidden flex items-center">
+                        <ThemeToggle />
                         <Button variant="ghost" size="icon" onClick={() => setIsOpen(!isOpen)}>
                             {isOpen ? <X /> : <Menu />}
                         </Button>
@@ -94,10 +142,10 @@ const Header = () => {
             <AnimatePresence>
                 {isOpen && (
                     <motion.div
-                        initial={{ opacity: 0, y: -20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -20 }}
-                        className="md:hidden absolute top-20 left-0 right-0 bg-background/95 pb-4"
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="md:hidden absolute top-20 left-0 right-0 bg-background/95 pb-4 border-b"
                     >
                         <div className="container mx-auto px-4 sm:px-6 lg:px-8 flex flex-col gap-4">
                             {navLinks.map((link) => (
@@ -123,7 +171,7 @@ const Header = () => {
 
 const HeroSection = () => {
   return (
-    <section className="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden">
+    <section id="hero" className="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden">
       <div className="absolute inset-0 z-0">
         <motion.div
           animate={{
@@ -134,10 +182,9 @@ const HeroSection = () => {
             repeat: Infinity,
             ease: 'linear',
           }}
-          className="h-full w-full bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,_hsl(var(--primary)/0.3),_rgba(255,255,255,0))] bg-no-repeat"
+          className="h-full w-full bg-cover"
           style={{
-            background: 'radial-gradient(ellipse 80% 80% at 50% -20%, hsl(var(--primary)/0.2), transparent)',
-            backgroundSize: '200% 200%',
+            backgroundImage: 'radial-gradient(ellipse 80% 80% at 50% -20%, hsl(var(--primary)/0.2), transparent)',
           }}
         />
       </div>
@@ -150,7 +197,7 @@ const HeroSection = () => {
           >
             <h1 className="text-4xl sm:text-5xl lg:text-7xl font-extrabold tracking-tight">
               Create. Sync. Collaborate.
-              <span className="block bg-clip-text text-transparent bg-gradient-to-r from-primary to-purple-500 mt-2">
+              <span className="block bg-clip-text text-transparent bg-gradient-to-r from-primary via-purple-500 to-orange-400 mt-2">
                 Effortlessly.
               </span>
             </h1>
@@ -164,11 +211,11 @@ const HeroSection = () => {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4"
           >
-            <Link href="/signup">
+            <Link href="#waitlist">
                 <MotionButton
                     size="lg"
                     className="w-full sm:w-auto text-lg font-semibold shadow-lg shadow-primary/20"
-                    whileHover={{ scale: 1.05, y: -2 }}
+                    whileHover={{ scale: 1.05, y: -2, boxShadow: "0 10px 20px -10px hsl(var(--primary))" }}
                     whileTap={{ scale: 0.95 }}
                 >
                     Join Waitlist
@@ -197,7 +244,7 @@ const HeroSection = () => {
             <MotionCard className="max-w-4xl mx-auto p-2 bg-white/10 backdrop-blur-xl border-white/20 shadow-2xl shadow-primary/10">
               <CardContent className="p-0">
                 <img
-                  src="https://picsum.photos/seed/docusync/1200/600"
+                  src="https://picsum.photos/seed/docusync-app/1200/600"
                   alt="DocuSync App Mockup"
                   className="rounded-lg"
                   data-ai-hint="app interface"
@@ -254,12 +301,13 @@ const FeaturesSection = () => {
                 custom={i}
                 initial="offscreen"
                 whileInView="onscreen"
+                whileHover={{ y: -5, scale: 1.02, boxShadow: "0px 10px 30px -5px hsla(var(--primary), 0.2)"}}
                 viewport={{ once: true, amount: 0.3 }}
                 variants={cardVariants}
-                className="bg-background/50 hover:bg-background/80 transition-colors duration-300 border-border/50 hover:border-primary/50 shadow-sm hover:shadow-lg"
+                className="bg-card/50 hover:bg-card transition-all duration-300 border-border/50 hover:border-primary/50 shadow-sm hover:shadow-xl"
               >
                 <CardContent className="p-6">
-                  <div className="flex items-center justify-center h-12 w-12 rounded-lg bg-primary/10 text-primary mb-6">
+                  <div className="flex items-center justify-center h-12 w-12 rounded-lg bg-gradient-to-br from-primary/10 to-purple-500/10 text-primary mb-6">
                     <Icon className="h-6 w-6" />
                   </div>
                   <h3 className="text-xl font-bold">{feature.title}</h3>
@@ -285,24 +333,24 @@ const WaitlistSection = () => {
               transform: ['translateX(-10%) translateY(-10%)', 'translateX(10%) translateY(10%)'],
             }}
             transition={{
-              duration: 4,
+              duration: 8,
               repeat: Infinity,
               repeatType: 'reverse',
               ease: 'easeInOut',
             }}
-            className="absolute -top-1/4 -left-1/4 h-1/2 w-1/2 bg-purple-500/20 rounded-full filter blur-3xl"
+            className="absolute -top-1/4 -left-1/4 h-1/2 w-1/2 bg-purple-500/10 rounded-full filter blur-3xl"
           />
           <motion.div
             animate={{
               transform: ['translateX(10%) translateY(10%)', 'translateX(-10%) translateY(-10%)'],
             }}
             transition={{
-              duration: 5,
+              duration: 10,
               repeat: Infinity,
               repeatType: 'reverse',
               ease: 'easeInOut',
             }}
-            className="absolute -bottom-1/4 -right-1/4 h-1/2 w-1/2 bg-primary/20 rounded-full filter blur-3xl"
+            className="absolute -bottom-1/4 -right-1/4 h-1/2 w-1/2 bg-primary/10 rounded-full filter blur-3xl"
           />
         </div>
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
@@ -332,9 +380,9 @@ const WaitlistSection = () => {
               </MotionButton>
             </form>
             <div className="mt-6 flex items-center justify-center gap-4">
-                <Checkbox id="wishlist" checked={wishlisted} onCheckedChange={() => setWishlisted(!wishlisted)} />
+                <Checkbox id="wishlist" checked={wishlisted} onCheckedChange={(checked) => setWishlisted(!!checked)} />
                 <Label htmlFor="wishlist" className="flex items-center gap-2 text-muted-foreground cursor-pointer">
-                    <Heart className={`h-5 w-5 transition-colors ${wishlisted ? 'text-red-500 fill-current' : ''}`} />
+                    <Heart className={cn(`h-5 w-5 transition-all`, wishlisted ? 'text-red-500 fill-current' : '')} />
                     Add to Wishlist
                 </Label>
             </div>
@@ -352,35 +400,53 @@ const carouselItems = [
 ];
   
 const ShowcaseSection = () => {
-    const [index, setIndex] = useState(0);
+    const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true });
+    const [selectedIndex, setSelectedIndex] = useState(0);
+
+    useEffect(() => {
+        if (!emblaApi) return;
+        const onSelect = () => {
+            setSelectedIndex(emblaApi.selectedScrollSnap());
+        };
+        emblaApi.on('select', onSelect);
+        return () => { emblaApi.off('select', onSelect) };
+    }, [emblaApi]);
 
     return (
         <section id="showcase" className="py-20 lg:py-32 bg-background">
             <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="relative h-[600px] w-full max-w-5xl mx-auto overflow-hidden rounded-2xl border bg-muted/20">
-                    <AnimatePresence initial={false}>
-                        <motion.img
-                            key={index}
-                            src={carouselItems[index].image}
-                            alt={carouselItems[index].caption}
-                            data-ai-hint={carouselItems[index].dataAiHint}
-                            initial={{ opacity: 0, x: 300 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            exit={{ opacity: 0, x: -300 }}
-                            transition={{ duration: 0.5, ease: 'easeInOut' }}
-                            className="absolute inset-0 h-full w-full object-cover"
-                        />
-                    </AnimatePresence>
-                    <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/60 to-transparent">
-                        <h3 className="text-2xl font-bold text-white">{carouselItems[index].caption}</h3>
+                <div ref={emblaRef} className="relative h-[600px] w-full max-w-5xl mx-auto overflow-hidden rounded-2xl border bg-muted/20">
+                    <div className="flex h-full">
+                        {carouselItems.map((item, i) => (
+                            <div className="relative flex-[0_0_100%] h-full" key={i}>
+                                <AnimatePresence>
+                                {i === selectedIndex && (
+                                    <motion.img
+                                        key={i}
+                                        src={item.image}
+                                        alt={item.caption}
+                                        data-ai-hint={item.dataAiHint}
+                                        initial={{ opacity: 0, scale: 1.05 }}
+                                        animate={{ opacity: 1, scale: 1 }}
+                                        exit={{ opacity: 0, scale: 1.05 }}
+                                        transition={{ duration: 0.8, ease: 'easeInOut' }}
+                                        className="absolute inset-0 h-full w-full object-cover"
+                                    />
+                                )}
+                                </AnimatePresence>
+                            </div>
+                        ))}
+                    </div>
+                     <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/60 to-transparent">
+                        <h3 className="text-2xl font-bold text-white">{carouselItems[selectedIndex].caption}</h3>
                     </div>
                 </div>
                 <div className="flex justify-center gap-2 mt-6">
                     {carouselItems.map((_, i) => (
                         <button
                             key={i}
-                            onClick={() => setIndex(i)}
-                            className={`h-2 w-8 rounded-full transition-colors ${i === index ? 'bg-primary' : 'bg-muted-foreground/50'}`}
+                            onClick={() => emblaApi?.scrollTo(i)}
+                            className={cn('h-2 w-8 rounded-full transition-colors', i === selectedIndex ? 'bg-primary' : 'bg-muted-foreground/50')}
                         />
                     ))}
                 </div>
@@ -396,8 +462,11 @@ const EnterpriseSection = () => (
                 "Trusted by teams, built for enterprise."
             </h2>
             <p className="mt-4 text-lg text-muted-foreground">Secure, scalable, and ready for the most demanding workflows.</p>
-            <div className="mt-10">
+            <div className="mt-10 flex justify-center gap-4">
                 <Button size="lg" variant="outline">
+                    Schedule a Demo
+                </Button>
+                <Button size="lg">
                     Contact Enterprise <ChevronRight className="ml-2 h-5 w-5" />
                 </Button>
             </div>
@@ -406,8 +475,8 @@ const EnterpriseSection = () => (
 );
 
 const Footer = () => (
-    <footer className="relative py-12 bg-muted/30">
-        <div className="absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-background to-transparent" />
+    <footer className="relative py-12 bg-muted/30 border-t">
+         <div className="absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-background to-transparent" />
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex flex-col md:flex-row justify-between items-center gap-8">
                 <div className="flex items-center gap-2">
@@ -415,16 +484,15 @@ const Footer = () => (
                     <span className="font-bold">DocuSync Lite</span>
                 </div>
                 <div className="flex gap-6 text-sm text-muted-foreground">
-                    <Link href="#" className="hover:text-primary">Privacy Policy</Link>
-                    <Link href="#" className="hover:text-primary">Terms</Link>
-                    <Link href="#" className="hover:text-primary">Contact</Link>
-                    <Link href="#" className="hover:text-primary">Docs</Link>
+                    <Link href="#" className="hover:text-primary transition-colors">Privacy Policy</Link>
+                    <Link href="#" className="hover:text-primary transition-colors">Terms</Link>
+                    <Link href="#" className="hover:text-primary transition-colors">Contact</Link>
                 </div>
                 <div className="flex gap-6">
-                    <Link href="#" className="text-muted-foreground hover:text-primary"><Twitter /></Link>
-                    <Link href="#" className="text-muted-foreground hover:text-primary"><Github /></Link>
-                    <Link href="#" className="text-muted-foreground hover:text-primary"><Linkedin /></Link>
-                    <Link href="#" className="text-muted-foreground hover:text-primary"><Disc /></Link>
+                    <Link href="#" className="text-muted-foreground hover:text-primary transition-colors"><Twitter /></Link>
+                    <Link href="#" className="text-muted-foreground hover:text-primary transition-colors"><Github /></Link>
+                    <Link href="#" className="text-muted-foreground hover:text-primary transition-colors"><Linkedin /></Link>
+                    <Link href="#" className="text-muted-foreground hover:text-primary transition-colors"><Disc /></Link>
                 </div>
             </div>
             <p className="mt-8 text-center text-sm text-muted-foreground">© 2025 DocuSync Lite. Built for creators, thinkers, and teams.</p>
@@ -432,9 +500,63 @@ const Footer = () => (
     </footer>
 );
 
+const ScrollToTopButton = () => {
+    const [isVisible, setIsVisible] = useState(false);
+
+    const toggleVisibility = () => {
+        if (window.pageYOffset > 300) {
+            setIsVisible(true);
+        } else {
+            setIsVisible(false);
+        }
+    };
+
+    const scrollToTop = () => {
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
+    };
+
+    useEffect(() => {
+        window.addEventListener('scroll', toggleVisibility);
+        return () => {
+            window.removeEventListener('scroll', toggleVisibility);
+        };
+    }, []);
+
+    return (
+        <AnimatePresence>
+        {isVisible && (
+            <MotionButton
+                onClick={scrollToTop}
+                className="fixed bottom-8 right-8 z-50 h-12 w-12 rounded-full shadow-lg"
+                initial={{ opacity: 0, scale: 0 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0 }}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                aria-label="Scroll to top"
+            >
+                <ArrowUp className="h-6 w-6" />
+            </MotionButton>
+        )}
+        </AnimatePresence>
+    );
+};
+
+
 export default function LandingPage() {
+  const { scrollYProgress } = useScroll();
+  const scaleX = useSpring(scrollYProgress, {
+    stiffness: 100,
+    damping: 30,
+    restDelta: 0.001
+  });
+
   return (
     <div className="bg-background text-foreground">
+      <motion.div className="fixed top-0 left-0 right-0 h-1 bg-primary origin-left z-50" style={{ scaleX }} />
       <Header />
       <main>
         <HeroSection />
@@ -444,6 +566,7 @@ export default function LandingPage() {
         <EnterpriseSection />
       </main>
       <Footer />
+      <ScrollToTopButton />
     </div>
   );
 }

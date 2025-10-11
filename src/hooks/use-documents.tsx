@@ -8,6 +8,8 @@ import { useAuth, type User } from './use-auth';
 import { db } from '@/lib/firebase';
 import { collection, query, where, onSnapshot, addDoc, updateDoc, doc, serverTimestamp, getDocs, writeBatch, getDoc, deleteDoc } from 'firebase/firestore';
 import { permanentlyDeleteFile } from '@/app/actions';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 
 interface DocumentsContextType {
@@ -78,7 +80,8 @@ export function DocumentsProvider({ children }: { children: ReactNode }) {
         return;
     }
     setLoading(true);
-    const q = query(collection(db, "documents"), where(`members.${user.id}`, "in", ["owner", "editor", "viewer"]));
+    const documentsCollectionRef = collection(db, "documents");
+    const q = query(documentsCollectionRef, where(`members.${user.id}`, "in", ["owner", "editor", "viewer"]));
 
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
         const docs: Document[] = [];
@@ -96,12 +99,19 @@ export function DocumentsProvider({ children }: { children: ReactNode }) {
         setLoading(false);
     }, (error) => {
         console.error("Error fetching documents: ", error);
-        toast({ title: "Error", description: "Could not fetch documents.", variant: "destructive" });
+        
+        const permissionError = new FirestorePermissionError({
+          path: documentsCollectionRef.path,
+          operation: 'list',
+        }, error);
+
+        errorEmitter.emit('permission-error', permissionError);
+        
         setLoading(false);
     });
 
     return () => unsubscribe();
-  }, [user, toast]);
+  }, [user]);
 
   const tags = useMemo(() => {
     const allTags = new Set<string>();
@@ -123,7 +133,7 @@ export function DocumentsProvider({ children }: { children: ReactNode }) {
     
     // 1. Create the new document
     const newDocRef = doc(collection(db, 'documents'));
-    batch.set(newDocRef, {
+    const newDocumentData = {
       ...docData,
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
@@ -137,7 +147,8 @@ export function DocumentsProvider({ children }: { children: ReactNode }) {
           avatar: user.avatar,
         }
       }
-    });
+    };
+    batch.set(newDocRef, newDocumentData);
 
     // 2. Create an activity log entry
     const activityRef = doc(collection(db, 'users', user.id, 'activity'));
@@ -150,9 +161,17 @@ export function DocumentsProvider({ children }: { children: ReactNode }) {
         }
     });
 
-    await batch.commit();
-    
-    return newDocRef.id;
+    try {
+        await batch.commit();
+        return newDocRef.id;
+    } catch(serverError: any) {
+        const permissionError = new FirestorePermissionError({
+          path: newDocRef.path,
+          operation: 'create',
+          requestResourceData: newDocumentData,
+        }, serverError);
+        errorEmitter.emit('permission-error', permissionError);
+    }
   };
 
   const updateDocument = async (id: string, updates: Partial<Document>) => {
@@ -164,18 +183,17 @@ export function DocumentsProvider({ children }: { children: ReactNode }) {
     );
     setDocuments(optimisticDocuments);
 
-    try {
-      const docRef = doc(db, 'documents', id);
-      await updateDoc(docRef, { ...updates, updatedAt: serverTimestamp() });
-    } catch (error) {
-      console.error("Failed to update document: ", error);
-      setDocuments(originalDocuments); // Revert on failure
-      toast({
-        variant: "destructive",
-        title: "Update Failed",
-        description: "Your changes could not be saved. Please try again."
+    const docRef = doc(db, 'documents', id);
+    updateDoc(docRef, { ...updates, updatedAt: serverTimestamp() })
+      .catch((serverError: any) => {
+        setDocuments(originalDocuments); // Revert on failure
+        const permissionError = new FirestorePermissionError({
+          path: `documents/${id}`,
+          operation: 'update',
+          requestResourceData: updates,
+        }, serverError);
+        errorEmitter.emit('permission-error', permissionError);
       });
-    }
   };
 
   const deleteDocument = async (id: string) => {
@@ -239,7 +257,14 @@ export function DocumentsProvider({ children }: { children: ReactNode }) {
       });
     }
   
-    await batch.commit();
+    batch.commit().catch(serverError => {
+        const permissionError = new FirestorePermissionError({
+            path: docRef.path,
+            operation: 'update',
+            requestResourceData: { members },
+        }, serverError);
+        errorEmitter.emit('permission-error', permissionError);
+    });
 
     // Optimistically update local state
     const optimisticDocuments = documents.map(doc => 
@@ -266,25 +291,36 @@ export function DocumentsProvider({ children }: { children: ReactNode }) {
         email: userData.email,
         avatar: userData.avatar,
         organizationName: userData.organizationName,
+        is2faEnabled: userData.is2faEnabled,
     };
   };
 
   const findUserById = async (id: string): Promise<User | null> => {
     const userDocRef = doc(db, 'users', id);
-    const userDoc = await getDoc(userDocRef);
+    
+    try {
+        const userDoc = await getDoc(userDocRef);
+        if (!userDoc.exists()) {
+          return null;
+        }
 
-    if (!userDoc.exists()) {
-      return null;
+        const userData = userDoc.data();
+        return {
+          id: userDoc.id,
+          name: userData.name,
+          email: userData.email,
+          avatar: userData.avatar,
+          organizationName: userData.organizationName,
+          is2faEnabled: userData.is2faEnabled,
+        };
+    } catch(serverError: any) {
+        const permissionError = new FirestorePermissionError({
+            path: userDocRef.path,
+            operation: 'get',
+        }, serverError);
+        errorEmitter.emit('permission-error', permissionError);
+        return null;
     }
-
-    const userData = userDoc.data();
-    return {
-      id: userDoc.id,
-      name: userData.name,
-      email: userData.email,
-      avatar: userData.avatar,
-      organizationName: userData.organizationName,
-    };
   };
 
   const value = { documents, loading, tags, addDocument, updateDocument, restoreDocument, permanentlyDeleteDocument, updateDocumentMembers, findUserByEmail, findUserById, deleteDocument };

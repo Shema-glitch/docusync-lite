@@ -111,7 +111,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   
   const handleSuccessfulLogin = useCallback(async (firebaseUser: FirebaseUser) => {
     const userDocRef = doc(db, 'users', firebaseUser.uid);
-    const userDoc = await getDoc(userDocRef);
+    let userDoc;
+    try {
+        userDoc = await getDoc(userDocRef);
+    } catch(serverError: any) {
+        const permissionError = new FirestorePermissionError({
+            path: userDocRef.path,
+            operation: 'get',
+        }, serverError);
+        errorEmitter.emit('permission-error', permissionError);
+        // Don't proceed with login if we can't even read the user doc
+        await signOut(auth);
+        return;
+    }
+    
     const userData = userDoc.data();
 
     if (userData?.is2faEnabled) {
@@ -191,12 +204,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         });
         
         const userDocRef = doc(db, 'users', firebaseUser.uid);
-        await setDoc(userDocRef, {
+        const newUserDoc = {
             name,
             email,
             avatar,
             is2faEnabled: false,
-        });
+        };
+        await setDoc(userDocRef, newUserDoc)
+            .catch(serverError => {
+                const permissionError = new FirestorePermissionError({
+                    path: userDocRef.path,
+                    operation: 'create',
+                    requestResourceData: newUserDoc
+                }, serverError);
+                errorEmitter.emit('permission-error', permissionError);
+            });
         
         localStorage.setItem('lastLoginProvider', 'password');
         // onAuthStateChanged will handle setting the new user
@@ -219,12 +241,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const userDoc = await getDoc(userDocRef);
 
       if (!userDoc.exists()) {
-          await setDoc(userDocRef, {
+          const newUserDoc = {
               name: firebaseUser.displayName,
               email: firebaseUser.email,
               avatar: firebaseUser.photoURL,
               is2faEnabled: false,
-          });
+          };
+          await setDoc(userDocRef, newUserDoc)
+            .catch(serverError => {
+                const permissionError = new FirestorePermissionError({
+                    path: userDocRef.path,
+                    operation: 'create',
+                    requestResourceData: newUserDoc
+                }, serverError);
+                errorEmitter.emit('permission-error', permissionError);
+            });
       }
       
       // @ts-ignore
@@ -281,24 +312,42 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     // 2. Update user document in 'users' collection
     const userDocRef = doc(db, 'users', firebaseUser.uid);
-    await setDoc(userDocRef, { name, avatar, organizationName }, { merge: true });
+    const updateData = { name, avatar, organizationName };
+    await updateDoc(userDocRef, updateData)
+        .catch(serverError => {
+            const permissionError = new FirestorePermissionError({
+                path: userDocRef.path,
+                operation: 'update',
+                requestResourceData: updateData
+            }, serverError);
+            errorEmitter.emit('permission-error', permissionError);
+        });
 
     // 3. Update 'members' field in all relevant documents
     const documentsRef = collection(db, 'documents');
     const q = query(documentsRef, where(`members.${firebaseUser.uid}`, '!=', null));
-    const querySnapshot = await getDocs(q);
-
-    const batch = writeBatch(db);
-    querySnapshot.forEach(docSnap => {
-        const docRef = doc(db, 'documents', docSnap.id);
-        const memberUpdate = {
-            [`members.${firebaseUser.uid}.name`]: name,
-            [`members.${firebaseUser.uid}.avatar`]: avatar
-        };
-        batch.update(docRef, memberUpdate);
+    
+    // We can't do this transactionally with the client SDK in a way that
+    // won't get super expensive. We'll let this be eventually consistent.
+    // For a production app, this would be a batched write or a cloud function.
+    getDocs(q).then(querySnapshot => {
+        const batch = writeBatch(db);
+        querySnapshot.forEach(docSnap => {
+            const docRef = doc(db, 'documents', docSnap.id);
+            const memberUpdate = {
+                [`members.${firebaseUser.uid}.name`]: name,
+                [`members.${firebaseUser.uid}.avatar`]: avatar
+            };
+            batch.update(docRef, memberUpdate);
+        });
+        return batch.commit();
+    }).catch(serverError => {
+         const permissionError = new FirestorePermissionError({
+            path: 'documents',
+            operation: 'list', // This is a query, so 'list' is appropriate
+        }, serverError);
+        errorEmitter.emit('permission-error', permissionError);
     });
-    await batch.commit();
-
 
     // 4. Update local state
     setUser(prevUser => prevUser ? { ...prevUser, name, avatar, organizationName } : null);
@@ -323,10 +372,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const userDocRef = doc(db, 'users', user.id);
         const updateData = { is2faEnabled: true };
         
-        updateDoc(userDocRef, updateData)
-            .then(() => {
-                setUser(prev => prev ? ({ ...prev, is2faEnabled: true }) : null);
-            })
+        await updateDoc(userDocRef, updateData)
             .catch(serverError => {
                 const permissionError = new FirestorePermissionError({
                     path: userDocRef.path,
@@ -334,7 +380,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     requestResourceData: updateData
                 }, serverError);
                 errorEmitter.emit('permission-error', permissionError);
+                // Revert optimistic UI update on failure
+                setUser(prev => prev ? ({ ...prev, is2faEnabled: false }) : null);
             });
+
+        setUser(prev => prev ? ({ ...prev, is2faEnabled: true }) : null);
 
     } else {
         throw new Error(result.error || "Failed to enable 2FA.");

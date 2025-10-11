@@ -56,7 +56,25 @@ const MOCK_AVATAR_URL = 'https://placehold.co/100x100/EEDC82/333333?text=';
 
 async function formatUser(firebaseUser: FirebaseUser): Promise<User> {
     const userDocRef = doc(db, 'users', firebaseUser.uid);
-    const userDoc = await getDoc(userDocRef);
+    let userDoc;
+    try {
+        userDoc = await getDoc(userDocRef);
+    } catch (serverError) {
+        const permissionError = new FirestorePermissionError({
+            path: userDocRef.path,
+            operation: 'get',
+        }, serverError);
+        errorEmitter.emit('permission-error', permissionError);
+        // Fallback to auth data if Firestore read fails
+        return {
+             id: firebaseUser.uid,
+            email: firebaseUser.email || '',
+            name: firebaseUser.displayName || firebaseUser.email || 'Anonymous',
+            avatar: firebaseUser.photoURL || `${MOCK_AVATAR_URL}${firebaseUser.displayName?.charAt(0) || 'A'}`,
+            is2faEnabled: false,
+        }
+    }
+
 
     if (userDoc.exists()) {
         const userData = userDoc.data();
@@ -94,6 +112,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
+        // Only set user if 2FA isn't pending. If it is, the verify2faAndLogin function will handle it.
         if (!is2faVerificationRequired) {
             const formattedUser = await formatUser(firebaseUser);
             localStorage.setItem('lastUserEmail', formattedUser.email);
@@ -102,6 +121,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
       } else {
         setUser(null);
+        setTempFirebaseUser(null);
+        setUserIdFor2fa(null);
+        setUserEmailFor2fa(null);
+        setIs2faVerificationRequired(false);
       }
       setLoading(false);
     });
@@ -125,20 +148,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return;
     }
     
-    const userData = userDoc.data();
+    const userData = userDoc.exists() ? userDoc.data() : null;
 
     if (userData?.is2faEnabled) {
       setUserIdFor2fa(firebaseUser.uid);
       setUserEmailFor2fa(firebaseUser.email);
-      setTempFirebaseUser(firebaseUser); // Keep the user object temporarily
-      setIs2faVerificationRequired(true); // This will show the dialog
+      setTempFirebaseUser(firebaseUser);
+      setIs2faVerificationRequired(true);
       if (firebaseUser.email) {
         await send2faCode(firebaseUser.uid, firebaseUser.email);
       }
-      setLoading(false); // Stop loading to show the dialog
-      // Crucially, we DO NOT call setUser here. The app state remains "logged out".
+      setLoading(false);
     } else {
-      // Regular login for non-2FA users
       const formattedUser = await formatUser(firebaseUser);
       setUser(formattedUser);
       const redirect = new URLSearchParams(window.location.search).get('redirect');
@@ -171,15 +192,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { success, error } = await verify2faCode(userId, code);
     
     if (success) {
-      // If code is valid, now we finalize the login
-      const formattedUser = await formatUser(tempFirebaseUser);
-      setUser(formattedUser); // Officially set the user in the app state
-      setIs2faVerificationRequired(false); // Hide the dialog
+      setIs2faVerificationRequired(false); // This will trigger the onAuthStateChanged to set the user
       
-      setTempFirebaseUser(null);
-      setUserIdFor2fa(null);
-      setUserEmailFor2fa(null);
-
       toast({
         variant: 'success',
         title: 'Login Successful!',
@@ -221,7 +235,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             });
         
         localStorage.setItem('lastLoginProvider', 'password');
-        // onAuthStateChanged will handle setting the new user
         const redirect = new URLSearchParams(window.location.search).get('redirect');
         router.push(redirect ? decodeURIComponent(redirect) : '/dashboard');
 
@@ -238,7 +251,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const firebaseUser = result.user;
 
       const userDocRef = doc(db, 'users', firebaseUser.uid);
-      const userDoc = await getDoc(userDocRef);
+      const userDoc = await getDoc(userDocRef).catch(serverError => {
+        const permissionError = new FirestorePermissionError({
+            path: userDocRef.path,
+            operation: 'get',
+        }, serverError);
+        errorEmitter.emit('permission-error', permissionError);
+        throw serverError; // Stop the login process
+      });
 
       if (!userDoc.exists()) {
           const newUserDoc = {
@@ -307,10 +327,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const { name = user.name, avatar = user.avatar, organizationName = user.organizationName } = updates;
     
-    // 1. Update Firebase Auth profile
     await updateProfile(firebaseUser, { displayName: name, photoURL: avatar });
 
-    // 2. Update user document in 'users' collection
     const userDocRef = doc(db, 'users', firebaseUser.uid);
     const updateData = { name, avatar, organizationName };
     await updateDoc(userDocRef, updateData)
@@ -323,13 +341,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             errorEmitter.emit('permission-error', permissionError);
         });
 
-    // 3. Update 'members' field in all relevant documents
     const documentsRef = collection(db, 'documents');
     const q = query(documentsRef, where(`members.${firebaseUser.uid}`, '!=', null));
     
-    // We can't do this transactionally with the client SDK in a way that
-    // won't get super expensive. We'll let this be eventually consistent.
-    // For a production app, this would be a batched write or a cloud function.
     getDocs(q).then(querySnapshot => {
         const batch = writeBatch(db);
         querySnapshot.forEach(docSnap => {
@@ -344,12 +358,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }).catch(serverError => {
          const permissionError = new FirestorePermissionError({
             path: 'documents',
-            operation: 'list', // This is a query, so 'list' is appropriate
+            operation: 'list',
         }, serverError);
         errorEmitter.emit('permission-error', permissionError);
     });
 
-    // 4. Update local state
     setUser(prevUser => prevUser ? { ...prevUser, name, avatar, organizationName } : null);
   };
   
@@ -380,7 +393,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     requestResourceData: updateData
                 }, serverError);
                 errorEmitter.emit('permission-error', permissionError);
-                // Revert optimistic UI update on failure
                 setUser(prev => prev ? ({ ...prev, is2faEnabled: false }) : null);
             });
 
@@ -400,11 +412,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             isOpen={is2faVerificationRequired}
             onOpenChange={(isOpen) => {
                 if (!isOpen) {
-                    // If dialog is closed by user, cancel the 2FA attempt and fully log out
                     setIs2faVerificationRequired(false);
-                    setUserIdFor2fa(null);
-                    setUserEmailFor2fa(null);
-                    setTempFirebaseUser(null);
                     if (auth.currentUser) {
                       signOut(auth);
                     }
@@ -424,3 +432,5 @@ export function useAuth() {
   }
   return context;
 }
+
+    

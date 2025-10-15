@@ -6,7 +6,6 @@ import { motion, AnimatePresence, useScroll, useSpring } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
-import { Checkbox } from '@/components/ui/checkbox';
 import Link from 'next/link';
 import {
   FileText,
@@ -30,7 +29,6 @@ import {
   Loader2
 } from 'lucide-react';
 import { useTheme } from 'next-themes';
-import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 import useEmblaCarousel from 'embla-carousel-react'
 import { useToast } from '@/hooks/use-toast';
@@ -214,17 +212,13 @@ const HeroSection = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4"
+            className="mt-10 flex items-center justify-center gap-4"
           >
              <Link href="#waitlist">
-                <Button size="lg" variant="outline">
+                <Button size="lg" variant="outline" className='h-14 text-lg'>
                     Join Waitlist
                 </Button>
             </Link>
-            <Button size="lg">
-              <PlayCircle className="mr-2" />
-              Watch Preview
-            </Button>
           </motion.div>
         </div>
 
@@ -319,7 +313,6 @@ const FeaturesSection = () => {
 const WaitlistSection = () => {
     const [email, setEmail] = useState('');
     const [isLoading, setIsLoading] = useState(false);
-    const [actionType, setActionType] = useState<'waitlist' | 'wishlist' | null>(null);
     const { toast } = useToast();
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -333,8 +326,6 @@ const WaitlistSection = () => {
             return;
         }
 
-        const currentAction = (e.nativeEvent.submitter as HTMLButtonElement).name as 'waitlist' | 'wishlist';
-        setActionType(currentAction);
         setIsLoading(true);
         
         try {
@@ -344,7 +335,7 @@ const WaitlistSection = () => {
             }
             toast({
                 variant: 'success',
-                title: currentAction === 'wishlist' ? "You're on the wishlist! ❤️" : "You're on the list! 🎉",
+                title: "You're on the list! 🎉",
                 description: "Thanks for your interest in DocuSync Lite. We'll be in touch!",
             });
             setEmail('');
@@ -352,11 +343,10 @@ const WaitlistSection = () => {
              toast({
                 variant: 'destructive',
                 title: "Something went wrong",
-                description: error.message || `Could not add you to the ${currentAction}. Please try again.`,
+                description: error.message || `Could not add you to the waitlist. Please try again.`,
             });
         } finally {
             setIsLoading(false);
-            setActionType(null);
         }
     }
   
@@ -417,24 +407,7 @@ const WaitlistSection = () => {
                     whileTap={{ scale: 0.95 }}
                     disabled={isLoading}
                 >
-                    {isLoading && actionType === 'waitlist' ? <Loader2 className="h-6 w-6 animate-spin" /> : 'Get Notified'}
-                </MotionButton>
-                 <MotionButton
-                    type="submit"
-                    name="wishlist"
-                    size="lg"
-                    variant="outline"
-                    className="h-14 text-lg font-semibold flex-1"
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    disabled={isLoading}
-                >
-                    {isLoading && actionType === 'wishlist' ? <Loader2 className="h-6 w-6 animate-spin" /> : (
-                      <>
-                        <Heart className="mr-2 h-5 w-5" />
-                        Add to Wishlist
-                      </>
-                    )}
+                    {isLoading ? <Loader2 className="h-6 w-6 animate-spin" /> : 'Join Waitlist'}
                 </MotionButton>
               </div>
             </form>

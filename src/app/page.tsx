@@ -32,7 +32,8 @@ import { useTheme } from 'next-themes';
 import { cn } from '@/lib/utils';
 import useEmblaCarousel from 'embla-carousel-react'
 import { useToast } from '@/hooks/use-toast';
-import { joinWaitlist } from '@/app/actions';
+import { joinWaitlist, requestDemo } from '@/app/actions';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 
 const MotionButton = motion(Button);
 const MotionCard = motion(Card);
@@ -71,6 +72,64 @@ const useActiveSection = (sectionIds: string[]) => {
 
     return activeSection;
 }
+
+const DemoDialog = ({ children }: { children: React.ReactNode }) => {
+    const [email, setEmail] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+    const [isSubmitted, setIsSubmitted] = useState(false);
+    const { toast } = useToast();
+
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        setIsLoading(true);
+        try {
+            const result = await requestDemo(email);
+            if (result.error) throw new Error(result.error);
+            setIsSubmitted(true);
+        } catch (error: any) {
+            toast({
+                variant: 'destructive',
+                title: 'Request Failed',
+                description: error.message || 'Could not submit your demo request.',
+            });
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    return (
+        <Dialog onOpenChange={(open) => !open && (setIsSubmitted(false), setEmail(''))}>
+            <DialogTrigger asChild>{children}</DialogTrigger>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>{isSubmitted ? "We'll Be In Touch!" : "Schedule a Demo"}</DialogTitle>
+                    <DialogDescription>
+                        {isSubmitted
+                            ? "Thank you for your interest! A team member will reach out to you shortly to schedule your personalized demo."
+                            : "Enter your email below and our team will contact you to schedule a personalized demo for your team."
+                        }
+                    </DialogDescription>
+                </DialogHeader>
+                {!isSubmitted && (
+                    <form onSubmit={handleSubmit} className="space-y-4">
+                        <Input
+                            type="email"
+                            placeholder="you@company.com"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            required
+                            disabled={isLoading}
+                        />
+                        <Button type="submit" className="w-full" disabled={isLoading}>
+                            {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Request Demo'}
+                        </Button>
+                    </form>
+                )}
+            </DialogContent>
+        </Dialog>
+    );
+};
+
 
 const Header = () => {
     const [isOpen, setIsOpen] = useState(false);
@@ -121,17 +180,17 @@ const Header = () => {
                     <div className="hidden md:flex items-center gap-2">
                         <ThemeToggle />
                         <Link href="/login">
-                            <Button variant="ghost">Log In</Button>
+                            <Button variant="ghost">Sign In</Button>
                         </Link>
-                        <Link href="/signup">
-                          <MotionButton
+                         <DemoDialog>
+                           <MotionButton
                             className="bg-primary hover:bg-primary/90"
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                            >
-                            Sign Up
+                            Book a demo
                           </MotionButton>
-                        </Link>
+                        </DemoDialog>
                     </div>
 
                     <div className="md:hidden flex items-center">
@@ -158,11 +217,11 @@ const Header = () => {
                             ))}
                             <div className="flex flex-col gap-4 mt-4">
                                 <Link href="/login">
-                                    <Button variant="outline" className="w-full">Log In</Button>
+                                    <Button variant="outline" className="w-full">Sign In</Button>
                                 </Link>
-                                <Link href="/signup">
-                                    <Button className="w-full">Sign Up</Button>
-                                </Link>
+                                <DemoDialog>
+                                    <Button className="w-full">Book a demo</Button>
+                                </DemoDialog>
                             </div>
                         </div>
                     </motion.div>
@@ -192,55 +251,51 @@ const HeroSection = () => {
         />
       </div>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-          >
-            <h1 className="text-4xl sm:text-5xl lg:text-7xl font-extrabold tracking-tight">
-              Create. Sync. Collaborate.
-              <span className="block bg-clip-text text-transparent bg-gradient-to-r from-primary via-purple-500 to-orange-400 mt-2">
-                Effortlessly.
-              </span>
-            </h1>
-            <p className="mt-6 max-w-2xl mx-auto text-lg text-muted-foreground">
-              DocuSync Lite connects teams through powerful, real-time document sync technology.
-            </p>
-          </motion.div>
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className="mt-10 flex items-center justify-center gap-4"
-          >
-             <Link href="#waitlist">
-                <Button size="lg" variant="outline" className='h-14 text-lg'>
-                    Join Waitlist
-                </Button>
-            </Link>
-          </motion.div>
-        </div>
-
-        <motion.div
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.8, delay: 0.4, type: 'spring', stiffness: 100 }}
-          className="mt-16 lg:mt-24"
-        >
-          <div className="relative">
-            <MotionCard className="max-w-4xl mx-auto p-2 bg-white/10 backdrop-blur-xl border-white/20 shadow-2xl shadow-primary/10">
-              <CardContent className="p-0">
+        <div className="grid lg:grid-cols-2 gap-12 items-center">
+            <div className="text-center lg:text-left">
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6 }}
+                >
+                    <h1 className="text-4xl sm:text-5xl lg:text-7xl font-extrabold tracking-tight">
+                    Create. Sync. Collaborate.
+                    <span className="block bg-clip-text text-transparent bg-gradient-to-r from-primary via-purple-500 to-orange-400 mt-2">
+                        Effortlessly.
+                    </span>
+                    </h1>
+                    <p className="mt-6 max-w-xl mx-auto lg:mx-0 text-lg text-muted-foreground">
+                    DocuSync Lite connects teams through powerful, real-time document sync technology.
+                    </p>
+                </motion.div>
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6, delay: 0.2 }}
+                    className="mt-10 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4"
+                >
+                    <Link href="#waitlist">
+                        <Button size="lg" className='h-14 text-lg'>Join Waitlist</Button>
+                    </Link>
+                    <DemoDialog>
+                        <Button size="lg" variant="outline" className='h-14 text-lg'>Book a demo</Button>
+                    </DemoDialog>
+                </motion.div>
+            </div>
+             <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.8, delay: 0.4, type: 'spring', stiffness: 100 }}
+                className="relative hidden lg:block"
+            >
                 <img
-                  src="https://picsum.photos/seed/docusync-app/1200/600"
-                  alt="DocuSync App Mockup"
-                  className="rounded-lg"
-                  data-ai-hint="app interface"
+                    src="https://picsum.photos/seed/docusync-app/1200/800"
+                    alt="DocuSync App Mockup"
+                    className="rounded-lg shadow-2xl"
+                    data-ai-hint="app interface"
                 />
-              </CardContent>
-            </MotionCard>
-          </div>
-        </motion.div>
+            </motion.div>
+        </div>
       </div>
     </section>
   );
@@ -384,32 +439,30 @@ const WaitlistSection = () => {
             <p className="mt-4 max-w-2xl mx-auto text-lg text-muted-foreground">12,000+ professionals are already on the waitlist. Join them to get early access and exclusive updates.</p>
           </div>
           <div className="mt-12 max-w-xl mx-auto">
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                <Input
-                  type="email"
-                  placeholder="Enter your email"
-                  className="pl-10 h-14 text-lg"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  disabled={isLoading}
-                />
+            <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-4">
+                <div className="relative flex-grow">
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                    <Input
+                        type="email"
+                        placeholder="Enter your email"
+                        className="pl-10 h-14 text-lg w-full"
+                        required
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        disabled={isLoading}
+                    />
               </div>
-              <div className="flex flex-col sm:flex-row gap-4">
                  <MotionButton
                     type="submit"
                     name="waitlist"
                     size="lg"
-                    className="h-14 text-lg font-semibold flex-1"
+                    className="h-14 text-lg font-semibold"
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     disabled={isLoading}
                 >
                     {isLoading ? <Loader2 className="h-6 w-6 animate-spin" /> : 'Join Waitlist'}
                 </MotionButton>
-              </div>
             </form>
           </div>
         </div>
@@ -487,13 +540,17 @@ const EnterpriseSection = () => (
                 "Trusted by teams, built for enterprise."
             </h2>
             <p className="mt-4 text-lg text-muted-foreground">Secure, scalable, and ready for the most demanding workflows.</p>
-            <div className="mt-10 flex justify-center gap-4">
-                <Button size="lg" variant="outline">
-                    Schedule a Demo
-                </Button>
-                <Button size="lg">
-                    Contact Enterprise <ChevronRight className="ml-2 h-5 w-5" />
-                </Button>
+            <div className="mt-10 flex flex-col sm:flex-row justify-center gap-4">
+                <DemoDialog>
+                     <Button size="lg">
+                        Schedule a Demo
+                    </Button>
+                </DemoDialog>
+                <DemoDialog>
+                    <Button size="lg" variant="outline">
+                        Contact Enterprise <ChevronRight className="ml-2 h-5 w-5" />
+                    </Button>
+                </DemoDialog>
             </div>
         </div>
     </section>

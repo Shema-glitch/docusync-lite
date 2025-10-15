@@ -136,8 +136,8 @@ export async function send2faCode(userId: string, email: string): Promise<{ erro
         const emailHtml = `
             <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: auto; border: 1px solid #ddd; border-radius: 10px; overflow: hidden;">
                 <div style="background-color: #f8f9fa; padding: 20px; text-align: center;">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="height: 40px; width: 40px; color: #ff9800; margin: 0 auto;">
-                        <path d="M12.378 1.602a.75.75 0 00-.756 0L3 7.232V18a1.5 1.5 0 001.5 1.5h15A1.5 1.5 0 0021 18V7.232l-8.622-5.63z" />
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="height: 40px; width: 40px; color: hsl(25, 95%, 53%); margin: 0 auto;">
+                        <path d="M12.378 1.602a.75.75 0 00-.756 0L3 7.232V18a1.5 1.5 0 001.5 1.5h15A1.5 1.5 0 0021 18V7.232l-8.622-5.63zM12 7.5a.75.75 0 01.75.75v3.69l3.44-2.293a.75.75 0 01.912 1.214l-4.25 2.833a.75.75 0 01-.912 0L7.898 11.16a.75.75 0 01.912-1.213L11.25 11.94V8.25A.75.75 0 0112 7.5z" />
                     </svg>
                     <h1 style="color: #333; margin-top: 10px;">DocuSync Lite</h1>
                 </div>
@@ -223,8 +223,8 @@ export async function joinWaitlist(email: string): Promise<{ error: string | nul
         const emailHtml = `
             <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: auto; border: 1px solid #ddd; border-radius: 10px; overflow: hidden;">
                 <div style="background-color: #f8f9fa; padding: 20px; text-align: center;">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="height: 40px; width: 40px; color: #ff9800; margin: 0 auto;">
-                        <path d="M12.378 1.602a.75.75 0 00-.756 0L3 7.232V18a1.5 1.5 0 001.5 1.5h15A1.5 1.5 0 0021 18V7.232l-8.622-5.63z" />
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="height: 40px; width: 40px; color: hsl(25, 95%, 53%); margin: 0 auto;">
+                        <path d="M12.378 1.602a.75.75 0 00-.756 0L3 7.232V18a1.5 1.5 0 001.5 1.5h15A1.5 1.5 0 0021 18V7.232l-8.622-5.63zM12 7.5a.75.75 0 01.75.75v3.69l3.44-2.293a.75.75 0 01.912 1.214l-4.25 2.833a.75.75 0 01-.912 0L7.898 11.16a.75.75 0 01.912-1.213L11.25 11.94V8.25A.75.75 0 0112 7.5z" />
                     </svg>
                     <h1 style="color: #333; margin-top: 10px;">DocuSync Lite</h1>
                 </div>
@@ -250,5 +250,73 @@ export async function joinWaitlist(email: string): Promise<{ error: string | nul
     } catch (e: any) {
         console.error("[WAITLIST DEBUG] CRITICAL ERROR in joinWaitlist:", e);
         return { error: e.message || 'Could not add you to the waitlist. Please try again.' };
+    }
+}
+
+export async function requestDemo(email: string): Promise<{ error: string | null }> {
+    if (!email) {
+        return { error: 'Email address is required to request a demo.' };
+    }
+     if (!process.env.GMAIL_USER) {
+        return { error: 'The recipient email for demo requests is not configured.' };
+    }
+
+    try {
+        await new Promise((resolve, reject) => {
+            transporter.verify(function (error, success) {
+                if (error) {
+                    console.error("[SMTP DEBUG] Connection verification failed:", error);
+                    reject(new Error("SMTP connection failed. Check credentials in .env file."));
+                } else {
+                    console.log("[SMTP DEBUG] Server is ready to take our messages");
+                    resolve(success);
+                }
+            });
+        });
+
+        const userEmailHtml = `
+            <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: auto; border: 1px solid #ddd; border-radius: 10px; overflow: hidden;">
+                <div style="background-color: #f8f9fa; padding: 20px; text-align: center;">
+                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="height: 40px; width: 40px; color: hsl(25, 95%, 53%); margin: 0 auto;">
+                        <path d="M12.378 1.602a.75.75 0 00-.756 0L3 7.232V18a1.5 1.5 0 001.5 1.5h15A1.5 1.5 0 0021 18V7.232l-8.622-5.63zM12 7.5a.75.75 0 01.75.75v3.69l3.44-2.293a.75.75 0 01.912 1.214l-4.25 2.833a.75.75 0 01-.912 0L7.898 11.16a.75.75 0 01.912-1.213L11.25 11.94V8.25A.75.75 0 0112 7.5z" />
+                    </svg>
+                    <h1 style="color: #333; margin-top: 10px;">DocuSync Lite</h1>
+                </div>
+                <div style="padding: 30px;">
+                    <h2 style="font-size: 24px; color: #333;">We've Received Your Demo Request!</h2>
+                    <p style="font-size: 16px; line-height: 1.5;">Thank you for your interest in DocuSync Lite. A member of our team will reach out to you shortly to schedule your demo.</p>
+                </div>
+                <div style="background-color: #f8f9fa; padding: 20px; text-align: center; font-size: 12px; color: #666;">
+                    <p>&copy; 2025 DocuSync Lite. All rights reserved.</p>
+                </div>
+            </div>
+        `;
+        
+        await transporter.sendMail({
+            from: `"DocuSync Lite Team" <${process.env.GMAIL_USER}>`,
+            to: email,
+            subject: 'Your DocuSync Lite Demo Request',
+            html: userEmailHtml
+        });
+        
+        const adminEmailHtml = `
+            <div style="font-family: Arial, sans-serif; color: #333; padding: 20px;">
+                <h2 style="font-size: 20px;">New Demo Request</h2>
+                <p>A new demo has been requested by: <strong>${email}</strong>.</p>
+                <p>Please follow up with them to schedule a session.</p>
+            </div>
+        `;
+
+        await transporter.sendMail({
+            from: `"DocuSync Lite System" <${process.env.GMAIL_USER}>`,
+            to: process.env.GMAIL_USER, // Sending to yourself
+            subject: 'New Demo Request for DocuSync Lite',
+            html: adminEmailHtml
+        });
+        
+        return { error: null };
+    } catch (e: any) {
+        console.error("[DEMO REQUEST DEBUG] CRITICAL ERROR in requestDemo:", e);
+        return { error: e.message || 'Could not process your demo request. Please try again.' };
     }
 }

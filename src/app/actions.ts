@@ -137,7 +137,7 @@ export async function send2faCode(userId: string, email: string): Promise<{ erro
             <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: auto; border: 1px solid #ddd; border-radius: 10px; overflow: hidden;">
                 <div style="background-color: #f8f9fa; padding: 20px; text-align: center;">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="height: 40px; width: 40px; color: #ff9800; margin: 0 auto;">
-                        <path d="M12.378 1.602a.75.75 0 00-.756 0L3 7.232V18a1.5 1.5 0 001.5 1.5h15A1.5 1.5 0 0021 18V7.232l-8.622-5.63zM12 7.5a.75.75 0 01.75.75v3.69l3.44-2.293a.75.75 0 01.912 1.214l-4.25 2.833a.75.75 0 01-.912 0L7.898 11.16a.75.75 0 01.912-1.213L11.25 11.94V8.25A.75.75 0 0112 7.5z" />
+                        <path d="M12.378 1.602a.75.75 0 00-.756 0L3 7.232V18a1.5 1.5 0 001.5 1.5h15A1.5 1.5 0 0021 18V7.232l-8.622-5.63z" />
                     </svg>
                     <h1 style="color: #333; margin-top: 10px;">DocuSync Lite</h1>
                 </div>
@@ -200,4 +200,55 @@ export async function verify2faCode(userId: string, code: string): Promise<{ suc
     otpStore.delete(userId); // Clean up used code
     
     return { success: true, error: null };
+}
+
+export async function joinWaitlist(email: string): Promise<{ error: string | null }> {
+    if (!email) {
+        return { error: 'Email address is required.' };
+    }
+    
+    try {
+        await new Promise((resolve, reject) => {
+            transporter.verify(function (error, success) {
+                if (error) {
+                    console.error("[SMTP DEBUG] Connection verification failed:", error);
+                    reject(new Error("SMTP connection failed. Check credentials in .env file."));
+                } else {
+                    console.log("[SMTP DEBUG] Server is ready to take our messages");
+                    resolve(success);
+                }
+            });
+        });
+
+        const emailHtml = `
+            <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: auto; border: 1px solid #ddd; border-radius: 10px; overflow: hidden;">
+                <div style="background-color: #f8f9fa; padding: 20px; text-align: center;">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="height: 40px; width: 40px; color: #ff9800; margin: 0 auto;">
+                        <path d="M12.378 1.602a.75.75 0 00-.756 0L3 7.232V18a1.5 1.5 0 001.5 1.5h15A1.5 1.5 0 0021 18V7.232l-8.622-5.63z" />
+                    </svg>
+                    <h1 style="color: #333; margin-top: 10px;">DocuSync Lite</h1>
+                </div>
+                <div style="padding: 30px;">
+                    <h2 style="font-size: 24px; color: #333;">You're on the Waitlist!</h2>
+                    <p style="font-size: 16px; line-height: 1.5;">Thank you for joining the waitlist for DocuSync Lite. You're one step closer to revolutionizing your team's collaboration.</p>
+                    <p style="font-size: 16px; line-height: 1.5;">We'll notify you as soon as we're ready to welcome you. Stay tuned for exclusive updates and sneak peeks!</p>
+                </div>
+                <div style="background-color: #f8f9fa; padding: 20px; text-align: center; font-size: 12px; color: #666;">
+                    <p>&copy; 2025 DocuSync Lite. All rights reserved.</p>
+                </div>
+            </div>
+        `;
+
+        await transporter.sendMail({
+            from: `"DocuSync Lite Team" <${process.env.GMAIL_USER}>`,
+            to: email,
+            subject: 'You\'re on the DocuSync Lite Waitlist! 🎉',
+            html: emailHtml
+        });
+        
+        return { error: null };
+    } catch (e: any) {
+        console.error("[WAITLIST DEBUG] CRITICAL ERROR in joinWaitlist:", e);
+        return { error: e.message || 'Could not add you to the waitlist. Please try again.' };
+    }
 }

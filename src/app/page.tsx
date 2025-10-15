@@ -26,12 +26,15 @@ import {
   Linkedin,
   ArrowUp,
   Moon,
-  Sun
+  Sun,
+  Loader2
 } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 import useEmblaCarousel from 'embla-carousel-react'
+import { useToast } from '@/hooks/use-toast';
+import { joinWaitlist } from '@/app/actions';
 
 const MotionButton = motion(Button);
 const MotionCard = motion(Card);
@@ -97,7 +100,7 @@ const Header = () => {
                         whileHover={{ scale: 1.05 }}
                         className="flex items-center gap-2"
                     >
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-8 w-8 text-primary">
+                       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-8 w-8 text-primary">
                             <path d="M12.378 1.602a.75.75 0 00-.756 0L3 7.232V18a1.5 1.5 0 001.5 1.5h15A1.5 1.5 0 0021 18V7.232l-8.622-5.63zM12 7.5a.75.75 0 01.75.75v3.69l3.44-2.293a.75.75 0 01.912 1.214l-4.25 2.833a.75.75 0 01-.912 0L7.898 11.16a.75.75 0 01.912-1.213L11.25 11.94V8.25A.75.75 0 0112 7.5z" />
                         </svg>
                         <span className="text-xl font-bold">DocuSync Lite</span>
@@ -213,13 +216,12 @@ const HeroSection = () => {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4"
           >
-            <Link href="#waitlist">
-                <Button size="lg">
+             <Link href="#waitlist">
+                <Button size="lg" variant="outline">
                     Join Waitlist
-                    <ChevronRight className="ml-2 h-5 w-5" />
                 </Button>
             </Link>
-            <Button size="lg" variant="outline">
+            <Button size="lg">
               <PlayCircle className="mr-2" />
               Watch Preview
             </Button>
@@ -316,6 +318,42 @@ const FeaturesSection = () => {
 
 const WaitlistSection = () => {
     const [wishlisted, setWishlisted] = useState(false);
+    const [email, setEmail] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+    const { toast } = useToast();
+
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        if (!email) {
+            toast({
+                variant: "destructive",
+                title: "Email Required",
+                description: "Please enter your email address to join the waitlist.",
+            });
+            return;
+        }
+        setIsLoading(true);
+        try {
+            const result = await joinWaitlist(email);
+            if (result.error) {
+                throw new Error(result.error);
+            }
+            toast({
+                variant: 'success',
+                title: "You're on the list! 🎉",
+                description: "Thanks for joining the DocuSync Lite waitlist. We'll be in touch!",
+            });
+            setEmail('');
+        } catch (error: any) {
+             toast({
+                variant: 'destructive',
+                title: "Something went wrong",
+                description: error.message || "Could not add you to the waitlist. Please try again.",
+            });
+        } finally {
+            setIsLoading(false);
+        }
+    }
   
     return (
       <section id="waitlist" className="relative py-20 lg:py-32 bg-muted/30 overflow-hidden">
@@ -351,7 +389,7 @@ const WaitlistSection = () => {
             <p className="mt-4 max-w-2xl mx-auto text-lg text-muted-foreground">12,000+ professionals are already on the waitlist. Join them to get early access and exclusive updates.</p>
           </div>
           <div className="mt-12 max-w-xl mx-auto">
-            <form className="flex flex-col sm:flex-row gap-4">
+            <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-4">
               <div className="relative flex-grow">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                 <Input
@@ -359,6 +397,9 @@ const WaitlistSection = () => {
                   placeholder="Enter your email to get notified"
                   className="pl-10 h-14 text-lg"
                   required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  disabled={isLoading}
                 />
               </div>
               <MotionButton
@@ -367,8 +408,9 @@ const WaitlistSection = () => {
                 className="h-14 text-lg font-semibold"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
+                disabled={isLoading}
               >
-                Get Notified
+                {isLoading ? <Loader2 className="h-6 w-6 animate-spin" /> : 'Get Notified'}
               </MotionButton>
             </form>
             <div className="mt-6 flex items-center justify-center gap-4">

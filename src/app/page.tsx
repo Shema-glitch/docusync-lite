@@ -76,7 +76,7 @@ const useActiveSection = (sectionIds: string[]) => {
     return activeSection;
 }
 
-const DemoDialog = ({ children }: { children: React.ReactNode }) => {
+const DemoDialog = ({ children, onOpenChange }: { children: React.ReactNode, onOpenChange?: (open: boolean) => void }) => {
     const [email, setEmail] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [isSubmitted, setIsSubmitted] = useState(false);
@@ -100,8 +100,16 @@ const DemoDialog = ({ children }: { children: React.ReactNode }) => {
         }
     };
 
+    const handleDialogChange = (open: boolean) => {
+        if (!open) {
+            setIsSubmitted(false);
+            setEmail('');
+        }
+        onOpenChange?.(open);
+    }
+
     return (
-        <Dialog onOpenChange={(open) => !open && (setIsSubmitted(false), setEmail(''))}>
+        <Dialog onOpenChange={handleDialogChange}>
             <DialogTrigger asChild>{children}</DialogTrigger>
             <DialogContent>
                 <DialogHeader>
@@ -222,7 +230,7 @@ const Header = () => {
                                 <Link href="/login">
                                     <Button variant="outline" className="w-full">Sign In</Button>
                                 </Link>
-                                <DemoDialog>
+                                <DemoDialog onOpenChange={() => setIsOpen(false)}>
                                     <Button className="w-full">Book a demo</Button>
                                 </DemoDialog>
                             </div>
@@ -278,10 +286,14 @@ const HeroSection = () => {
                     className="mt-10 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4"
                 >
                     <Link href="#waitlist">
-                        <Button size="lg" variant="outline" className='h-14 text-lg'>Join Waitlist</Button>
+                       <Button size="lg" variant="outline">
+                           Join Waitlist
+                       </Button>
                     </Link>
                     <DemoDialog>
-                        <Button size="lg" className='h-14 text-lg'>Book a demo</Button>
+                        <Button size="lg">
+                            Book a demo
+                        </Button>
                     </DemoDialog>
                 </motion.div>
             </div>
@@ -643,10 +655,10 @@ const Footer = () => {
                         </div>
                         <p className="text-sm text-muted-foreground">Sync smarter. Collaborate faster.</p>
                          <div className="flex gap-4 mt-2">
-                            <Link href="#" className="text-muted-foreground hover:text-primary transition-colors"><Twitter /></Link>
-                            <Link href="#" className="text-muted-foreground hover:text-primary transition-colors"><Github /></Link>
-                            <Link href="#" className="text-muted-foreground hover:text-primary transition-colors"><Linkedin /></Link>
-                            <Link href="#" className="text-muted-foreground hover:text-primary transition-colors"><Disc /></Link>
+                            <a href="https://x.com/@shemacharmant" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors"><Twitter /></a>
+                            <a href="https://github.com/Shema-glitch/docusync-lite" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors"><Github /></a>
+                            <a href="#" className="text-muted-foreground hover:text-primary transition-colors"><Linkedin /></a>
+                            <a href="#" className="text-muted-foreground hover:text-primary transition-colors"><Disc /></a>
                         </div>
                     </div>
                      <div className="flex flex-col gap-2">
@@ -654,14 +666,14 @@ const Footer = () => {
                         <Link href="#features" className="text-sm text-muted-foreground hover:text-primary transition-colors">Features</Link>
                         <Link href="#pricing" className="text-sm text-muted-foreground hover:text-primary transition-colors">Pricing</Link>
                         <Link href="#enterprise" className="text-sm text-muted-foreground hover:text-primary transition-colors">Enterprise</Link>
-                        <Link href="#" className="text-sm text-muted-foreground hover:text-primary transition-colors">Docs</Link>
+                        <Link href="/docs" className="text-sm text-muted-foreground hover:text-primary transition-colors">Docs</Link>
                     </div>
                      <div className="flex flex-col gap-2">
                         <h4 className="font-semibold">Company</h4>
-                        <Link href="#" className="text-sm text-muted-foreground hover:text-primary transition-colors">About</Link>
-                        <Link href="#" className="text-sm text-muted-foreground hover:text-primary transition-colors">Contact</Link>
-                        <Link href="#" className="text-sm text-muted-foreground hover:text-primary transition-colors">Terms</Link>
-                        <Link href="#" className="text-sm text-muted-foreground hover:text-primary transition-colors">Privacy</Link>
+                        <Link href="/about" className="text-sm text-muted-foreground hover:text-primary transition-colors">About</Link>
+                        <Link href="/contact" className="text-sm text-muted-foreground hover:text-primary transition-colors">Contact</Link>
+                        <Link href="/terms" className="text-sm text-muted-foreground hover:text-primary transition-colors">Terms</Link>
+                        <Link href="/privacy" className="text-sm text-muted-foreground hover:text-primary transition-colors">Privacy</Link>
                     </div>
                      <div className="flex flex-col gap-2">
                         <h4 className="font-semibold">Stay Updated</h4>
@@ -759,5 +771,7 @@ export default function LandingPage() {
     </div>
   );
 }
+
+    
 
     

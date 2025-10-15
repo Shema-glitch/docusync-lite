@@ -317,9 +317,9 @@ const FeaturesSection = () => {
 };
 
 const WaitlistSection = () => {
-    const [wishlisted, setWishlisted] = useState(false);
     const [email, setEmail] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const [actionType, setActionType] = useState<'waitlist' | 'wishlist' | null>(null);
     const { toast } = useToast();
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -328,11 +328,15 @@ const WaitlistSection = () => {
             toast({
                 variant: "destructive",
                 title: "Email Required",
-                description: "Please enter your email address to join the waitlist.",
+                description: "Please enter your email address.",
             });
             return;
         }
+
+        const currentAction = (e.nativeEvent.submitter as HTMLButtonElement).name as 'waitlist' | 'wishlist';
+        setActionType(currentAction);
         setIsLoading(true);
+        
         try {
             const result = await joinWaitlist(email);
             if (result.error) {
@@ -340,18 +344,19 @@ const WaitlistSection = () => {
             }
             toast({
                 variant: 'success',
-                title: "You're on the list! 🎉",
-                description: "Thanks for joining the DocuSync Lite waitlist. We'll be in touch!",
+                title: currentAction === 'wishlist' ? "You're on the wishlist! ❤️" : "You're on the list! 🎉",
+                description: "Thanks for your interest in DocuSync Lite. We'll be in touch!",
             });
             setEmail('');
         } catch (error: any) {
              toast({
                 variant: 'destructive',
                 title: "Something went wrong",
-                description: error.message || "Could not add you to the waitlist. Please try again.",
+                description: error.message || `Could not add you to the ${currentAction}. Please try again.`,
             });
         } finally {
             setIsLoading(false);
+            setActionType(null);
         }
     }
   
@@ -389,12 +394,12 @@ const WaitlistSection = () => {
             <p className="mt-4 max-w-2xl mx-auto text-lg text-muted-foreground">12,000+ professionals are already on the waitlist. Join them to get early access and exclusive updates.</p>
           </div>
           <div className="mt-12 max-w-xl mx-auto">
-            <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-4">
-              <div className="relative flex-grow">
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                 <Input
                   type="email"
-                  placeholder="Enter your email to get notified"
+                  placeholder="Enter your email"
                   className="pl-10 h-14 text-lg"
                   required
                   value={email}
@@ -402,24 +407,37 @@ const WaitlistSection = () => {
                   disabled={isLoading}
                 />
               </div>
-              <MotionButton
-                type="submit"
-                size="lg"
-                className="h-14 text-lg font-semibold"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                disabled={isLoading}
-              >
-                {isLoading ? <Loader2 className="h-6 w-6 animate-spin" /> : 'Get Notified'}
-              </MotionButton>
+              <div className="flex flex-col sm:flex-row gap-4">
+                 <MotionButton
+                    type="submit"
+                    name="waitlist"
+                    size="lg"
+                    className="h-14 text-lg font-semibold flex-1"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    disabled={isLoading}
+                >
+                    {isLoading && actionType === 'waitlist' ? <Loader2 className="h-6 w-6 animate-spin" /> : 'Get Notified'}
+                </MotionButton>
+                 <MotionButton
+                    type="submit"
+                    name="wishlist"
+                    size="lg"
+                    variant="outline"
+                    className="h-14 text-lg font-semibold flex-1"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    disabled={isLoading}
+                >
+                    {isLoading && actionType === 'wishlist' ? <Loader2 className="h-6 w-6 animate-spin" /> : (
+                      <>
+                        <Heart className="mr-2 h-5 w-5" />
+                        Add to Wishlist
+                      </>
+                    )}
+                </MotionButton>
+              </div>
             </form>
-            <div className="mt-6 flex items-center justify-center gap-4">
-                <Checkbox id="wishlist" checked={wishlisted} onCheckedChange={(checked) => setWishlisted(!!checked)} />
-                <Label htmlFor="wishlist" className="flex items-center gap-2 text-muted-foreground cursor-pointer">
-                    <Heart className={cn(`h-5 w-5 transition-all`, wishlisted ? 'text-red-500 fill-current' : '')} />
-                    Add to Wishlist
-                </Label>
-            </div>
           </div>
         </div>
       </section>

@@ -301,12 +301,13 @@ const HeroSection = () => {
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.8, delay: 0.4, type: 'spring', stiffness: 100 }}
-                className="relative hidden lg:block"
+                className="relative hidden lg:block group"
             >
+                <div className="absolute -inset-0.5 bg-gradient-to-r from-primary to-purple-600 rounded-lg blur opacity-25 group-hover:opacity-75 transition duration-1000 group-hover:duration-200 animate-tilt"></div>
                 <img
                     src="https://picsum.photos/seed/collaboration/1200/800"
                     alt="DocuSync App Mockup showing team collaboration"
-                    className="rounded-lg shadow-2xl"
+                    className="relative rounded-lg shadow-2xl"
                     data-ai-hint="app interface collaboration"
                 />
             </motion.div>

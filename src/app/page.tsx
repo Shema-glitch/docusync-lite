@@ -286,14 +286,14 @@ const HeroSection = () => {
                     className="mt-10 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4"
                 >
                     <Link href="#waitlist">
-                       <Button size="lg" variant="outline">
+                       <MotionButton size="lg" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                            Join Waitlist
-                       </Button>
+                       </MotionButton>
                     </Link>
                     <DemoDialog>
-                        <Button size="lg">
+                        <MotionButton size="lg" variant="outline" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                             Book a demo
-                        </Button>
+                        </MotionButton>
                     </DemoDialog>
                 </motion.div>
             </div>
@@ -318,12 +318,11 @@ const HeroSection = () => {
 
 
 const features = [
-  { icon: Users, title: 'Real-time Collaboration', description: 'Work together on the same document, at the same time, without conflicts. See changes as they happen and maintain a single source of truth for your team.' },
-  { icon: Cloud, title: 'DocuSync Sync Engine', description: 'Our powerful sync engine seamlessly syncs your work across all devices. Start on your desktop and continue on your phone, even when you are offline.' },
-  { icon: Layers, title: 'Smart Document Structuring', description: 'Organize your thoughts and content with an intuitive and flexible editor. Use nested documents, tags, and bi-directional links to create a personal knowledge base.' },
-  { icon: ShieldCheck, title: 'Enterprise-grade Security', description: 'Your data is protected with end-to-end encryption, robust access controls, and a commitment to data privacy. We are GDPR-ready and SOC 2 compliant.' },
-  { icon: Cpu, title: 'AI Smart Suggestions', description: 'Enhance your writing, find insights, and automate tasks with intelligent AI-powered assistance. Get suggestions for tags, summaries, and related documents.' },
-  { icon: GitBranch, title: 'Version Control', description: 'Track every change with a complete version history for each document. Easily compare versions, revert to previous states, and never lose important work.' },
+  { icon: Users, title: 'Real-time Collaboration', description: 'Work together on the same document, at the same time, without conflicts. See changes as they happen and maintain a single source of truth for your team, boosting productivity and reducing errors.' },
+  { icon: Cloud, title: 'DocuSync Sync Engine', description: 'Our powerful sync engine seamlessly syncs your work across all devices. Start on your desktop and continue on your phone, even when you are offline. All changes are queued and synced once you reconnect.' },
+  { icon: Layers, title: 'Smart Organization & Versioning', description: 'Organize content with nested documents, tags, and bi-directional links to create a powerful knowledge base. Track every change with a complete version history and easily revert to previous states.' },
+  { icon: ShieldCheck, title: 'Enterprise-grade Security', description: 'Your data is protected with end-to-end encryption, robust access controls, and a commitment to data privacy. We are GDPR-ready and SOC 2 compliant, ensuring your information is always secure.' },
+  { icon: Cpu, title: 'AI Smart Suggestions', description: 'Enhance your writing, find insights, and automate tasks with intelligent AI-powered assistance. Get suggestions for tags, summaries, and related documents to work faster and smarter.' },
 ];
 
 const FeaturesSection = () => {
@@ -581,17 +580,6 @@ const TestimonialsSection = () => (
   </section>
 );
 
-const EnterpriseProofSection = () => (
-    <section id="enterprise-proof" className="py-20 lg:py-32">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h2 className="text-3xl font-extrabold tracking-tight sm:text-4xl">Built For Enterprise</h2>
-            <p className="mt-4 max-w-2xl mx-auto text-lg text-muted-foreground">
-                Coming soon: See how DocuSync Lite powers teams across industries.
-            </p>
-        </div>
-    </section>
-);
-
 const PricingSection = () => (
     <section id="pricing" className="py-20 lg:py-32 bg-muted/30">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -761,7 +749,6 @@ export default function LandingPage() {
         <FeaturesSection />
         <TestimonialsSection />
         <ShowcaseSection />
-        <EnterpriseProofSection />
         <PricingSection />
         <EnterpriseSection />
         <WaitlistSection />
@@ -771,7 +758,5 @@ export default function LandingPage() {
     </div>
   );
 }
-
-    
 
     

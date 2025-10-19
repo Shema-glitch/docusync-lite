@@ -9,14 +9,23 @@ import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
 import { useTheme } from 'next-themes';
 import { useState, useEffect } from 'react';
-import { Loader2, ShieldCheck, ShieldOff, LifeBuoy } from 'lucide-react';
+import { Loader2, ShieldCheck, ShieldOff, LifeBuoy, User, Palette, Bell, Accessibility, KeyRound, Cloud, FlaskConical, Github, Bot, Link as LinkIcon, LogOut, Monitor, Smartphone, Tablet } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { Slider } from '@/components/ui/slider';
 import { TwoFactorAuthDialog } from '@/components/auth/two-factor-auth-dialog';
 import { useOnboarding } from '@/hooks/use-onboarding';
+import { cn } from '@/lib/utils';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import { Separator } from '@/components/ui/separator';
 
-
-type Accent = 'default' | 'violet' | 'orange';
+const accentColors = [
+    { name: 'Orange', class: 'bg-orange-500', value: 'hsl(25 95% 53%)' },
+    { name: 'Blue', class: 'bg-blue-500', value: 'hsl(217 91% 60%)' },
+    { name: 'Green', class: 'bg-green-500', value: 'hsl(142 71% 45%)' },
+    { name: 'Purple', class: 'bg-purple-500', value: 'hsl(258 90% 47%)' },
+    { name: 'Rose', class: 'bg-rose-500', value: 'hsl(347 90% 55%)' },
+];
 
 export default function SettingsPage() {
     const { user, updateUserProfile } = useAuth();
@@ -29,12 +38,20 @@ export default function SettingsPage() {
     const [organizationName, setOrganizationName] = useState('');
     const [isSaving, setIsSaving] = useState(false);
     
+    // Notifications State
     const [emailNotifications, setEmailNotifications] = useState(true);
     const [inAppReminders, setInAppReminders] = useState(true);
     const [activityDigest, setActivityDigest] = useState(false);
+    const [digestFrequency, setDigestFrequency] = useState('weekly');
 
+    // Accessibility State
     const [fontSize, setFontSize] = useState(16);
     const [isHighContrast, setIsHighContrast] = useState(false);
+
+    // Appearance State
+    const [layoutDensity, setLayoutDensity] = useState('comfortable');
+    const [previewMode, setPreviewMode] = useState('grid');
+    const [activeAccent, setActiveAccent] = useState('hsl(25 95% 53%)');
 
     const [is2faDialogOpen, setIs2faDialogOpen] = useState(false);
 
@@ -45,7 +62,6 @@ export default function SettingsPage() {
             setOrganizationName(user.organizationName ?? '');
         }
     }, [user]);
-
 
     useEffect(() => {
       document.documentElement.style.fontSize = `${fontSize}px`;
@@ -59,6 +75,10 @@ export default function SettingsPage() {
       }
       return () => document.body.classList.remove('high-contrast');
     }, [isHighContrast]);
+
+     useEffect(() => {
+        document.documentElement.style.setProperty('--primary', activeAccent);
+    }, [activeAccent]);
     
 
     const hasChanges = name !== (user?.name ?? '') || avatar !== (user?.avatar ?? '') || organizationName !== (user?.organizationName ?? '');
@@ -103,8 +123,6 @@ export default function SettingsPage() {
         if (!user?.is2faEnabled) {
             setIs2faDialogOpen(true);
         } else {
-            // Here you would typically have another dialog to confirm disabling 2FA
-            // For simplicity, we'll just disable it directly
              toast({
                 variant: 'destructive',
                 title: '2FA Not Yet Disableable',
@@ -122,45 +140,78 @@ export default function SettingsPage() {
         <p className="text-muted-foreground">Manage your account settings, preferences, and more.</p>
       </div>
       <Tabs defaultValue="profile" className="w-full">
-        <TabsList>
-          <TabsTrigger value="profile">Profile</TabsTrigger>
-          <TabsTrigger value="appearance">Appearance</TabsTrigger>
-          <TabsTrigger value="notifications">Notifications</TabsTrigger>
-          <TabsTrigger value="accessibility">Accessibility</TabsTrigger>
-          <TabsTrigger value="security">Security</TabsTrigger>
-          <TabsTrigger value="help">Help</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 lg:grid-cols-8 h-auto">
+          <TabsTrigger value="profile"><User className='h-4 w-4 mr-2'/>Profile</TabsTrigger>
+          <TabsTrigger value="appearance"><Palette className='h-4 w-4 mr-2'/>Appearance</TabsTrigger>
+          <TabsTrigger value="notifications"><Bell className='h-4 w-4 mr-2'/>Notifications</TabsTrigger>
+          <TabsTrigger value="accessibility"><Accessibility className='h-4 w-4 mr-2'/>Accessibility</TabsTrigger>
+          <TabsTrigger value="security"><KeyRound className='h-4 w-4 mr-2'/>Security</TabsTrigger>
+          <TabsTrigger value="integrations"><Cloud className='h-4 w-4 mr-2'/>Integrations</TabsTrigger>
+          <TabsTrigger value="labs"><FlaskConical className='h-4 w-4 mr-2'/>Labs</TabsTrigger>
+          <TabsTrigger value="help"><LifeBuoy className='h-4 w-4 mr-2'/>Help</TabsTrigger>
         </TabsList>
+
         <TabsContent value="profile">
           <Card>
             <CardHeader>
-              <CardTitle>Profile & Branding</CardTitle>
+              <CardTitle>Profile</CardTitle>
               <CardDescription>
-                Customize your personal and workspace appearance.
+                This is how others will see you on the site.
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="name">Name</Label>
-                <Input id="name" value={name} onChange={(e) => setName(e.target.value)} />
-              </div>
-               <div className="space-y-2">
-                <Label htmlFor="organizationName">Organization Name</Label>
-                <Input id="organizationName" value={organizationName} onChange={(e) => setOrganizationName(e.target.value)} placeholder="Your Company, Inc." />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="avatar">Avatar URL</Label>
-                <Input id="avatar" value={avatar} onChange={(e) => setAvatar(e.target.value)} placeholder="https://example.com/logo.png"/>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input id="email" type="email" value={user?.email ?? ''} readOnly disabled />
-              </div>
-               <Button onClick={handleSaveChanges} disabled={isSaving || !hasChanges}>
+            <CardContent className="space-y-6">
+                <div className="flex items-center gap-4">
+                    <Avatar className="h-20 w-20">
+                        <AvatarImage src={user?.avatar} />
+                        <AvatarFallback>{user?.name?.charAt(0)}</AvatarFallback>
+                    </Avatar>
+                     <Button variant="outline" disabled>
+                        Upload + Crop (Coming Soon)
+                    </Button>
+                </div>
+
+                <div className="space-y-2">
+                    <Label htmlFor="name">Display Name</Label>
+                    <Input id="name" value={name} onChange={(e) => setName(e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="email">Email</Label>
+                    <Input id="email" type="email" value={user?.email ?? ''} readOnly disabled />
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="role">Role</Label>
+                    <Input id="role" value="Member" readOnly disabled />
+                </div>
+                <Button onClick={handleSaveChanges} disabled={isSaving || !hasChanges}>
                  {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Save changes'}
                </Button>
             </CardContent>
+            <Separator />
+            <CardHeader>
+                <CardTitle>Connected Accounts</CardTitle>
+            </CardHeader>
+             <CardContent className="space-y-4">
+                <div className="flex items-center justify-between rounded-lg border p-4">
+                    <div className='flex items-center gap-3'><Github /> <span>GitHub</span></div>
+                    <Button variant="outline" disabled>Connect</Button>
+                </div>
+                <div className="flex items-center justify-between rounded-lg border p-4">
+                    <div className='flex items-center gap-3'><Bot /> <span>Google</span></div>
+                    <Button variant="secondary">Connected</Button>
+                </div>
+             </CardContent>
+             <Separator />
+             <CardHeader>
+                <CardTitle>Activity Log</CardTitle>
+            </CardHeader>
+             <CardContent className="space-y-4">
+                <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                    <Monitor /> <div>Last Login: 3 hours ago from Chrome on macOS</div>
+                </div>
+             </CardContent>
           </Card>
         </TabsContent>
+
         <TabsContent value="appearance">
           <Card>
             <CardHeader>
@@ -170,51 +221,126 @@ export default function SettingsPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-                <div className="space-y-2">
+                <div>
                     <Label>Theme</Label>
-                    <p className="text-sm text-muted-foreground">Select the overall color scheme for the app.</p>
+                    <p className="text-sm text-muted-foreground">Select the overall color scheme.</p>
+                    <div className="flex space-x-2 mt-2">
+                        <Button variant={theme === 'light' ? 'default' : 'outline'} onClick={() => setTheme('light')}>Light</Button>
+                        <Button variant={theme === 'dark' ? 'default' : 'outline'} onClick={() => setTheme('dark')}>Dark</Button>
+                        <Button variant={theme === 'system' ? 'default' : 'outline'} onClick={() => setTheme('system')}>System</Button>
+                    </div>
                 </div>
-                <div className="flex space-x-2">
-                    <Button variant={theme === 'light' ? 'default' : 'outline'} onClick={() => setTheme('light')}>Light</Button>
-                    <Button variant={theme === 'dark' ? 'default' : 'outline'} onClick={() => setTheme('dark')}>Dark</Button>
-                    <Button variant={theme === 'system' ? 'default' : 'outline'} onClick={() => setTheme('system')}>System</Button>
+                 <div>
+                    <Label>Accent Color</Label>
+                    <p className="text-sm text-muted-foreground">Choose your primary accent color.</p>
+                    <div className="flex space-x-2 mt-2">
+                        {accentColors.map(color => (
+                            <Button 
+                                key={color.name}
+                                variant={activeAccent === color.value ? 'default' : 'outline'}
+                                onClick={() => setActiveAccent(color.value)}
+                                className="h-8 w-8 p-0 rounded-full"
+                            >
+                                <span className={cn("h-5 w-5 rounded-full", color.class)} />
+                            </Button>
+                        ))}
+                    </div>
+                </div>
+                <div>
+                    <Label>Layout Density</Label>
+                     <p className="text-sm text-muted-foreground">Adjust spacing and element sizes.</p>
+                    <Select value={layoutDensity} onValueChange={setLayoutDensity}>
+                        <SelectTrigger className="w-[280px] mt-2">
+                            <SelectValue placeholder="Select density" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="comfortable">Comfortable</SelectItem>
+                            <SelectItem value="compact">Compact</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+                <div>
+                    <Label>Preview Mode</Label>
+                     <p className="text-sm text-muted-foreground">How to display document lists.</p>
+                    <Select value={previewMode} onValueChange={setPreviewMode}>
+                        <SelectTrigger className="w-[280px] mt-2">
+                            <SelectValue placeholder="Select preview mode" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="grid">Grid</SelectItem>
+                            <SelectItem value="list">List</SelectItem>
+                        </SelectContent>
+                    </Select>
                 </div>
             </CardContent>
           </Card>
         </TabsContent>
+
         <TabsContent value="notifications">
           <Card>
             <CardHeader>
               <CardTitle>Notifications</CardTitle>
               <CardDescription>
-                Manage how you receive notifications and reminders.
+                Manage how you receive notifications.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
                 <div className="flex items-center justify-between rounded-lg border p-4">
                     <div>
                         <Label htmlFor="email-notifications">Email Notifications</Label>
-                        <p className="text-sm text-muted-foreground">Receive emails for document shares, comments, and reminders.</p>
+                        <p className="text-sm text-muted-foreground">Receive important updates via email.</p>
                     </div>
                     <Switch id="email-notifications" checked={emailNotifications} onCheckedChange={setEmailNotifications} />
                 </div>
                 <div className="flex items-center justify-between rounded-lg border p-4">
                     <div>
                         <Label htmlFor="inapp-notifications">In-App Reminders</Label>
-                        <p className="text-sm text-muted-foreground">Show browser notifications for upcoming document reminders.</p>
+                        <p className="text-sm text-muted-foreground">Show browser notifications for upcoming due dates.</p>
                     </div>
                     <Switch id="inapp-notifications" checked={inAppReminders} onCheckedChange={setInAppReminders} />
                 </div>
-                <div className="flex items-center justify-between rounded-lg border p-4">
+                <Separator />
+                 <h4 className="text-md font-semibold">Granular Controls</h4>
+                 <div className="flex items-center justify-between rounded-lg border p-4">
                     <div>
-                        <Label htmlFor="activity-digest">Weekly Activity Digest</Label>
-                        <p className="text-sm text-muted-foreground">Get a weekly summary of your document activity.</p>
+                        <Label>Mentions</Label>
+                        <p className="text-sm text-muted-foreground">Notify me when someone @mentions me.</p>
                     </div>
-                    <Switch id="activity-digest" checked={activityDigest} onCheckedChange={setActivityDigest} />
+                    <Switch />
+                </div>
+                 <div className="flex items-center justify-between rounded-lg border p-4">
+                    <div>
+                        <Label>Document Shares</Label>
+                        <p className="text-sm text-muted-foreground">Notify me when a document is shared with me.</p>
+                    </div>
+                    <Switch defaultChecked />
+                </div>
+                 <div className="flex items-center justify-between rounded-lg border p-4">
+                    <div>
+                        <Label>Comments</Label>
+                        <p className="text-sm text-muted-foreground">Notify me about comments on my documents.</p>
+                    </div>
+                    <Switch defaultChecked/>
+                </div>
+                <Separator />
+                <div>
+                    <Label>Digest Frequency</Label>
+                     <p className="text-sm text-muted-foreground">How often to receive summary emails.</p>
+                    <Select value={digestFrequency} onValueChange={setDigestFrequency}>
+                        <SelectTrigger className="w-[280px] mt-2">
+                            <SelectValue placeholder="Select frequency" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="instant">Instant</SelectItem>
+                            <SelectItem value="daily">Daily</SelectItem>
+                            <SelectItem value="weekly">Weekly</SelectItem>
+                        </SelectContent>
+                    </Select>
                 </div>
             </CardContent>
           </Card>
         </TabsContent>
+
         <TabsContent value="accessibility">
           <Card>
             <CardHeader>
@@ -241,10 +367,25 @@ export default function SettingsPage() {
                     </div>
                     <Switch id="high-contrast" checked={isHighContrast} onCheckedChange={setIsHighContrast} />
                 </div>
+                <div className="flex items-center justify-between rounded-lg border p-4">
+                    <div>
+                        <Label htmlFor="sr-hints">Screen Reader Hints</Label>
+                        <p className="text-sm text-muted-foreground">Provide additional ARIA hints for screen readers.</p>
+                    </div>
+                    <Switch id="sr-hints" />
+                </div>
+                <div className="flex items-center justify-between rounded-lg border p-4">
+                    <div>
+                        <Label>Keyboard Shortcuts</Label>
+                        <p className="text-sm text-muted-foreground">Customize keyboard shortcuts.</p>
+                    </div>
+                    <Button variant="outline" disabled>Customize (Soon)</Button>
+                </div>
             </CardContent>
           </Card>
         </TabsContent>
-         <TabsContent value="security">
+
+        <TabsContent value="security">
           <Card>
             <CardHeader>
               <CardTitle>Security</CardTitle>
@@ -265,9 +406,90 @@ export default function SettingsPage() {
                         {user?.is2faEnabled ? 'Disable' : 'Enable'}
                     </Button>
                 </div>
+                <div className="flex items-center justify-between rounded-lg border p-4">
+                    <div>
+                        <Label>Password</Label>
+                        <p className="text-sm text-muted-foreground">Last changed on 1 Jan, 2024</p>
+                    </div>
+                    <Button variant="outline" disabled>Reset Password</Button>
+                </div>
+
+                <Separator />
+                 <h4 className="text-md font-semibold">Active Sessions</h4>
+                 <div className="flex items-center justify-between rounded-lg border p-4">
+                    <div className='flex items-center gap-3'><Monitor /> <div><p className='font-medium'>macOS, Chrome</p><p className='text-xs text-green-500'>Current Session</p></div></div>
+                    <Button variant="ghost" size="sm" disabled>Revoke</Button>
+                </div>
+                <div className="flex items-center justify-between rounded-lg border p-4">
+                    <div className='flex items-center gap-3'><Smartphone /> <div><p className='font-medium'>iPhone 15 Pro</p><p className='text-xs text-muted-foreground'>3 days ago</p></div></div>
+                    <Button variant="ghost" size="sm">Revoke</Button>
+                </div>
+
+                 <Separator />
+                 <h4 className="text-md font-semibold">Developer Keys</h4>
+                  <div className="flex items-center justify-between rounded-lg border p-4">
+                    <div>
+                        <Label>API Tokens</Label>
+                        <p className="text-sm text-muted-foreground">Manage API tokens for third-party integrations.</p>
+                    </div>
+                    <Button variant="outline" disabled>Manage Keys</Button>
+                </div>
             </CardContent>
           </Card>
         </TabsContent>
+
+        <TabsContent value="integrations">
+            <Card>
+                 <CardHeader>
+                    <CardTitle>Integrations</CardTitle>
+                    <CardDescription>Connect DocuSync with your favorite tools.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <div className="flex items-center justify-between rounded-lg border p-4">
+                        <div className='flex items-center gap-3'><img src="https://www.google.com/drive/static/images/drive/logo-drive.png" className="h-6 w-6"/><span>Google Drive</span></div>
+                        <Button variant="outline">Connect</Button>
+                    </div>
+                    <div className="flex items-center justify-between rounded-lg border p-4">
+                        <div className='flex items-center gap-3'><img src="https://upload.wikimedia.org/wikipedia/commons/a/a1/Slack_Mark.svg" className="h-6 w-6"/><span>Slack</span></div>
+                        <Button variant="outline">Connect</Button>
+                    </div>
+                    <div className="flex items-center justify-between rounded-lg border p-4">
+                        <div className='flex items-center gap-3'><img src="https://static-00.iconduck.com/assets.00/zapier-icon-2048x1235-pua8crgq.png" className="h-6"/><span>Zapier</span></div>
+                        <Button variant="outline">Connect</Button>
+                    </div>
+                     <div className="flex items-center justify-between rounded-lg border p-4">
+                        <div className='flex items-center gap-3'><LinkIcon className="h-6 w-6"/><span>Custom Webhooks</span></div>
+                        <Button variant="outline">Manage</Button>
+                    </div>
+                </CardContent>
+            </Card>
+        </TabsContent>
+
+         <TabsContent value="labs">
+            <Card>
+                 <CardHeader>
+                    <CardTitle>Labs</CardTitle>
+                    <CardDescription>Toggle experimental features. These may change or be removed at any time.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <div className="flex items-center justify-between rounded-lg border p-4">
+                        <div>
+                            <Label>AI-Powered Document Structuring</Label>
+                            <p className="text-sm text-muted-foreground">Automatically organize your documents into a knowledge graph.</p>
+                        </div>
+                        <Switch />
+                    </div>
+                    <div className="flex items-center justify-between rounded-lg border p-4">
+                        <div>
+                            <Label>Offline Desktop App</Label>
+                            <p className="text-sm text-muted-foreground">Sign up for early access to our native desktop experience.</p>
+                        </div>
+                        <Button variant="outline">Sign Up</Button>
+                    </div>
+                </CardContent>
+            </Card>
+        </TabsContent>
+        
         <TabsContent value="help">
           <Card>
             <CardHeader>
@@ -279,7 +501,7 @@ export default function SettingsPage() {
             <CardContent className="space-y-6">
                 <div className="flex items-center justify-between rounded-lg border p-4">
                     <div>
-                        <Label htmlFor="onboarding">Onboarding Guide</Label>
+                        <Label>Onboarding Guide</Label>
                         <p className="text-sm text-muted-foreground">Restart the initial tutorial to get a tour of the app's features.</p>
                     </div>
                     <Button variant="outline" onClick={startOnboarding}>
@@ -288,14 +510,24 @@ export default function SettingsPage() {
                 </div>
                  <div className="flex items-center justify-between rounded-lg border p-4">
                     <div>
-                        <Label htmlFor="support" className='flex items-center gap-2'>
-                           <LifeBuoy className="h-5 w-5 text-primary" />
-                           Contact Support
-                        </Label>
-                        <p className="text-sm text-muted-foreground">Have a question or problem? Our team is here to help.</p>
+                        <Label>Documentation</Label>
+                        <p className="text-sm text-muted-foreground">Browse our comprehensive guides and tutorials.</p>
                     </div>
-                    <Button>Contact Us</Button>
+                    <Button variant="outline" disabled>View Docs</Button>
                 </div>
+                 <div className="flex items-center justify-between rounded-lg border p-4">
+                    <div>
+                        <Label>Status Page</Label>
+                        <p className="text-sm text-muted-foreground">Check our system uptime and maintenance schedule.</p>
+                    </div>
+                    <Button variant="outline" disabled>View Status</Button>
+                </div>
+                <Separator />
+                <h4 className="text-md font-semibold">Contact Support</h4>
+                <form className='space-y-4'>
+                    <Textarea placeholder="Describe your issue..." />
+                     <Button disabled>Submit Feedback</Button>
+                </form>
             </CardContent>
           </Card>
         </TabsContent>

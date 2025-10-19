@@ -63,22 +63,61 @@
 }
 
 @layer utilities {
-  .alert-destructive {
-      @apply border-red-500/50 bg-red-900/20 text-red-400;
-  }
-  .alert-destructive > svg {
-      @apply text-red-400;
-  }
+  /* Custom Toast Styles */
   .alert-success {
-      @apply border-green-500/50 bg-green-900/20 text-green-400;
+    @apply bg-[#ECFDF5] border-[#16A34A] text-[#065F46];
   }
   .alert-success > svg {
-      @apply text-green-400;
+    @apply text-[#16A34A];
   }
+
+  .alert-destructive {
+    @apply bg-[#FEF2F2] border-[#DC2626] text-[#7F1D1D];
+  }
+  .alert-destructive > svg {
+    @apply text-[#DC2626];
+  }
+  
+  .alert-warning {
+    @apply bg-[#FFFBEB] border-[#F59E0B] text-[#78350F];
+  }
+  .alert-warning > svg {
+    @apply text-[#F59E0B];
+  }
+
   .alert-info {
-    @apply border-blue-500/50 bg-blue-900/20 text-blue-400;
+    @apply bg-[#F0F9FF] border-[#0EA5E9] text-[#075985];
   }
   .alert-info > svg {
-      @apply text-blue-400;
+    @apply text-[#0EA5E9];
+  }
+
+  /* Dark mode overrides for custom toasts */
+  .dark .alert-success {
+    @apply bg-green-900/30 border-green-500/70 text-green-200;
+  }
+  .dark .alert-success > svg {
+    @apply text-green-400;
+  }
+
+  .dark .alert-destructive {
+    @apply bg-red-900/30 border-red-500/70 text-red-200;
+  }
+  .dark .alert-destructive > svg {
+    @apply text-red-400;
+  }
+
+  .dark .alert-warning {
+    @apply bg-amber-900/30 border-amber-500/70 text-amber-200;
+  }
+  .dark .alert-warning > svg {
+    @apply text-amber-400;
+  }
+
+  .dark .alert-info {
+    @apply bg-cyan-900/30 border-cyan-500/70 text-cyan-200;
+  }
+  .dark .alert-info > svg {
+    @apply text-cyan-400;
   }
 }

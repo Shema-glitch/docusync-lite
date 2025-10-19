@@ -151,28 +151,28 @@ export default function SettingsPage() {
       <Tabs defaultValue="profile" className="w-full">
         <div className="sticky top-[59px] bg-background z-10 -mx-6 px-6 border-b">
            <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 lg:grid-cols-8 h-auto bg-transparent p-0 rounded-none border-none">
-              <TabsTrigger value="profile" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:shadow-none bg-transparent font-semibold text-muted-foreground data-[state=active]:text-primary gap-2 !shadow-none py-3">
+              <TabsTrigger value="profile" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:shadow-none bg-transparent font-semibold text-muted-foreground data-[state=active]:text-primary gap-2 !shadow-none py-3 [&_svg]:hidden data-[state=active]:[&_svg]:inline-block">
                   <User className='h-4 w-4'/>Profile
               </TabsTrigger>
-              <TabsTrigger value="appearance" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:shadow-none bg-transparent font-semibold text-muted-foreground data-[state=active]:text-primary gap-2 !shadow-none py-3">
+              <TabsTrigger value="appearance" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:shadow-none bg-transparent font-semibold text-muted-foreground data-[state=active]:text-primary gap-2 !shadow-none py-3 [&_svg]:hidden data-[state=active]:[&_svg]:inline-block">
                   <Palette className='h-4 w-4'/>Appearance
               </TabsTrigger>
-              <TabsTrigger value="notifications" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:shadow-none bg-transparent font-semibold text-muted-foreground data-[state=active]:text-primary gap-2 !shadow-none py-3">
+              <TabsTrigger value="notifications" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:shadow-none bg-transparent font-semibold text-muted-foreground data-[state=active]:text-primary gap-2 !shadow-none py-3 [&_svg]:hidden data-[state=active]:[&_svg]:inline-block">
                   <Bell className='h-4 w-4'/>Notifications
               </TabsTrigger>
-              <TabsTrigger value="accessibility" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:shadow-none bg-transparent font-semibold text-muted-foreground data-[state=active]:text-primary gap-2 !shadow-none py-3">
+              <TabsTrigger value="accessibility" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:shadow-none bg-transparent font-semibold text-muted-foreground data-[state=active]:text-primary gap-2 !shadow-none py-3 [&_svg]:hidden data-[state=active]:[&_svg]:inline-block">
                   <Accessibility className='h-4 w-4'/>Accessibility
               </TabsTrigger>
-              <TabsTrigger value="security" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:shadow-none bg-transparent font-semibold text-muted-foreground data-[state=active]:text-primary gap-2 !shadow-none py-3">
+              <TabsTrigger value="security" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:shadow-none bg-transparent font-semibold text-muted-foreground data-[state=active]:text-primary gap-2 !shadow-none py-3 [&_svg]:hidden data-[state=active]:[&_svg]:inline-block">
                   <KeyRound className='h-4 w-4'/>Security
               </TabsTrigger>
-              <TabsTrigger value="integrations" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:shadow-none bg-transparent font-semibold text-muted-foreground data-[state=active]:text-primary gap-2 !shadow-none py-3">
+              <TabsTrigger value="integrations" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:shadow-none bg-transparent font-semibold text-muted-foreground data-[state=active]:text-primary gap-2 !shadow-none py-3 [&_svg]:hidden data-[state=active]:[&_svg]:inline-block">
                   <Cloud className='h-4 w-4'/>Integrations
               </TabsTrigger>
-              <TabsTrigger value="labs" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:shadow-none bg-transparent font-semibold text-muted-foreground data-[state=active]:text-primary gap-2 !shadow-none py-3">
+              <TabsTrigger value="labs" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:shadow-none bg-transparent font-semibold text-muted-foreground data-[state=active]:text-primary gap-2 !shadow-none py-3 [&_svg]:hidden data-[state=active]:[&_svg]:inline-block">
                   <FlaskConical className='h-4 w-4'/>Labs
               </TabsTrigger>
-              <TabsTrigger value="help" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:shadow-none bg-transparent font-semibold text-muted-foreground data-[state=active]:text-primary gap-2 !shadow-none py-3">
+              <TabsTrigger value="help" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:shadow-none bg-transparent font-semibold text-muted-foreground data-[state=active]:text-primary gap-2 !shadow-none py-3 [&_svg]:hidden data-[state=active]:[&_svg]:inline-block">
                   <LifeBuoy className='h-4 w-4'/>Help
               </TabsTrigger>
           </TabsList>
@@ -250,8 +250,8 @@ export default function SettingsPage() {
                   Customize the look and feel of the app.
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
-                  <div className="flex items-center justify-between rounded-lg border p-4">
+              <CardContent className="grid gap-6">
+                  <div className="flex items-center justify-between">
                       <div>
                           <Label>Theme</Label>
                           <p className="text-sm text-muted-foreground">Select the overall color scheme.</p>
@@ -262,7 +262,7 @@ export default function SettingsPage() {
                           <Button variant={theme === 'system' ? 'default' : 'outline'} onClick={() => setTheme('system')}>System</Button>
                       </div>
                   </div>
-                  <div className="flex items-center justify-between rounded-lg border p-4">
+                  <div className="flex items-center justify-between">
                       <div>
                           <Label>Accent Color</Label>
                           <p className="text-sm text-muted-foreground">Choose your primary accent color.</p>
@@ -280,7 +280,7 @@ export default function SettingsPage() {
                           ))}
                       </div>
                   </div>
-                  <div className="flex items-center justify-between rounded-lg border p-4">
+                  <div className="flex items-center justify-between">
                       <div>
                           <Label>Layout Density</Label>
                           <p className="text-sm text-muted-foreground">Adjust spacing and element sizes.</p>
@@ -295,7 +295,7 @@ export default function SettingsPage() {
                           </SelectContent>
                       </Select>
                   </div>
-                  <div className="flex items-center justify-between rounded-lg border p-4">
+                  <div className="flex items-center justify-between">
                       <div>
                           <Label>Preview Mode</Label>
                           <p className="text-sm text-muted-foreground">How to display document lists.</p>
@@ -324,22 +324,22 @@ export default function SettingsPage() {
                   Manage how you receive notifications from us.
                 </CardDescription>
               </CardHeader>
-              <CardContent className="grid gap-4">
-                  <div className="flex items-center justify-between space-x-2 rounded-lg border p-4">
+              <CardContent className="grid gap-6">
+                  <div className="flex items-center justify-between space-x-2">
                       <div className="space-y-0.5">
                           <Label htmlFor="email-notifications">Email Notifications</Label>
                           <p className="text-sm text-muted-foreground">Receive important updates via email.</p>
                       </div>
                       <Switch id="email-notifications" checked={emailNotifications} onCheckedChange={setEmailNotifications} />
                   </div>
-                  <div className="flex items-center justify-between space-x-2 rounded-lg border p-4">
+                  <div className="flex items-center justify-between space-x-2">
                       <div className="space-y-0.5">
                           <Label htmlFor="inapp-notifications">In-App Reminders</Label>
                           <p className="text-sm text-muted-foreground">Show browser notifications for upcoming due dates.</p>
                       </div>
                       <Switch id="inapp-notifications" checked={inAppReminders} onCheckedChange={setInAppReminders} />
                   </div>
-                   <div className="flex items-center justify-between space-x-2 rounded-lg border p-4">
+                   <div className="flex items-center justify-between space-x-2">
                       <div className="space-y-0.5">
                           <Label>Digest Frequency</Label>
                           <p className="text-sm text-muted-foreground">How often to receive summary emails.</p>
@@ -364,22 +364,22 @@ export default function SettingsPage() {
                   Control exactly which notifications you want to receive.
                 </CardDescription>
               </CardHeader>
-               <CardContent className="grid gap-4">
-                  <div className="flex items-center justify-between space-x-2 rounded-lg border p-4">
+               <CardContent className="grid gap-6">
+                  <div className="flex items-center justify-between space-x-2">
                       <div className="space-y-0.5">
                           <Label>Mentions</Label>
                           <p className="text-sm text-muted-foreground">When someone @mentions you.</p>
                       </div>
                       <Switch />
                   </div>
-                  <div className="flex items-center justify-between space-x-2 rounded-lg border p-4">
+                  <div className="flex items-center justify-between space-x-2">
                       <div className="space-y-0.5">
                           <Label>Document Shares</Label>
                           <p className="text-sm text-muted-foreground">When a document is shared with you.</p>
                       </div>
                       <Switch defaultChecked />
                   </div>
-                  <div className="flex items-center justify-between space-x-2 rounded-lg border p-4">
+                  <div className="flex items-center justify-between space-x-2">
                       <div className="space-y-0.5">
                           <Label>Comments</Label>
                           <p className="text-sm text-muted-foreground">On your documents and replies.</p>
@@ -400,8 +400,8 @@ export default function SettingsPage() {
                   Make the app more comfortable for your needs.
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
-                  <div className="flex items-center justify-between rounded-lg border p-4">
+              <CardContent className="grid gap-6">
+                  <div className="flex items-center justify-between">
                       <div>
                           <Label htmlFor="font-size">Font Size</Label>
                           <p className="text-sm text-muted-foreground">Adjust the font size for better readability.</p>
@@ -411,21 +411,21 @@ export default function SettingsPage() {
                         <span className="text-sm text-muted-foreground w-8">{fontSize}px</span>
                       </div>
                   </div>
-                  <div className="flex items-center justify-between rounded-lg border p-4">
+                  <div className="flex items-center justify-between">
                       <div>
                           <Label htmlFor="high-contrast">High Contrast Mode</Label>
                           <p className="text-sm text-muted-foreground">Increase contrast throughout the app.</p>
                       </div>
                       <Switch id="high-contrast" checked={isHighContrast} onCheckedChange={setIsHighContrast} />
                   </div>
-                  <div className="flex items-center justify-between rounded-lg border p-4">
+                  <div className="flex items-center justify-between">
                       <div>
                           <Label htmlFor="sr-hints">Screen Reader Hints</Label>
                           <p className="text-sm text-muted-foreground">Provide additional ARIA hints for screen readers.</p>
                       </div>
                       <Switch id="sr-hints" />
                   </div>
-                  <div className="flex items-center justify-between rounded-lg border p-4">
+                  <div className="flex items-center justify-between">
                       <div>
                           <Label>Keyboard Shortcuts</Label>
                           <p className="text-sm text-muted-foreground">Customize keyboard shortcuts.</p>
@@ -446,8 +446,8 @@ export default function SettingsPage() {
                   Manage your account's security settings.
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
-                  <div className="flex items-center justify-between rounded-lg border p-4">
+              <CardContent className="grid gap-6">
+                  <div className="flex items-center justify-between">
                       <div>
                           <Label htmlFor="2fa" className='flex items-center gap-2'>
                             {user?.is2faEnabled ? <ShieldCheck className="h-5 w-5 text-green-500" /> : <ShieldOff className="h-5 w-5 text-destructive" />}
@@ -459,7 +459,7 @@ export default function SettingsPage() {
                           {user?.is2faEnabled ? 'Disable' : 'Enable'}
                       </Button>
                   </div>
-                  <div className="flex items-center justify-between rounded-lg border p-4">
+                  <div className="flex items-center justify-between">
                       <div>
                           <Label>Password</Label>
                           <p className="text-sm text-muted-foreground">Last changed on 1 Jan, 2024</p>
@@ -475,11 +475,12 @@ export default function SettingsPage() {
                       <CardDescription>This is a list of devices that have logged into your account. Revoke any sessions you do not recognize.</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                      <div className="flex items-center justify-between rounded-lg border p-4">
+                      <div className="flex items-center justify-between">
                           <div className='flex items-center gap-3'><Monitor /> <div><p className='font-medium'>macOS, Chrome</p><p className='text-xs text-green-500'>Current Session</p></div></div>
                           <Button variant="ghost" size="sm" disabled>Revoke</Button>
                       </div>
-                      <div className="flex items-center justify-between rounded-lg border p-4">
+                       <Separator />
+                      <div className="flex items-center justify-between">
                           <div className='flex items-center gap-3'><Smartphone /> <div><p className='font-medium'>iPhone 15 Pro</p><p className='text-xs text-muted-foreground'>3 days ago</p></div></div>
                           <Button variant="outline" size="sm">Revoke</Button>
                       </div>
@@ -492,7 +493,7 @@ export default function SettingsPage() {
                       <CardDescription>Manage API tokens for third-party integrations.</CardDescription>
                   </CardHeader>
                   <CardContent>
-                      <div className="flex items-center justify-between rounded-lg border p-4">
+                      <div className="flex items-center justify-between">
                           <div>
                               <Label>API Tokens</Label>
                               <p className="text-sm text-muted-foreground">For building custom integrations.</p>
@@ -511,20 +512,20 @@ export default function SettingsPage() {
                       <CardTitle>Integrations</CardTitle>
                       <CardDescription>Connect DocuSync with your favorite tools.</CardDescription>
                   </CardHeader>
-                  <CardContent className="space-y-4">
-                      <div className="flex items-center justify-between rounded-lg border p-4">
+                  <CardContent className="grid gap-6">
+                      <div className="flex items-center justify-between">
                           <div className='flex items-center gap-3'><img src="https://www.google.com/drive/static/images/drive/logo-drive.png" className="h-6 w-6"/><span>Google Drive</span></div>
                           <Button variant="outline">Connect</Button>
                       </div>
-                      <div className="flex items-center justify-between rounded-lg border p-4">
+                      <div className="flex items-center justify-between">
                           <div className='flex items-center gap-3'><img src="https://upload.wikimedia.org/wikipedia/commons/a/a1/Slack_Mark.svg" className="h-6 w-6"/><span>Slack</span></div>
                           <Button variant="outline">Connect</Button>
                       </div>
-                      <div className="flex items-center justify-between rounded-lg border p-4">
+                      <div className="flex items-center justify-between">
                           <div className='flex items-center gap-3'><img src="https://static-00.iconduck.com/assets.00/zapier-icon-2048x1235-pua8crgq.png" className="h-6"/><span>Zapier</span></div>
                           <Button variant="outline">Connect</Button>
                       </div>
-                      <div className="flex items-center justify-between rounded-lg border p-4">
+                      <div className="flex items-center justify-between">
                           <div className='flex items-center gap-3'><LinkIcon className="h-6 w-6"/><span>Custom Webhooks</span></div>
                           <Button variant="outline">Manage</Button>
                       </div>
@@ -540,15 +541,15 @@ export default function SettingsPage() {
                       <CardTitle>Labs</CardTitle>
                       <CardDescription>Toggle experimental features. These may change or be removed at any time.</CardDescription>
                   </CardHeader>
-                  <CardContent className="space-y-4">
-                      <div className="flex items-center justify-between rounded-lg border p-4">
+                  <CardContent className="grid gap-6">
+                      <div className="flex items-center justify-between">
                           <div>
                               <Label>AI-Powered Document Structuring</Label>
                               <p className="text-sm text-muted-foreground">Automatically organize your documents into a knowledge graph.</p>
                           </div>
                           <Switch />
                       </div>
-                      <div className="flex items-center justify-between rounded-lg border p-4">
+                      <div className="flex items-center justify-between">
                           <div>
                               <Label>Offline Desktop App</Label>
                               <p className="text-sm text-muted-foreground">Sign up for early access to our native desktop experience.</p>
@@ -569,8 +570,8 @@ export default function SettingsPage() {
                   Need assistance? Find resources here.
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
-                  <div className="flex items-center justify-between rounded-lg border p-4">
+              <CardContent className="grid gap-6">
+                  <div className="flex items-center justify-between">
                       <div>
                           <Label>Onboarding Guide</Label>
                           <p className="text-sm text-muted-foreground">Restart the initial tutorial to get a tour of the app's features.</p>
@@ -579,29 +580,35 @@ export default function SettingsPage() {
                           Restart Tutorial
                       </Button>
                   </div>
-                  <div className="flex items-center justify-between rounded-lg border p-4">
+                  <div className="flex items-center justify-between">
                       <div>
                           <Label>Documentation</Label>
                           <p className="text-sm text-muted-foreground">Browse our comprehensive guides and tutorials.</p>
                       </div>
                       <Button variant="outline" disabled>View Docs</Button>
                   </div>
-                  <div className="flex items-center justify-between rounded-lg border p-4">
+                  <div className="flex items-center justify-between">
                       <div>
                           <Label>Status Page</Label>
                           <p className="text-sm text-muted-foreground">Check our system uptime and maintenance schedule.</p>
                       </div>
                       <Button variant="outline" disabled>View Status</Button>
                   </div>
-                  <Separator />
-                  <div className="space-y-4">
-                      <h4 className="text-md font-semibold">Contact Support</h4>
-                      <form className='space-y-4'>
-                          <Textarea placeholder="Describe your issue..." />
-                          <Button disabled>Submit Feedback</Button>
-                      </form>
-                  </div>
               </CardContent>
+            </Card>
+            <Card>
+              <CardHeader>
+                  <CardTitle>Contact Support</CardTitle>
+                   <CardDescription>Describe your issue below and our team will get back to you.</CardDescription>
+              </CardHeader>
+              <CardContent>
+                  <form className='space-y-4'>
+                      <Textarea placeholder="Describe your issue..." />
+                  </form>
+              </CardContent>
+              <CardFooter>
+                 <Button disabled>Submit Feedback</Button>
+              </CardFooter>
             </Card>
           </motion.div>
         </TabsContent>
@@ -611,3 +618,5 @@ export default function SettingsPage() {
     </>
   );
 }
+
+    

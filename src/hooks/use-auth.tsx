@@ -163,7 +163,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const formattedUser = await formatUser(firebaseUser);
       setUser(formattedUser);
       toast({
-        variant: 'success',
         title: 'Login Successful!',
         description: `Welcome back, ${formattedUser.name}.`,
       });
@@ -200,7 +199,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setIs2faVerificationRequired(false); // This will trigger the onAuthStateChanged to set the user
       
       toast({
-        variant: 'success',
         title: 'Login Successful!',
         description: `Welcome back, ${tempFirebaseUser.displayName || tempFirebaseUser.email}.`,
       });
@@ -438,5 +436,3 @@ export function useAuth() {
   }
   return context;
 }
-
-    

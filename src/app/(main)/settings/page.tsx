@@ -44,7 +44,6 @@ export default function SettingsPage() {
     // Notifications State
     const [emailNotifications, setEmailNotifications] = useState(true);
     const [inAppReminders, setInAppReminders] = useState(true);
-    const [activityDigest, setActivityDigest] = useState(false);
     const [digestFrequency, setDigestFrequency] = useState('weekly');
 
     // Accessibility State
@@ -71,6 +70,7 @@ export default function SettingsPage() {
     }, [fontSize]);
 
     useEffect(() => {
+      document.body.classList.add('transition-colors', 'duration-300');
       if (isHighContrast) {
         document.body.classList.add('high-contrast');
       } else {
@@ -143,18 +143,36 @@ export default function SettingsPage() {
         <p className="text-muted-foreground">Manage your account settings, preferences, and more.</p>
       </div>
       <Tabs defaultValue="profile" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 lg:grid-cols-8 h-auto">
-          <TabsTrigger value="profile"><User className='h-4 w-4 mr-2'/>Profile</TabsTrigger>
-          <TabsTrigger value="appearance"><Palette className='h-4 w-4 mr-2'/>Appearance</TabsTrigger>
-          <TabsTrigger value="notifications"><Bell className='h-4 w-4 mr-2'/>Notifications</TabsTrigger>
-          <TabsTrigger value="accessibility"><Accessibility className='h-4 w-4 mr-2'/>Accessibility</TabsTrigger>
-          <TabsTrigger value="security"><KeyRound className='h-4 w-4 mr-2'/>Security</TabsTrigger>
-          <TabsTrigger value="integrations"><Cloud className='h-4 w-4 mr-2'/>Integrations</TabsTrigger>
-          <TabsTrigger value="labs"><FlaskConical className='h-4 w-4 mr-2'/>Labs</TabsTrigger>
-          <TabsTrigger value="help"><LifeBuoy className='h-4 w-4 mr-2'/>Help</TabsTrigger>
-        </TabsList>
+        <div className="sticky top-[59px] bg-background z-10 -mx-6 px-6 border-b">
+           <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 lg:grid-cols-8 h-auto bg-transparent p-0 rounded-none border-none">
+              <TabsTrigger value="profile" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:shadow-none bg-transparent font-semibold text-muted-foreground data-[state=active]:text-primary gap-2 !shadow-none py-3">
+                  <User className='h-4 w-4'/>Profile
+              </TabsTrigger>
+              <TabsTrigger value="appearance" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:shadow-none bg-transparent font-semibold text-muted-foreground data-[state=active]:text-primary gap-2 !shadow-none py-3">
+                  <Palette className='h-4 w-4'/>Appearance
+              </TabsTrigger>
+              <TabsTrigger value="notifications" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:shadow-none bg-transparent font-semibold text-muted-foreground data-[state=active]:text-primary gap-2 !shadow-none py-3">
+                  <Bell className='h-4 w-4'/>Notifications
+              </TabsTrigger>
+              <TabsTrigger value="accessibility" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:shadow-none bg-transparent font-semibold text-muted-foreground data-[state=active]:text-primary gap-2 !shadow-none py-3">
+                  <Accessibility className='h-4 w-4'/>Accessibility
+              </TabsTrigger>
+              <TabsTrigger value="security" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:shadow-none bg-transparent font-semibold text-muted-foreground data-[state=active]:text-primary gap-2 !shadow-none py-3">
+                  <KeyRound className='h-4 w-4'/>Security
+              </TabsTrigger>
+              <TabsTrigger value="integrations" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:shadow-none bg-transparent font-semibold text-muted-foreground data-[state=active]:text-primary gap-2 !shadow-none py-3">
+                  <Cloud className='h-4 w-4'/>Integrations
+              </TabsTrigger>
+              <TabsTrigger value="labs" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:shadow-none bg-transparent font-semibold text-muted-foreground data-[state=active]:text-primary gap-2 !shadow-none py-3">
+                  <FlaskConical className='h-4 w-4'/>Labs
+              </TabsTrigger>
+              <TabsTrigger value="help" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:shadow-none bg-transparent font-semibold text-muted-foreground data-[state=active]:text-primary gap-2 !shadow-none py-3">
+                  <LifeBuoy className='h-4 w-4'/>Help
+              </TabsTrigger>
+          </TabsList>
+        </div>
 
-        <TabsContent value="profile">
+        <TabsContent value="profile" className="space-y-6">
           <Card>
             <CardHeader>
               <CardTitle>Profile</CardTitle>
@@ -172,51 +190,47 @@ export default function SettingsPage() {
                         Upload + Crop (Coming Soon)
                     </Button>
                 </div>
-
-                <div className="space-y-2">
-                    <Label htmlFor="name">Display Name</Label>
-                    <Input id="name" value={name} onChange={(e) => setName(e.target.value)} />
+                <div className="grid md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="name">Display Name</Label>
+                        <Input id="name" value={name} onChange={(e) => setName(e.target.value)} />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="organizationName">Organization Name</Label>
+                        <Input id="organizationName" value={organizationName} onChange={(e) => setOrganizationName(e.target.value)} placeholder="Your Company, Inc."/>
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="email">Email</Label>
+                        <Input id="email" type="email" value={user?.email ?? ''} readOnly disabled />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="role">Role</Label>
+                        <Input id="role" value="Member" readOnly disabled />
+                    </div>
                 </div>
-                 <div className="space-y-2">
-                    <Label htmlFor="organizationName">Organization Name</Label>
-                    <Input id="organizationName" value={organizationName} onChange={(e) => setOrganizationName(e.target.value)} placeholder="Your Company, Inc."/>
+                <div className="flex justify-end">
+                    <Button onClick={handleSaveChanges} disabled={isSaving || !hasChanges}>
+                        {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Save changes'}
+                    </Button>
                 </div>
-                <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
-                    <Input id="email" type="email" value={user?.email ?? ''} readOnly disabled />
-                </div>
-                <div className="space-y-2">
-                    <Label htmlFor="role">Role</Label>
-                    <Input id="role" value="Member" readOnly disabled />
-                </div>
-                <Button onClick={handleSaveChanges} disabled={isSaving || !hasChanges}>
-                 {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Save changes'}
-               </Button>
             </CardContent>
-            <Separator />
-            <CardHeader>
-                <CardTitle>Connected Accounts</CardTitle>
-            </CardHeader>
-             <CardContent className="space-y-4">
-                <div className="flex items-center justify-between rounded-lg border p-4">
-                    <div className='flex items-center gap-3'><Github /> <span>GitHub</span></div>
-                    <Button variant="outline" disabled>Connect</Button>
-                </div>
-                <div className="flex items-center justify-between rounded-lg border p-4">
-                    <div className='flex items-center gap-3'><Bot /> <span>Google</span></div>
-                    <Button variant="secondary">Connected</Button>
-                </div>
-             </CardContent>
-             <Separator />
-             <CardHeader>
-                <CardTitle>Activity Log</CardTitle>
-            </CardHeader>
-             <CardContent className="space-y-4">
-                <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                    <Monitor /> <div>Last Login: 3 hours ago from Chrome on macOS</div>
-                </div>
-             </CardContent>
           </Card>
+           <Card>
+                <CardHeader>
+                    <CardTitle>Connected Accounts</CardTitle>
+                    <CardDescription>Manage your third-party account connections.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <div className="flex items-center justify-between rounded-lg border p-4">
+                        <div className='flex items-center gap-3'><Github className="h-6 w-6"/> <span>GitHub</span></div>
+                        <Button variant="outline" disabled>Connect</Button>
+                    </div>
+                    <div className="flex items-center justify-between rounded-lg border p-4">
+                        <div className='flex items-center gap-3'><Bot className="h-6 w-6"/> <span>Google</span></div>
+                        <Button variant="secondary" disabled>Connected</Button>
+                    </div>
+                </CardContent>
+            </Card>
         </TabsContent>
 
         <TabsContent value="appearance">
@@ -228,19 +242,23 @@ export default function SettingsPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-                <div>
-                    <Label>Theme</Label>
-                    <p className="text-sm text-muted-foreground">Select the overall color scheme.</p>
-                    <div className="flex space-x-2 mt-2">
+                <div className="flex items-center justify-between rounded-lg border p-4">
+                    <div>
+                        <Label>Theme</Label>
+                        <p className="text-sm text-muted-foreground">Select the overall color scheme.</p>
+                    </div>
+                    <div className="flex space-x-2">
                         <Button variant={theme === 'light' ? 'default' : 'outline'} onClick={() => setTheme('light')}>Light</Button>
                         <Button variant={theme === 'dark' ? 'default' : 'outline'} onClick={() => setTheme('dark')}>Dark</Button>
                         <Button variant={theme === 'system' ? 'default' : 'outline'} onClick={() => setTheme('system')}>System</Button>
                     </div>
                 </div>
-                 <div>
-                    <Label>Accent Color</Label>
-                    <p className="text-sm text-muted-foreground">Choose your primary accent color.</p>
-                    <div className="flex space-x-2 mt-2">
+                 <div className="flex items-center justify-between rounded-lg border p-4">
+                    <div>
+                        <Label>Accent Color</Label>
+                        <p className="text-sm text-muted-foreground">Choose your primary accent color.</p>
+                    </div>
+                    <div className="flex space-x-2">
                         {accentColors.map(color => (
                             <Button 
                                 key={color.name}
@@ -253,11 +271,13 @@ export default function SettingsPage() {
                         ))}
                     </div>
                 </div>
-                <div>
-                    <Label>Layout Density</Label>
-                     <p className="text-sm text-muted-foreground">Adjust spacing and element sizes.</p>
+                <div className="flex items-center justify-between rounded-lg border p-4">
+                    <div>
+                        <Label>Layout Density</Label>
+                        <p className="text-sm text-muted-foreground">Adjust spacing and element sizes.</p>
+                    </div>
                     <Select value={layoutDensity} onValueChange={setLayoutDensity}>
-                        <SelectTrigger className="w-[280px] mt-2">
+                        <SelectTrigger className="w-[180px]">
                             <SelectValue placeholder="Select density" />
                         </SelectTrigger>
                         <SelectContent>
@@ -266,11 +286,13 @@ export default function SettingsPage() {
                         </SelectContent>
                     </Select>
                 </div>
-                <div>
-                    <Label>Preview Mode</Label>
-                     <p className="text-sm text-muted-foreground">How to display document lists.</p>
+                 <div className="flex items-center justify-between rounded-lg border p-4">
+                    <div>
+                        <Label>Preview Mode</Label>
+                        <p className="text-sm text-muted-foreground">How to display document lists.</p>
+                    </div>
                     <Select value={previewMode} onValueChange={setPreviewMode}>
-                        <SelectTrigger className="w-[280px] mt-2">
+                        <SelectTrigger className="w-[180px]">
                             <SelectValue placeholder="Select preview mode" />
                         </SelectTrigger>
                         <SelectContent>
@@ -288,7 +310,7 @@ export default function SettingsPage() {
             <CardHeader>
               <CardTitle>Notifications</CardTitle>
               <CardDescription>
-                Manage how you receive notifications.
+                Manage how you receive notifications from us.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -307,34 +329,36 @@ export default function SettingsPage() {
                     <Switch id="inapp-notifications" checked={inAppReminders} onCheckedChange={setInAppReminders} />
                 </div>
                 <Separator />
-                 <h4 className="text-md font-semibold">Granular Controls</h4>
+                 <h4 className="text-md font-semibold px-4">Granular Controls</h4>
                  <div className="flex items-center justify-between rounded-lg border p-4">
                     <div>
                         <Label>Mentions</Label>
-                        <p className="text-sm text-muted-foreground">Notify me when someone @mentions me.</p>
+                        <p className="text-sm text-muted-foreground">When someone @mentions you.</p>
                     </div>
                     <Switch />
                 </div>
                  <div className="flex items-center justify-between rounded-lg border p-4">
                     <div>
                         <Label>Document Shares</Label>
-                        <p className="text-sm text-muted-foreground">Notify me when a document is shared with me.</p>
+                        <p className="text-sm text-muted-foreground">When a document is shared with you.</p>
                     </div>
                     <Switch defaultChecked />
                 </div>
                  <div className="flex items-center justify-between rounded-lg border p-4">
                     <div>
                         <Label>Comments</Label>
-                        <p className="text-sm text-muted-foreground">Notify me about comments on my documents.</p>
+                        <p className="text-sm text-muted-foreground">On your documents and replies.</p>
                     </div>
                     <Switch defaultChecked/>
                 </div>
                 <Separator />
-                <div>
-                    <Label>Digest Frequency</Label>
-                     <p className="text-sm text-muted-foreground">How often to receive summary emails.</p>
+                <div className="flex items-center justify-between rounded-lg border p-4">
+                    <div>
+                        <Label>Digest Frequency</Label>
+                        <p className="text-sm text-muted-foreground">How often to receive summary emails.</p>
+                    </div>
                     <Select value={digestFrequency} onValueChange={setDigestFrequency}>
-                        <SelectTrigger className="w-[280px] mt-2">
+                        <SelectTrigger className="w-[180px]">
                             <SelectValue placeholder="Select frequency" />
                         </SelectTrigger>
                         <SelectContent>
@@ -392,7 +416,7 @@ export default function SettingsPage() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="security">
+        <TabsContent value="security" className="space-y-6">
           <Card>
             <CardHeader>
               <CardTitle>Security</CardTitle>
@@ -420,29 +444,41 @@ export default function SettingsPage() {
                     </div>
                     <Button variant="outline" disabled>Reset Password</Button>
                 </div>
-
-                <Separator />
-                 <h4 className="text-md font-semibold">Active Sessions</h4>
-                 <div className="flex items-center justify-between rounded-lg border p-4">
-                    <div className='flex items-center gap-3'><Monitor /> <div><p className='font-medium'>macOS, Chrome</p><p className='text-xs text-green-500'>Current Session</p></div></div>
-                    <Button variant="ghost" size="sm" disabled>Revoke</Button>
-                </div>
-                <div className="flex items-center justify-between rounded-lg border p-4">
-                    <div className='flex items-center gap-3'><Smartphone /> <div><p className='font-medium'>iPhone 15 Pro</p><p className='text-xs text-muted-foreground'>3 days ago</p></div></div>
-                    <Button variant="ghost" size="sm">Revoke</Button>
-                </div>
-
-                 <Separator />
-                 <h4 className="text-md font-semibold">Developer Keys</h4>
-                  <div className="flex items-center justify-between rounded-lg border p-4">
-                    <div>
-                        <Label>API Tokens</Label>
-                        <p className="text-sm text-muted-foreground">Manage API tokens for third-party integrations.</p>
-                    </div>
-                    <Button variant="outline" disabled>Manage Keys</Button>
-                </div>
             </CardContent>
           </Card>
+
+           <Card>
+                <CardHeader>
+                    <CardTitle>Active Sessions</CardTitle>
+                    <CardDescription>This is a list of devices that have logged into your account. Revoke any sessions you do not recognize.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                     <div className="flex items-center justify-between rounded-lg border p-4">
+                        <div className='flex items-center gap-3'><Monitor /> <div><p className='font-medium'>macOS, Chrome</p><p className='text-xs text-green-500'>Current Session</p></div></div>
+                        <Button variant="ghost" size="sm" disabled>Revoke</Button>
+                    </div>
+                    <div className="flex items-center justify-between rounded-lg border p-4">
+                        <div className='flex items-center gap-3'><Smartphone /> <div><p className='font-medium'>iPhone 15 Pro</p><p className='text-xs text-muted-foreground'>3 days ago</p></div></div>
+                        <Button variant="outline" size="sm">Revoke</Button>
+                    </div>
+                </CardContent>
+            </Card>
+
+             <Card>
+                <CardHeader>
+                    <CardTitle>Developer Keys</CardTitle>
+                    <CardDescription>Manage API tokens for third-party integrations.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <div className="flex items-center justify-between rounded-lg border p-4">
+                        <div>
+                            <Label>API Tokens</Label>
+                            <p className="text-sm text-muted-foreground">For building custom integrations.</p>
+                        </div>
+                        <Button variant="outline" disabled>Manage Keys</Button>
+                    </div>
+                </CardContent>
+            </Card>
         </TabsContent>
 
         <TabsContent value="integrations">
@@ -491,7 +527,8 @@ export default function SettingsPage() {
                             <Label>Offline Desktop App</Label>
                             <p className="text-sm text-muted-foreground">Sign up for early access to our native desktop experience.</p>
                         </div>
-                        <Button variant="outline">Sign Up</Button>                    </div>
+                        <Button variant="outline">Sign Up</Button>
+                    </div>
                 </CardContent>
             </Card>
         </TabsContent>
@@ -529,11 +566,13 @@ export default function SettingsPage() {
                     <Button variant="outline" disabled>View Status</Button>
                 </div>
                 <Separator />
-                <h4 className="text-md font-semibold">Contact Support</h4>
-                <form className='space-y-4'>
-                    <Textarea placeholder="Describe your issue..." />
-                     <Button disabled>Submit Feedback</Button>
-                </form>
+                <div className="space-y-4">
+                    <h4 className="text-md font-semibold">Contact Support</h4>
+                    <form className='space-y-4'>
+                        <Textarea placeholder="Describe your issue..." />
+                        <Button disabled>Submit Feedback</Button>
+                    </form>
+                </div>
             </CardContent>
           </Card>
         </TabsContent>

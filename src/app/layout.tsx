@@ -8,6 +8,7 @@ import { ThemeProvider } from '@/components/theme-provider';
 import { Inter } from 'next/font/google';
 import { cn } from '@/lib/utils';
 import { FirebaseErrorListener } from '@/components/FirebaseErrorListener';
+import { AppearanceProvider } from '@/hooks/use-appearance';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-sans' });
 
@@ -61,15 +62,19 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <AuthProvider>
-              <DocumentsProvider>
-                  {children}
-                  <Toaster />
-                  <FirebaseErrorListener />
-              </DocumentsProvider>
-          </AuthProvider>
+          <AppearanceProvider>
+            <AuthProvider>
+                <DocumentsProvider>
+                    {children}
+                    <Toaster />
+                    <FirebaseErrorListener />
+                </DocumentsProvider>
+            </AuthProvider>
+          </AppearanceProvider>
         </ThemeProvider>
       </body>
     </html>
   );
 }
+
+    

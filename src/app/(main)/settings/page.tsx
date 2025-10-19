@@ -21,21 +21,23 @@ import { Textarea } from '@/components/ui/textarea';
 import { Separator } from '@/components/ui/separator';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { motion } from 'framer-motion';
+import { useAppearance, accentColors } from '@/hooks/use-appearance';
 
-
-const accentColors = [
-    { name: 'Orange', class: 'bg-orange-500', value: 'hsl(25 95% 53%)' },
-    { name: 'Blue', class: 'bg-blue-500', value: 'hsl(217 91% 60%)' },
-    { name: 'Green', class: 'bg-green-500', value: 'hsl(142 71% 45%)' },
-    { name: 'Purple', class: 'bg-purple-500', value: 'hsl(258 90% 47%)' },
-    { name: 'Rose', class: 'bg-rose-500', value: 'hsl(347 90% 55%)' },
-];
 
 export default function SettingsPage() {
     const { user, updateUserProfile } = useAuth();
     const { theme, setTheme } = useTheme();
     const { toast } = useToast();
     const { startOnboarding } = useOnboarding();
+
+    const { 
+      fontSize, 
+      setFontSize, 
+      isHighContrast, 
+      setIsHighContrast,
+      accentColor,
+      setAccentColor,
+    } = useAppearance();
 
     const [name, setName] = useState('');
     const [avatar, setAvatar] = useState('');
@@ -47,15 +49,10 @@ export default function SettingsPage() {
     const [inAppReminders, setInAppReminders] = useState(true);
     const [digestFrequency, setDigestFrequency] = useState('weekly');
 
-    // Accessibility State
-    const [fontSize, setFontSize] = useState(14);
-    const [isHighContrast, setIsHighContrast] = useState(false);
-
     // Appearance State
     const [layoutDensity, setLayoutDensity] = useState('comfortable');
     const [previewMode, setPreviewMode] = useState('grid');
-    const [activeAccent, setActiveAccent] = useState('hsl(25 95% 53%)');
-
+   
     const [is2faDialogOpen, setIs2faDialogOpen] = useState(false);
 
     useEffect(() => {
@@ -65,24 +62,6 @@ export default function SettingsPage() {
             setOrganizationName(user.organizationName ?? '');
         }
     }, [user]);
-
-    useEffect(() => {
-      document.documentElement.style.fontSize = `${fontSize}px`;
-    }, [fontSize]);
-
-    useEffect(() => {
-      document.body.classList.add('transition-colors', 'duration-300');
-      if (isHighContrast) {
-        document.body.classList.add('high-contrast');
-      } else {
-        document.body.classList.remove('high-contrast');
-      }
-      return () => document.body.classList.remove('high-contrast');
-    }, [isHighContrast]);
-
-     useEffect(() => {
-        document.documentElement.style.setProperty('--primary', activeAccent);
-    }, [activeAccent]);
     
 
     const hasChanges = name !== (user?.name ?? '') || organizationName !== (user?.organizationName ?? '');
@@ -148,31 +127,31 @@ export default function SettingsPage() {
         <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Settings</h1>
         <p className="text-muted-foreground">Manage your account settings, preferences, and more.</p>
       </div>
-      <Tabs defaultValue="profile" className="w-full">
-        <div className="sticky top-[59px] bg-background z-10 -mx-6 px-6 border-b">
-            <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 lg:grid-cols-8 h-auto bg-transparent p-0 rounded-none border-none">
-                <TabsTrigger value="profile" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:shadow-none bg-transparent font-semibold text-muted-foreground data-[state=active]:text-primary gap-2 !shadow-none py-3 [&>svg]:hidden data-[state=active]:[&>svg]:inline-block">
+       <Tabs defaultValue="profile" className="w-full">
+        <div className="overflow-x-auto">
+          <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 lg:grid-cols-8 h-auto bg-transparent p-0 rounded-none border-b md:w-full sm:w-max">
+                <TabsTrigger value="profile" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary bg-transparent font-semibold text-muted-foreground data-[state=active]:text-primary gap-2 !shadow-none py-3 data-[state=active]:[&>svg]:inline-block [&>svg]:hidden">
                     <User className='h-4 w-4'/>Profile
                 </TabsTrigger>
-                <TabsTrigger value="appearance" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:shadow-none bg-transparent font-semibold text-muted-foreground data-[state=active]:text-primary gap-2 !shadow-none py-3 [&>svg]:hidden data-[state=active]:[&>svg]:inline-block">
+                <TabsTrigger value="appearance" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary bg-transparent font-semibold text-muted-foreground data-[state=active]:text-primary gap-2 !shadow-none py-3 data-[state=active]:[&>svg]:inline-block [&>svg]:hidden">
                     <Palette className='h-4 w-4'/>Appearance
                 </TabsTrigger>
-                <TabsTrigger value="notifications" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:shadow-none bg-transparent font-semibold text-muted-foreground data-[state=active]:text-primary gap-2 !shadow-none py-3 [&>svg]:hidden data-[state=active]:[&>svg]:inline-block">
+                <TabsTrigger value="notifications" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary bg-transparent font-semibold text-muted-foreground data-[state=active]:text-primary gap-2 !shadow-none py-3 data-[state=active]:[&>svg]:inline-block [&>svg]:hidden">
                     <Bell className='h-4 w-4'/>Notifications
                 </TabsTrigger>
-                <TabsTrigger value="accessibility" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:shadow-none bg-transparent font-semibold text-muted-foreground data-[state=active]:text-primary gap-2 !shadow-none py-3 [&>svg]:hidden data-[state=active]:[&>svg]:inline-block">
+                <TabsTrigger value="accessibility" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary bg-transparent font-semibold text-muted-foreground data-[state=active]:text-primary gap-2 !shadow-none py-3 data-[state=active]:[&>svg]:inline-block [&>svg]:hidden">
                     <Accessibility className='h-4 w-4'/>Accessibility
                 </TabsTrigger>
-                <TabsTrigger value="security" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:shadow-none bg-transparent font-semibold text-muted-foreground data-[state=active]:text-primary gap-2 !shadow-none py-3 [&>svg]:hidden data-[state=active]:[&>svg]:inline-block">
+                <TabsTrigger value="security" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary bg-transparent font-semibold text-muted-foreground data-[state=active]:text-primary gap-2 !shadow-none py-3 data-[state=active]:[&>svg]:inline-block [&>svg]:hidden">
                     <KeyRound className='h-4 w-4'/>Security
                 </TabsTrigger>
-                <TabsTrigger value="integrations" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:shadow-none bg-transparent font-semibold text-muted-foreground data-[state=active]:text-primary gap-2 !shadow-none py-3 [&>svg]:hidden data-[state=active]:[&>svg]:inline-block">
+                <TabsTrigger value="integrations" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary bg-transparent font-semibold text-muted-foreground data-[state=active]:text-primary gap-2 !shadow-none py-3 data-[state=active]:[&>svg]:inline-block [&>svg]:hidden">
                     <Cloud className='h-4 w-4'/>Integrations
                 </TabsTrigger>
-                <TabsTrigger value="labs" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:shadow-none bg-transparent font-semibold text-muted-foreground data-[state=active]:text-primary gap-2 !shadow-none py-3 [&>svg]:hidden data-[state=active]:[&>svg]:inline-block">
+                <TabsTrigger value="labs" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary bg-transparent font-semibold text-muted-foreground data-[state=active]:text-primary gap-2 !shadow-none py-3 data-[state=active]:[&>svg]:inline-block [&>svg]:hidden">
                     <FlaskConical className='h-4 w-4'/>Labs
                 </TabsTrigger>
-                <TabsTrigger value="help" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:shadow-none bg-transparent font-semibold text-muted-foreground data-[state=active]:text-primary gap-2 !shadow-none py-3 [&>svg]:hidden data-[state=active]:[&>svg]:inline-block">
+                <TabsTrigger value="help" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary bg-transparent font-semibold text-muted-foreground data-[state=active]:text-primary gap-2 !shadow-none py-3 data-[state=active]:[&>svg]:inline-block [&>svg]:hidden">
                     <LifeBuoy className='h-4 w-4'/>Help
                 </TabsTrigger>
             </TabsList>
@@ -251,8 +230,8 @@ export default function SettingsPage() {
                   Customize the look and feel of the app.
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <CardContent className="divide-y divide-border">
+                <div className="py-4 flex flex-col md:flex-row md:items-center justify-between gap-4 first:pt-0 last:pb-0">
                     <div>
                         <Label>Theme</Label>
                         <p className="text-sm text-muted-foreground">Select the overall color scheme.</p>
@@ -263,7 +242,7 @@ export default function SettingsPage() {
                         <Button variant={theme === 'system' ? 'default' : 'outline'} onClick={() => setTheme('system')}>System</Button>
                     </div>
                 </div>
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div className="py-4 flex flex-col md:flex-row md:items-center justify-between gap-4 first:pt-0 last:pb-0">
                     <div>
                         <Label>Accent Color</Label>
                         <p className="text-sm text-muted-foreground">Choose your primary accent color.</p>
@@ -272,8 +251,8 @@ export default function SettingsPage() {
                         {accentColors.map(color => (
                             <Button 
                                 key={color.name}
-                                variant={activeAccent === color.value ? 'default' : 'outline'}
-                                onClick={() => setActiveAccent(color.value)}
+                                variant={accentColor === color.value ? 'default' : 'outline'}
+                                onClick={() => setAccentColor(color.value)}
                                 className="h-8 w-8 p-0 rounded-full"
                             >
                                 <span className={cn("h-5 w-5 rounded-full", color.class)} />
@@ -281,7 +260,7 @@ export default function SettingsPage() {
                         ))}
                     </div>
                 </div>
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div className="py-4 flex flex-col md:flex-row md:items-center justify-between gap-4 first:pt-0 last:pb-0">
                     <div>
                         <Label>Layout Density</Label>
                         <p className="text-sm text-muted-foreground">Adjust spacing and element sizes.</p>
@@ -296,7 +275,7 @@ export default function SettingsPage() {
                         </SelectContent>
                     </Select>
                 </div>
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div className="py-4 flex flex-col md:flex-row md:items-center justify-between gap-4 first:pt-0 last:pb-0">
                     <div>
                         <Label>Preview Mode</Label>
                         <p className="text-sm text-muted-foreground">How to display document lists.</p>
@@ -408,7 +387,7 @@ export default function SettingsPage() {
                           <p className="text-sm text-muted-foreground">Adjust the font size for better readability.</p>
                       </div>
                       <div className="w-full md:w-1/3 flex items-center gap-4">
-                        <Slider defaultValue={[fontSize]} max={24} min={12} step={1} onValueChange={([value]) => setFontSize(value)} />
+                        <Slider value={[fontSize]} max={24} min={12} step={1} onValueChange={([value]) => setFontSize(value)} />
                         <span className="text-sm text-muted-foreground w-8">{fontSize}px</span>
                       </div>
                   </div>
@@ -616,3 +595,5 @@ export default function SettingsPage() {
     </>
   );
 }
+
+    

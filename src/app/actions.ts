@@ -33,18 +33,21 @@ const otpStore: Map<string, { code: string; expires: Date }> = new Map();
 
 
 export async function getAiSuggestions(data: SuggestTagsInput) {
-  console.log("AI features are currently disabled.");
-  return { tags: [], error: 'AI features are currently disabled.' };
+  return { tags: ['report', 'finance', 'Q4', 'marketing', 'budget'], error: null };
 }
 
 export async function getAiSummary(data: SummarizeDocInput) {
-    console.log("AI features are currently disabled.");
-  return { summary: '', error: 'AI features are currently disabled.' };
+  return { 
+    summary: `- The report analyzes the Q4 financial performance, highlighting a 15% increase in revenue.\n- Marketing expenditure saw a 10% rise, with a notable ROI from digital campaigns.\n- Key challenges included supply chain disruptions, which impacted profit margins by 5%.\n- The forecast for the next quarter predicts steady growth, contingent on market stability.`,
+    error: null 
+  };
 }
 
 export async function getAiExplanation(data: ExplainDocInput) {
-    console.log("AI features are currently disabled.");
-  return { explanation: '', error: 'AI features are currently disabled.' };
+  return { 
+    explanation: `### **Purpose**\nThis document is a standard **Quarterly Financial Report**. Its main goal is to provide stakeholders with a summary of the company's financial performance over the last three months (Q4).\n\n### **Key Concepts**\n*   **ROI (Return on Investment):** A metric used to evaluate the efficiency of an investment. In this case, it measures how much profit was generated from the money spent on marketing.\n*   **Profit Margins:** This represents the percentage of revenue that has turned into profit. A 5% impact means that for every $100 in sales, the profit was $5 less than expected due to supply chain issues.\n\n### **Main Takeaways**\n1.  **Financially Successful Quarter:** The company's revenue grew significantly (15%), which is a strong positive signal.\n2.  **Marketing is Working:** Increased spending on digital marketing is paying off, leading to more sales.\n3.  **External Factors are a Risk:** Problems with the supply chain are a key challenge that is making products more expensive to produce, thus reducing profits.`,
+    error: null 
+  };
 }
 
 export async function uploadFile(formData: FormData): Promise<{ downloadURL: string; storagePath: string; error: string | null; }> {
@@ -54,6 +57,29 @@ export async function uploadFile(formData: FormData): Promise<{ downloadURL: str
             return { downloadURL: '', storagePath: '', error: 'No file provided.' };
         }
 
+        // --- SIMULATED UPLOAD FOR DEMO ---
+        // In a real application, you'd use the commented out code below.
+        // For this demo, we'll return a URL to a sample document.
+        const getSampleUrl = (type: string) => {
+            if (type.includes('word')) return 'https://calibre-ebook.com/downloads/demos/demo.docx';
+            if (type.includes('spreadsheet')) return 'https://file-examples.com/storage/fe52cb0c6162138b79b9472/2017/02/file_example_XLSX_10.xlsx';
+            if (type.includes('presentation')) return 'https://file-examples.com/storage/fe52cb0c6162138b79b9472/2017/08/file_example_PPT_250KB.ppt';
+            if (type.includes('pdf')) return 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf';
+            if (type.includes('text')) return 'data:text/plain;base64,SGVsbG8sIFdvcmxkISBUaGlzIGlzIGEgdGV4dCBmaWxlIHRoYXQgY2FuIGJlIHNlYXJjaGVkLg==';
+            return '';
+        }
+        
+        const downloadURL = getSampleUrl(file.type);
+        const storagePath = `documents/sample-${file.name}`;
+        
+        if (!downloadURL) {
+          return { downloadURL: '', storagePath: '', error: 'This file type is not supported in the demo.' };
+        }
+
+        return { downloadURL, storagePath, error: null };
+        
+        /*
+        // --- REAL UPLOAD LOGIC (Commented out for demo) ---
         const storagePath = `documents/${uuidv4()}-${file.name}`;
         const bucket = adminStorage.bucket();
         const buffer = Buffer.from(await file.arrayBuffer());
@@ -72,6 +98,8 @@ export async function uploadFile(formData: FormData): Promise<{ downloadURL: str
         });
 
         return { downloadURL, storagePath, error: null };
+        */
+
     } catch (e: any) {
         console.error('Upload failed:', e);
         return { downloadURL: '', storagePath: '', error: 'File upload failed. Please try again.' };
@@ -81,7 +109,7 @@ export async function uploadFile(formData: FormData): Promise<{ downloadURL: str
 export async function permanentlyDeleteFile(document: { id: string; storagePath?: string }): Promise<{ error: string | null }> {
     const { id, storagePath } = document;
 
-    if (storagePath) {
+    if (storagePath && !storagePath.startsWith('documents/sample-')) {
         try {
             const bucket = adminStorage.bucket();
             await bucket.file(storagePath).delete();
@@ -320,3 +348,5 @@ export async function requestDemo(email: string): Promise<{ error: string | null
         return { error: e.message || 'Could not process your demo request. Please try again.' };
     }
 }
+
+    

@@ -15,10 +15,11 @@ import { useAuth } from '@/hooks/use-auth';
 import { Members } from '@/components/document/members';
 import { ShareDialog } from '@/components/document/share-dialog';
 import { useToast } from '@/hooks/use-toast';
-// import { getAiSummary, getAiExplanation } from '@/app/actions';
+import { getAiSummary, getAiExplanation } from '@/app/actions';
 import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter } from '@/components/ui/alert-dialog';
 import { AlertDialogCancel } from '@radix-ui/react-alert-dialog';
 import { Input } from '@/components/ui/input';
+import { cn } from '@/lib/utils';
 
 
 const loadingMessages = [
@@ -29,7 +30,7 @@ const loadingMessages = [
 ];
 
 export default function DocumentDetailsPage({ params }: { params: { id: string } }) {
-  const { documents } = useDocuments();
+  const { documents, loading: docsLoading } = useDocuments();
   const { user } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
@@ -54,11 +55,10 @@ export default function DocumentDetailsPage({ params }: { params: { id: string }
 
 
   useEffect(() => {
+    if (docsLoading) return;
     const foundDoc = documents.find((doc) => doc.id === id);
-    if (foundDoc) {
-      setDocument(foundDoc);
-    }
-  }, [id, documents]);
+    setDocument(foundDoc);
+  }, [id, documents, docsLoading]);
 
   useEffect(() => {
     const cinematicTimer = setTimeout(() => {
@@ -76,19 +76,28 @@ export default function DocumentDetailsPage({ params }: { params: { id: string }
   }, [id]);
 
   useEffect(() => {
-    if (document && document.fileType === 'text/plain' && document.content) {
-      fetch(document.content)
-        .then(response => {
-          if (!response.ok) throw new Error('Could not fetch document content.');
-          return response.text();
-        })
-        .then(text => setDocumentText(text))
-        .catch(e => {
-            console.error(e);
-            toast({ variant: 'destructive', title: 'Error', description: 'Failed to load document content for searching.' });
-        });
+    if (document && document.fileType === 'text/plain' && document.content.startsWith('data:')) {
+        try {
+            const base64Content = document.content.split(',')[1];
+            const text = atob(base64Content);
+            setDocumentText(text);
+        } catch (e) {
+            console.error("Failed to decode text content", e);
+            setDocumentText("Error decoding document content.");
+        }
+    } else if (document && document.fileType === 'text/plain') {
+        fetch(document.content)
+            .then(response => {
+                if (!response.ok) throw new Error('Could not fetch document content.');
+                return response.text();
+            })
+            .then(text => setDocumentText(text))
+            .catch(e => {
+                console.error(e);
+                setDocumentText("Error loading document content for search.");
+            });
     }
-  }, [document, toast]);
+  }, [document]);
 
   const userRole = useMemo(() => {
     if (!document || !user) return undefined;
@@ -110,20 +119,40 @@ export default function DocumentDetailsPage({ params }: { params: { id: string }
   }
 
   const handleAiFeature = async (type: 'summarize' | 'explain') => {
-    toast({
-        variant: 'destructive',
-        title: 'AI Features Disabled',
-        description: 'AI features are currently unavailable. Please try again later.',
-    });
-    return;
+    if (!document) return;
+
+    if (type === 'summarize') {
+        setIsSummaryLoading(true);
+        const result = await getAiSummary({ documentText: documentText || '', documentTitle: document.title });
+        if (result.error) {
+            toast({ variant: 'destructive', title: 'AI Summary Failed', description: result.error });
+        } else {
+            setSummary(result.summary);
+            setIsSummaryDialogOpen(true);
+        }
+        setIsSummaryLoading(false);
+    }
+
+    if (type === 'explain') {
+        setIsExplainLoading(true);
+        const result = await getAiExplanation({ documentText: documentText || '', documentTitle: document.title });
+        if (result.error) {
+            toast({ variant: 'destructive', title: 'AI Explanation Failed', description: result.error });
+        } else {
+            setExplanation(result.explanation);
+            setIsExplainDialogOpen(true);
+        }
+        setIsExplainLoading(false);
+    }
   };
 
 
-  if (isLoading || !document) {
+  if (isLoading || docsLoading || !document) {
+    const showLoading = isLoading || docsLoading;
     return (
       <div className="flex flex-1 items-center justify-center h-full">
         <div className="flex flex-col items-center gap-4 text-center">
-            {isLoading ? (
+            {showLoading ? (
                 <>
                     <Loader2 className="h-10 w-10 animate-spin text-primary" />
                     <h2 className="text-2xl font-bold tracking-tight">{loadingMessages[loadingMessageIndex]}</h2>
@@ -148,6 +177,9 @@ export default function DocumentDetailsPage({ params }: { params: { id: string }
 
   const renderContent = () => {
     const isOfficeDoc = ['application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/vnd.openxmlformats-officedocument.presentationml.presentation'].includes(document.fileType || '');
+    
+    // Check if the current theme is dark
+    const isDarkTheme = document.documentElement.classList.contains('dark');
 
     if (!document.content) {
         return (
@@ -170,9 +202,9 @@ export default function DocumentDetailsPage({ params }: { params: { id: string }
         return <iframe id="doc-iframe" src={document.content} className="w-full h-full border-0" title={document.title} ref={iframeRef} />;
     }
 
-    if (document.fileType === 'text/plain') {
-        const highlightedText = inDocSearchQuery ? documentText?.replace(
-            new RegExp(inDocSearchQuery, 'gi'),
+    if (document.fileType === 'text/plain' && documentText) {
+        const highlightedText = inDocSearchQuery ? documentText.replace(
+            new RegExp(inDocSearchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi'),
             (match) => `<mark>${match}</mark>`
         ) : documentText;
 
@@ -182,9 +214,11 @@ export default function DocumentDetailsPage({ params }: { params: { id: string }
                     <style>
                         body { 
                             font-family: sans-serif; 
-                            color: ${document.documentElement.classList.contains('dark') ? '#fff' : '#000'}; 
+                            color: ${isDarkTheme ? '#fff' : '#000'}; 
+                            background-color: transparent;
                             white-space: pre-wrap;
                             word-wrap: break-word;
+                            padding: 1rem;
                         }
                         mark { background-color: #ffeb3b; color: black; }
                     </style>
@@ -217,12 +251,12 @@ export default function DocumentDetailsPage({ params }: { params: { id: string }
                     Back
             </Button>
             <div className='flex items-center gap-2'>
-                <Button variant="outline" onClick={() => handleAiFeature('explain')} disabled>
-                    <BookOpen className="mr-2 h-4 w-4"/>
+                <Button variant="outline" onClick={() => handleAiFeature('explain')} disabled={isExplainLoading}>
+                    {isExplainLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <BookOpen className="mr-2 h-4 w-4"/>}
                     Explain
                 </Button>
-                <Button variant="outline" onClick={() => handleAiFeature('summarize')} disabled>
-                    <Sparkles className="mr-2 h-4 w-4"/>
+                <Button variant="outline" onClick={() => handleAiFeature('summarize')} disabled={isSummaryLoading}>
+                    {isSummaryLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Sparkles className="mr-2 h-4 w-4"/>}
                     Summarize
                 </Button>
                 <Button variant="outline" onClick={copyShareLink}>
@@ -286,7 +320,7 @@ export default function DocumentDetailsPage({ params }: { params: { id: string }
                 </div>
             </CardHeader>
             <CardContent className="flex-grow p-0">
-                <div className="w-full h-[70vh] bg-muted rounded-b-lg">
+                <div className="w-full h-[70vh] bg-muted/20 rounded-b-lg">
                     {renderContent()}
                 </div>
             </CardContent>
@@ -342,3 +376,5 @@ export default function DocumentDetailsPage({ params }: { params: { id: string }
     </>
   );
 }
+
+    

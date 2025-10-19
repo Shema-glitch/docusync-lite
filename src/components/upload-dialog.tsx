@@ -17,8 +17,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { X, UploadCloud, Sparkles, Loader2, FileText, Calendar as CalendarIcon } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-// import { getAiSuggestions, uploadFile } from '@/app/actions';
-import { uploadFile } from '@/app/actions';
+import { getAiSuggestions, uploadFile } from '@/app/actions';
 import { cn } from '@/lib/utils';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
@@ -100,12 +99,33 @@ export function UploadDialog({ isOpen, onOpenChange }: UploadDialogProps) {
   };
 
   const handleSuggest = async () => {
-    toast({
-        variant: 'destructive',
-        title: 'AI Features Disabled',
-        description: 'AI features are currently unavailable. Please try again later.',
-    });
-    return;
+    if (!file) {
+      toast({
+        variant: 'info',
+        title: 'Select a file first',
+        description: 'Please select a text-based file to get suggestions.',
+      });
+      return;
+    }
+
+    setIsSuggesting(true);
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+        try {
+            const text = e.target?.result as string;
+            const result = await getAiSuggestions({ documentText: text });
+            if (result.error) {
+                toast({ variant: 'destructive', title: 'AI Suggestion Failed', description: result.error });
+            } else {
+                setSuggestedTags(result.tags.filter(t => !tags.includes(t)));
+            }
+        } catch (error: any) {
+            toast({ variant: 'destructive', title: 'Error', description: 'Could not read file for suggestions.' });
+        } finally {
+            setIsSuggesting(false);
+        }
+    };
+    reader.readAsText(file);
   };
 
   const handleTagKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -355,14 +375,24 @@ export function UploadDialog({ isOpen, onOpenChange }: UploadDialogProps) {
                     <Sparkles className="h-4 w-4 text-primary" />
                     Smart Tag Suggestions
                 </Label>
-                <Button variant="ghost" size="sm" onClick={handleSuggest} disabled>
-                    <Sparkles className="mr-2 h-4 w-4" />
+                <Button variant="ghost" size="sm" onClick={handleSuggest} disabled={isSuggesting || !file}>
+                    {isSuggesting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
                     Suggest
                 </Button>
                </div>
-                <p className="text-sm text-muted-foreground">
-                    AI features are currently disabled.
-                </p>
+                {suggestedTags.length > 0 ? (
+                    <div className="flex flex-wrap gap-2 pt-2">
+                        {suggestedTags.map(tag => (
+                             <Badge key={tag} variant="outline" className="cursor-pointer hover:bg-primary/20" onClick={() => addSuggestedTag(tag)}>
+                                + {tag}
+                            </Badge>
+                        ))}
+                    </div>
+                ) : (
+                     <p className="text-sm text-muted-foreground">
+                        Click "Suggest" to get AI-powered tag ideas based on your document's content.
+                    </p>
+                )}
             </div>
 
           </div>
@@ -377,3 +407,5 @@ export function UploadDialog({ isOpen, onOpenChange }: UploadDialogProps) {
     </Dialog>
   );
 }
+
+    

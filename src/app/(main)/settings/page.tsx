@@ -10,7 +10,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
 import { useTheme } from 'next-themes';
 import { useState, useEffect } from 'react';
-import { Loader2, ShieldCheck, ShieldOff, LifeBuoy, User, Palette, Bell, Accessibility, KeyRound, Cloud, FlaskConical, Github, Bot, Link as LinkIcon, LogOut, Monitor, Smartphone, Tablet } from 'lucide-react';
+import { Loader2, ShieldCheck, ShieldOff, LifeBuoy, User, Palette, Bell, Accessibility, KeyRound, Cloud, FlaskConical, Github, Bot, Link as LinkIcon, LogOut, Monitor, Smartphone, Tablet, Zap, Slack, Database } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { Slider } from '@/components/ui/slider';
 import { TwoFactorAuthDialog } from '@/components/auth/two-factor-auth-dialog';
@@ -151,28 +151,28 @@ export default function SettingsPage() {
       <Tabs defaultValue="profile" className="w-full">
         <div className="sticky top-[59px] bg-background z-10 -mx-6 px-6 border-b">
            <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 lg:grid-cols-8 h-auto bg-transparent p-0 rounded-none border-none">
-              <TabsTrigger value="profile" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:shadow-none bg-transparent font-semibold text-muted-foreground data-[state=active]:text-primary gap-2 !shadow-none py-3 [&_svg]:hidden data-[state=active]:[&_svg]:inline-block">
+              <TabsTrigger value="profile" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:shadow-none bg-transparent font-semibold text-muted-foreground data-[state=active]:text-primary gap-2 !shadow-none py-3 [&>svg]:hidden data-[state=active]:[&>svg]:inline-block">
                   <User className='h-4 w-4'/>Profile
               </TabsTrigger>
-              <TabsTrigger value="appearance" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:shadow-none bg-transparent font-semibold text-muted-foreground data-[state=active]:text-primary gap-2 !shadow-none py-3 [&_svg]:hidden data-[state=active]:[&_svg]:inline-block">
+              <TabsTrigger value="appearance" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:shadow-none bg-transparent font-semibold text-muted-foreground data-[state=active]:text-primary gap-2 !shadow-none py-3 [&>svg]:hidden data-[state=active]:[&>svg]:inline-block">
                   <Palette className='h-4 w-4'/>Appearance
               </TabsTrigger>
-              <TabsTrigger value="notifications" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:shadow-none bg-transparent font-semibold text-muted-foreground data-[state=active]:text-primary gap-2 !shadow-none py-3 [&_svg]:hidden data-[state=active]:[&_svg]:inline-block">
+              <TabsTrigger value="notifications" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:shadow-none bg-transparent font-semibold text-muted-foreground data-[state=active]:text-primary gap-2 !shadow-none py-3 [&>svg]:hidden data-[state=active]:[&>svg]:inline-block">
                   <Bell className='h-4 w-4'/>Notifications
               </TabsTrigger>
-              <TabsTrigger value="accessibility" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:shadow-none bg-transparent font-semibold text-muted-foreground data-[state=active]:text-primary gap-2 !shadow-none py-3 [&_svg]:hidden data-[state=active]:[&_svg]:inline-block">
+              <TabsTrigger value="accessibility" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:shadow-none bg-transparent font-semibold text-muted-foreground data-[state=active]:text-primary gap-2 !shadow-none py-3 [&>svg]:hidden data-[state=active]:[&>svg]:inline-block">
                   <Accessibility className='h-4 w-4'/>Accessibility
               </TabsTrigger>
-              <TabsTrigger value="security" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:shadow-none bg-transparent font-semibold text-muted-foreground data-[state=active]:text-primary gap-2 !shadow-none py-3 [&_svg]:hidden data-[state=active]:[&_svg]:inline-block">
+              <TabsTrigger value="security" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:shadow-none bg-transparent font-semibold text-muted-foreground data-[state=active]:text-primary gap-2 !shadow-none py-3 [&>svg]:hidden data-[state=active]:[&>svg]:inline-block">
                   <KeyRound className='h-4 w-4'/>Security
               </TabsTrigger>
-              <TabsTrigger value="integrations" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:shadow-none bg-transparent font-semibold text-muted-foreground data-[state=active]:text-primary gap-2 !shadow-none py-3 [&_svg]:hidden data-[state=active]:[&_svg]:inline-block">
+              <TabsTrigger value="integrations" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:shadow-none bg-transparent font-semibold text-muted-foreground data-[state=active]:text-primary gap-2 !shadow-none py-3 [&>svg]:hidden data-[state=active]:[&>svg]:inline-block">
                   <Cloud className='h-4 w-4'/>Integrations
               </TabsTrigger>
-              <TabsTrigger value="labs" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:shadow-none bg-transparent font-semibold text-muted-foreground data-[state=active]:text-primary gap-2 !shadow-none py-3 [&_svg]:hidden data-[state=active]:[&_svg]:inline-block">
+              <TabsTrigger value="labs" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:shadow-none bg-transparent font-semibold text-muted-foreground data-[state=active]:text-primary gap-2 !shadow-none py-3 [&>svg]:hidden data-[state=active]:[&>svg]:inline-block">
                   <FlaskConical className='h-4 w-4'/>Labs
               </TabsTrigger>
-              <TabsTrigger value="help" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:shadow-none bg-transparent font-semibold text-muted-foreground data-[state=active]:text-primary gap-2 !shadow-none py-3 [&_svg]:hidden data-[state=active]:[&_svg]:inline-block">
+              <TabsTrigger value="help" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:shadow-none bg-transparent font-semibold text-muted-foreground data-[state=active]:text-primary gap-2 !shadow-none py-3 [&>svg]:hidden data-[state=active]:[&>svg]:inline-block">
                   <LifeBuoy className='h-4 w-4'/>Help
               </TabsTrigger>
           </TabsList>
@@ -514,15 +514,15 @@ export default function SettingsPage() {
                   </CardHeader>
                   <CardContent className="grid gap-6">
                       <div className="flex items-center justify-between">
-                          <div className='flex items-center gap-3'><img src="https://www.google.com/drive/static/images/drive/logo-drive.png" className="h-6 w-6"/><span>Google Drive</span></div>
+                          <div className='flex items-center gap-3'><Database className="h-6 w-6"/><span>Google Drive</span></div>
                           <Button variant="outline">Connect</Button>
                       </div>
                       <div className="flex items-center justify-between">
-                          <div className='flex items-center gap-3'><img src="https://upload.wikimedia.org/wikipedia/commons/a/a1/Slack_Mark.svg" className="h-6 w-6"/><span>Slack</span></div>
+                          <div className='flex items-center gap-3'><Slack className="h-6 w-6"/><span>Slack</span></div>
                           <Button variant="outline">Connect</Button>
                       </div>
                       <div className="flex items-center justify-between">
-                          <div className='flex items-center gap-3'><img src="https://static-00.iconduck.com/assets.00/zapier-icon-2048x1235-pua8crgq.png" className="h-6"/><span>Zapier</span></div>
+                          <div className='flex items-center gap-3'><Zap className="h-6 w-6"/><span>Zapier</span></div>
                           <Button variant="outline">Connect</Button>
                       </div>
                       <div className="flex items-center justify-between">
@@ -618,5 +618,7 @@ export default function SettingsPage() {
     </>
   );
 }
+
+    
 
     

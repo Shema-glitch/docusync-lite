@@ -162,11 +162,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } else {
       const formattedUser = await formatUser(firebaseUser);
       setUser(formattedUser);
+      toast({
+        variant: 'success',
+        title: 'Login Successful!',
+        description: `Welcome back, ${formattedUser.name}.`,
+      });
       const redirect = new URLSearchParams(window.location.search).get('redirect');
       router.push(redirect ? decodeURIComponent(redirect) : '/dashboard');
       setLoading(false);
     }
-  }, [router]);
+  }, [router, toast]);
 
 
   const login = async (email: string, password: string): Promise<void> => {
@@ -197,6 +202,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       toast({
         variant: 'success',
         title: 'Login Successful!',
+        description: `Welcome back, ${tempFirebaseUser.displayName || tempFirebaseUser.email}.`,
       });
       const redirect = new URLSearchParams(window.location.search).get('redirect');
       router.push(redirect ? decodeURIComponent(redirect) : '/dashboard');

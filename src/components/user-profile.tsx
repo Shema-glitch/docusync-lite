@@ -71,7 +71,7 @@ export function UserProfile({ user }: UserProfileProps) {
               <AvatarImage src={user.avatar} alt={user.name} />
               <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
             </Avatar>
-            <CardTitle className="text-3xl">{user.name}</CardTitle>
+            <CardTitle>{user.name}</CardTitle>
             {user.organizationName && (
                 <CardDescription className="text-base">{user.organizationName}</CardDescription>
             )}

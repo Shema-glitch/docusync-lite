@@ -4,40 +4,36 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // A user can only read and write to their own user document.
+    // Users can only read and write their own profile document.
     match /users/{userId} {
-      allow read, write: if request.auth.uid == userId;
+      allow read, write: if request.auth != null && request.auth.uid == userId;
 
-      // Activity logs are private and can only be read or created by the user.
+      // Activity logs are private to each user.
       match /activity/{activityId} {
-        allow read, create: if request.auth.uid == userId;
+        allow read, write: if request.auth.uid == userId;
       }
     }
 
     // Rules for the 'documents' collection
     match /documents/{documentId} {
+      // Allow a user to read a document if they are listed in its 'members' map.
+      allow get: if request.auth != null && resource.data.members.keys().hasAny([request.auth.uid]);
+      
+      // Allow a user to list documents, ONLY IF they are querying by their own user ID in the 'members' map.
+      // This rule validates the client-side query.
+      allow list: if request.auth != null && request.query.where.get("path").get(1) == request.auth.uid;
 
-      // LIST: A user can list documents if they are querying for documents
-      // where they are a member. This is crucial for fetching the initial document list.
-      allow list: if request.auth != null
-                  && request.query.get("where")[0][0] == "members." + request.auth.uid;
-
-      // READ: A user can read a single document if their ID is in the members map.
-      allow read: if request.auth != null 
-                  && resource.data.members.keys().hasAny([request.auth.uid]);
-
-      // CREATE: A user can create a document if they are making themselves the owner.
+      // Allow creating a document if the user is making themselves the owner.
       allow create: if request.auth != null
                     && request.resource.data.members[request.auth.uid].role == 'owner';
 
-      // UPDATE: A user can update a document if they are an owner or editor.
+      // Allow updating a document if the user is an owner or editor.
       allow update: if request.auth != null
                     && (resource.data.members[request.auth.uid].role == 'owner'
                         || resource.data.members[request.auth.uid].role == 'editor');
                         
-      // DELETE: A user can delete a document only if they are the owner.
-      allow delete: if request.auth != null 
-                    && resource.data.members[request.auth.uid].role == 'owner';
+      // Allow deleting a document only if the user is the owner.
+      allow delete: if request.auth != null && resource.data.members[request.auth.uid].role == 'owner';
     }
   }
 }

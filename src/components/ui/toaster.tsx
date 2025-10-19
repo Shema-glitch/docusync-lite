@@ -1,7 +1,6 @@
 
 "use client"
 
-import { useToast } from "@/hooks/use-toast"
 import {
   Toast,
   ToastClose,
@@ -10,37 +9,21 @@ import {
   ToastTitle,
   ToastViewport,
 } from "@/components/ui/toast"
-import { CheckCircle, AlertCircle, Info, AlertTriangle, LucideIcon } from "lucide-react"
-
-const iconMap: Record<string, LucideIcon> = {
-    success: CheckCircle,
-    destructive: AlertCircle,
-    info: Info,
-    warning: AlertTriangle,
-};
-
+import { useToast } from "@/hooks/use-toast"
 
 export function Toaster() {
   const { toasts } = useToast()
 
   return (
     <ToastProvider>
-      {toasts.map(function ({ id, title, description, action, variant, ...props }) {
-        const Icon = variant ? iconMap[variant] : null;
+      {toasts.map(function ({ id, title, description, action, ...props }) {
         return (
-          <Toast key={id} variant={variant} {...props}>
-            <div className="flex items-start gap-3">
-              {Icon && <Icon className="h-6 w-6 mt-0.5" />}
-              <div className="grid gap-1">
-                {title && (
-                  <ToastTitle>
-                    {title}
-                  </ToastTitle>
-                )}
-                {description && (
-                  <ToastDescription>{description}</ToastDescription>
-                )}
-              </div>
+          <Toast key={id} {...props}>
+            <div className="grid gap-1">
+              {title && <ToastTitle>{title}</ToastTitle>}
+              {description && (
+                <ToastDescription>{description}</ToastDescription>
+              )}
             </div>
             {action}
             <ToastClose />

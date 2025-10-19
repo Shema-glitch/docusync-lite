@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Button } from '@/components/ui/button';
@@ -175,6 +176,10 @@ export default function SettingsPage() {
                 <div className="space-y-2">
                     <Label htmlFor="name">Display Name</Label>
                     <Input id="name" value={name} onChange={(e) => setName(e.target.value)} />
+                </div>
+                 <div className="space-y-2">
+                    <Label htmlFor="organizationName">Organization Name</Label>
+                    <Input id="organizationName" value={organizationName} onChange={(e) => setOrganizationName(e.target.value)} placeholder="Your Company, Inc."/>
                 </div>
                 <div className="space-y-2">
                     <Label htmlFor="email">Email</Label>
@@ -486,8 +491,7 @@ export default function SettingsPage() {
                             <Label>Offline Desktop App</Label>
                             <p className="text-sm text-muted-foreground">Sign up for early access to our native desktop experience.</p>
                         </div>
-                        <Button variant="outline">Sign Up</Button>
-                    </div>
+                        <Button variant="outline">Sign Up</Button>                    </div>
                 </CardContent>
             </Card>
         </TabsContent>
@@ -539,3 +543,5 @@ export default function SettingsPage() {
     </>
   );
 }
+
+    

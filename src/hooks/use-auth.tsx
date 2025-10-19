@@ -239,6 +239,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             });
         
         localStorage.setItem('lastLoginProvider', 'password');
+        toast({
+            variant: 'success',
+            title: 'Success!',
+            description: "Account created successfully! Redirecting...",
+          });
         const redirect = new URLSearchParams(window.location.search).get('redirect');
         router.push(redirect ? decodeURIComponent(redirect) : '/dashboard');
 
@@ -436,3 +441,5 @@ export function useAuth() {
   }
   return context;
 }
+
+    

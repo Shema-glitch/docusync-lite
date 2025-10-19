@@ -2,7 +2,7 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -18,7 +18,6 @@ import { useOnboarding } from '@/hooks/use-onboarding';
 import { cn } from '@/lib/utils';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { Separator } from '@/components/ui/separator';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { motion } from 'framer-motion';
 import { useAppearance, accentColors } from '@/hooks/use-appearance';
@@ -50,6 +49,7 @@ export default function SettingsPage() {
     // Appearance State
     const [layoutDensity, setLayoutDensity] = useState('comfortable');
     const [previewMode, setPreviewMode] = useState('grid');
+    const [isHighContrast, setIsHighContrast] = useState(false);
    
     const [is2faDialogOpen, setIs2faDialogOpen] = useState(false);
 
@@ -61,22 +61,22 @@ export default function SettingsPage() {
         }
     }, [user]);
 
+    useEffect(() => {
+        const highContrastEnabled = localStorage.getItem('high-contrast-mode') === 'true';
+        setIsHighContrast(highContrastEnabled);
+        if (highContrastEnabled) {
+            document.documentElement.classList.add('high-contrast');
+        }
+    }, []);
+
     const handleHighContrastChange = (isHigh: boolean) => {
-      if (isHigh) {
-        setTheme('high-contrast');
-      } else {
-        // Revert to the previous theme, defaulting to 'system'
-        const previousTheme = localStorage.getItem('previous-theme') || 'system';
-        setTheme(previousTheme);
-      }
-    };
-    
-    const handleThemeChange = (newTheme: string) => {
-      // Store the current non-high-contrast theme before switching
-      if (theme !== 'high-contrast') {
-        localStorage.setItem('previous-theme', theme || 'system');
-      }
-      setTheme(newTheme);
+        setIsHighContrast(isHigh);
+        localStorage.setItem('high-contrast-mode', String(isHigh));
+        if (isHigh) {
+            document.documentElement.classList.add('high-contrast');
+        } else {
+            document.documentElement.classList.remove('high-contrast');
+        }
     };
 
     const hasChanges = name !== (user?.name ?? '') || organizationName !== (user?.organizationName ?? '');
@@ -144,29 +144,29 @@ export default function SettingsPage() {
       </div>
        <Tabs defaultValue="profile" className="w-full">
         <div className="overflow-x-auto">
-          <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 lg:grid-cols-8 h-auto bg-transparent p-0 rounded-none border-b md:w-full sm:w-max">
-                <TabsTrigger value="profile" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary bg-transparent font-semibold text-muted-foreground data-[state=active]:text-primary gap-2 !shadow-none py-3 data-[state=active]:[&>svg]:inline-block [&>svg]:hidden">
+            <TabsList className="grid w-full grid-cols-2 sm:w-max md:grid-cols-4 lg:grid-cols-8 h-auto rounded-none border-b bg-transparent p-0">
+                <TabsTrigger value="profile" className="flex-1 gap-2 rounded-none border-b-2 border-transparent bg-transparent !shadow-none py-3 font-semibold text-muted-foreground data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:[&>svg]:inline-block [&>svg]:hidden">
                     <User className='h-4 w-4'/>Profile
                 </TabsTrigger>
-                <TabsTrigger value="appearance" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary bg-transparent font-semibold text-muted-foreground data-[state=active]:text-primary gap-2 !shadow-none py-3 data-[state=active]:[&>svg]:inline-block [&>svg]:hidden">
+                <TabsTrigger value="appearance" className="flex-1 gap-2 rounded-none border-b-2 border-transparent bg-transparent !shadow-none py-3 font-semibold text-muted-foreground data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:[&>svg]:inline-block [&>svg]:hidden">
                     <Palette className='h-4 w-4'/>Appearance
                 </TabsTrigger>
-                <TabsTrigger value="notifications" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary bg-transparent font-semibold text-muted-foreground data-[state=active]:text-primary gap-2 !shadow-none py-3 data-[state=active]:[&>svg]:inline-block [&>svg]:hidden">
+                <TabsTrigger value="notifications" className="flex-1 gap-2 rounded-none border-b-2 border-transparent bg-transparent !shadow-none py-3 font-semibold text-muted-foreground data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:[&>svg]:inline-block [&>svg]:hidden">
                     <Bell className='h-4 w-4'/>Notifications
                 </TabsTrigger>
-                <TabsTrigger value="accessibility" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary bg-transparent font-semibold text-muted-foreground data-[state=active]:text-primary gap-2 !shadow-none py-3 data-[state=active]:[&>svg]:inline-block [&>svg]:hidden">
+                <TabsTrigger value="accessibility" className="flex-1 gap-2 rounded-none border-b-2 border-transparent bg-transparent !shadow-none py-3 font-semibold text-muted-foreground data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:[&>svg]:inline-block [&>svg]:hidden">
                     <Accessibility className='h-4 w-4'/>Accessibility
                 </TabsTrigger>
-                <TabsTrigger value="security" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary bg-transparent font-semibold text-muted-foreground data-[state=active]:text-primary gap-2 !shadow-none py-3 data-[state=active]:[&>svg]:inline-block [&>svg]:hidden">
+                <TabsTrigger value="security" className="flex-1 gap-2 rounded-none border-b-2 border-transparent bg-transparent !shadow-none py-3 font-semibold text-muted-foreground data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:[&>svg]:inline-block [&>svg]:hidden">
                     <KeyRound className='h-4 w-4'/>Security
                 </TabsTrigger>
-                <TabsTrigger value="integrations" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary bg-transparent font-semibold text-muted-foreground data-[state=active]:text-primary gap-2 !shadow-none py-3 data-[state=active]:[&>svg]:inline-block [&>svg]:hidden">
+                <TabsTrigger value="integrations" className="flex-1 gap-2 rounded-none border-b-2 border-transparent bg-transparent !shadow-none py-3 font-semibold text-muted-foreground data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:[&>svg]:inline-block [&>svg]:hidden">
                     <Cloud className='h-4 w-4'/>Integrations
                 </TabsTrigger>
-                <TabsTrigger value="labs" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary bg-transparent font-semibold text-muted-foreground data-[state=active]:text-primary gap-2 !shadow-none py-3 data-[state=active]:[&>svg]:inline-block [&>svg]:hidden">
+                <TabsTrigger value="labs" className="flex-1 gap-2 rounded-none border-b-2 border-transparent bg-transparent !shadow-none py-3 font-semibold text-muted-foreground data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:[&>svg]:inline-block [&>svg]:hidden">
                     <FlaskConical className='h-4 w-4'/>Labs
                 </TabsTrigger>
-                <TabsTrigger value="help" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary bg-transparent font-semibold text-muted-foreground data-[state=active]:text-primary gap-2 !shadow-none py-3 data-[state=active]:[&>svg]:inline-block [&>svg]:hidden">
+                <TabsTrigger value="help" className="flex-1 gap-2 rounded-none border-b-2 border-transparent bg-transparent !shadow-none py-3 font-semibold text-muted-foreground data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:[&>svg]:inline-block [&>svg]:hidden">
                     <LifeBuoy className='h-4 w-4'/>Help
                 </TabsTrigger>
             </TabsList>
@@ -252,9 +252,9 @@ export default function SettingsPage() {
                         <p className="text-sm text-muted-foreground">Select the overall color scheme.</p>
                     </div>
                     <div className="flex space-x-2 shrink-0">
-                        <Button variant={(theme === 'light') ? 'default' : 'outline'} onClick={() => handleThemeChange('light')}>Light</Button>
-                        <Button variant={(theme === 'dark') ? 'default' : 'outline'} onClick={() => handleThemeChange('dark')}>Dark</Button>
-                        <Button variant={(theme === 'system') ? 'default' : 'outline'} onClick={() => handleThemeChange('system')}>System</Button>
+                        <Button variant={(theme === 'light') ? 'default' : 'outline'} onClick={() => setTheme('light')}>Light</Button>
+                        <Button variant={(theme === 'dark') ? 'default' : 'outline'} onClick={() => setTheme('dark')}>Dark</Button>
+                        <Button variant={(theme === 'system') ? 'default' : 'outline'} onClick={() => setTheme('system')}>System</Button>
                     </div>
                 </div>
                 <div className="py-4 flex flex-col md:flex-row md:items-center justify-between gap-4 first:pt-0 last:pb-0">
@@ -411,7 +411,7 @@ export default function SettingsPage() {
                           <Label htmlFor="high-contrast">High Contrast Mode</Label>
                           <p className="text-sm text-muted-foreground">Increase contrast throughout the app.</p>
                       </div>
-                      <Switch id="high-contrast" checked={theme === 'high-contrast'} onCheckedChange={handleHighContrastChange} />
+                      <Switch id="high-contrast" checked={isHighContrast} onCheckedChange={handleHighContrastChange} />
                   </div>
                   <div className="py-4 flex flex-col md:flex-row md:items-center justify-between gap-4 first:pt-0 last:pb-0">
                       <div>
@@ -610,3 +610,5 @@ export default function SettingsPage() {
     </>
   );
 }
+
+    

@@ -55,6 +55,22 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning className="scroll-smooth">
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  var highContrast = localStorage.getItem('high-contrast-mode') === 'true';
+                  if (highContrast) {
+                    document.documentElement.classList.add('high-contrast');
+                  }
+                } catch (e) {}
+              })();
+            `,
+          }}
+        />
+      </head>
       <body className={cn("min-h-screen bg-background font-sans antialiased", inter.variable)} suppressHydrationWarning>
         <ThemeProvider
           attribute="class"

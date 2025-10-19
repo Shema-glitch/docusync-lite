@@ -65,21 +65,8 @@
     --input: 217.2 32.6% 17.5%;
     --ring: 25 95% 53%;
   }
-}
- 
-@layer base {
-  * {
-    @apply border-border;
-  }
-  body {
-    @apply bg-background text-foreground;
-    transition-property: color, background-color;
-    transition-duration: 300ms;
-  }
-  html {
-    scroll-behavior: smooth;
-  }
-  body.high-contrast {
+
+  .high-contrast {
     --background: 0 0% 0%;
     --foreground: 0 0% 100%;
     --card: 0 0% 0%;
@@ -94,6 +81,20 @@
     --input: 0 0% 13%;
     --primary: 25 95% 53%;
     --primary-foreground: 0 0% 100%;
+  }
+}
+ 
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    transition-property: color, background-color;
+    transition-duration: 300ms;
+  }
+  html {
+    scroll-behavior: smooth;
   }
 }
 

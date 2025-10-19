@@ -5,7 +5,6 @@ import { createContext, useContext, useState, useEffect, ReactNode, useCallback 
 
 const ACCENT_COLOR_KEY = 'docusync-accent-color';
 const FONT_SIZE_KEY = 'docusync-font-size';
-const HIGH_CONTRAST_KEY = 'docusync-high-contrast';
 
 export const accentColors = [
     { name: 'Orange', class: 'bg-orange-500', value: 'hsl(25 95% 53%)' },
@@ -21,8 +20,6 @@ const DEFAULT_FONT_SIZE = 14;
 interface AppearanceContextType {
   fontSize: number;
   setFontSize: (size: number) => void;
-  isHighContrast: boolean;
-  setIsHighContrast: (isHighContrast: boolean) => void;
   accentColor: string;
   setAccentColor: (color: string) => void;
 }
@@ -40,11 +37,6 @@ export function AppearanceProvider({ children }: { children: ReactNode }) {
   const [fontSize, setFontSizeState] = useState<number>(() => {
     if (typeof window === 'undefined') return DEFAULT_FONT_SIZE;
     return parseInt(localStorage.getItem(FONT_SIZE_KEY) || `${DEFAULT_FONT_SIZE}`, 10);
-  });
-
-  const [isHighContrast, setHighContrastState] = useState<boolean>(() => {
-    if (typeof window === 'undefined') return false;
-    return localStorage.getItem(HIGH_CONTRAST_KEY) === 'true';
   });
 
   useEffect(() => {
@@ -65,13 +57,6 @@ export function AppearanceProvider({ children }: { children: ReactNode }) {
     }
   }, [isClient]);
 
-  const setIsHighContrast = useCallback((isHigh: boolean) => {
-    setHighContrastState(isHigh);
-    if (isClient) {
-      localStorage.setItem(HIGH_CONTRAST_KEY, isHigh.toString());
-    }
-  }, [isClient]);
-
 
   useEffect(() => {
     if (isClient) {
@@ -84,19 +69,11 @@ export function AppearanceProvider({ children }: { children: ReactNode }) {
       document.documentElement.style.fontSize = `${fontSize}px`;
     }
   }, [fontSize, isClient]);
-
-  useEffect(() => {
-    if (isClient) {
-      document.body.classList.toggle('high-contrast', isHighContrast);
-    }
-  }, [isHighContrast, isClient]);
   
 
   const value = {
     fontSize,
     setFontSize,
-    isHighContrast,
-    setIsHighContrast,
     accentColor,
     setAccentColor,
   };
@@ -111,5 +88,3 @@ export function useAppearance() {
   }
   return context;
 }
-
-    

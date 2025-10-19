@@ -33,8 +33,6 @@ export default function SettingsPage() {
     const { 
       fontSize, 
       setFontSize, 
-      isHighContrast, 
-      setIsHighContrast,
       accentColor,
       setAccentColor,
     } = useAppearance();
@@ -62,7 +60,24 @@ export default function SettingsPage() {
             setOrganizationName(user.organizationName ?? '');
         }
     }, [user]);
+
+    const handleHighContrastChange = (isHigh: boolean) => {
+      if (isHigh) {
+        setTheme('high-contrast');
+      } else {
+        // Revert to the previous theme, defaulting to 'system'
+        const previousTheme = localStorage.getItem('previous-theme') || 'system';
+        setTheme(previousTheme);
+      }
+    };
     
+    const handleThemeChange = (newTheme: string) => {
+      // Store the current non-high-contrast theme before switching
+      if (theme !== 'high-contrast') {
+        localStorage.setItem('previous-theme', theme || 'system');
+      }
+      setTheme(newTheme);
+    };
 
     const hasChanges = name !== (user?.name ?? '') || organizationName !== (user?.organizationName ?? '');
 
@@ -237,9 +252,9 @@ export default function SettingsPage() {
                         <p className="text-sm text-muted-foreground">Select the overall color scheme.</p>
                     </div>
                     <div className="flex space-x-2 shrink-0">
-                        <Button variant={theme === 'light' ? 'default' : 'outline'} onClick={() => setTheme('light')}>Light</Button>
-                        <Button variant={theme === 'dark' ? 'default' : 'outline'} onClick={() => setTheme('dark')}>Dark</Button>
-                        <Button variant={theme === 'system' ? 'default' : 'outline'} onClick={() => setTheme('system')}>System</Button>
+                        <Button variant={(theme === 'light') ? 'default' : 'outline'} onClick={() => handleThemeChange('light')}>Light</Button>
+                        <Button variant={(theme === 'dark') ? 'default' : 'outline'} onClick={() => handleThemeChange('dark')}>Dark</Button>
+                        <Button variant={(theme === 'system') ? 'default' : 'outline'} onClick={() => handleThemeChange('system')}>System</Button>
                     </div>
                 </div>
                 <div className="py-4 flex flex-col md:flex-row md:items-center justify-between gap-4 first:pt-0 last:pb-0">
@@ -396,7 +411,7 @@ export default function SettingsPage() {
                           <Label htmlFor="high-contrast">High Contrast Mode</Label>
                           <p className="text-sm text-muted-foreground">Increase contrast throughout the app.</p>
                       </div>
-                      <Switch id="high-contrast" checked={isHighContrast} onCheckedChange={setIsHighContrast} />
+                      <Switch id="high-contrast" checked={theme === 'high-contrast'} onCheckedChange={handleHighContrastChange} />
                   </div>
                   <div className="py-4 flex flex-col md:flex-row md:items-center justify-between gap-4 first:pt-0 last:pb-0">
                       <div>
@@ -595,5 +610,3 @@ export default function SettingsPage() {
     </>
   );
 }
-
-    

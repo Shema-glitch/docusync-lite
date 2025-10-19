@@ -324,47 +324,23 @@ export default function SettingsPage() {
                   Manage how you receive notifications from us.
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-6">
-                  <div className="flex items-center justify-between rounded-lg border p-4">
-                      <div>
+              <CardContent className="grid gap-6">
+                  <div className="flex items-center justify-between space-x-2 rounded-lg border p-4">
+                      <div className="space-y-0.5">
                           <Label htmlFor="email-notifications">Email Notifications</Label>
                           <p className="text-sm text-muted-foreground">Receive important updates via email.</p>
                       </div>
                       <Switch id="email-notifications" checked={emailNotifications} onCheckedChange={setEmailNotifications} />
                   </div>
-                  <div className="flex items-center justify-between rounded-lg border p-4">
-                      <div>
+                  <div className="flex items-center justify-between space-x-2 rounded-lg border p-4">
+                      <div className="space-y-0.5">
                           <Label htmlFor="inapp-notifications">In-App Reminders</Label>
                           <p className="text-sm text-muted-foreground">Show browser notifications for upcoming due dates.</p>
                       </div>
                       <Switch id="inapp-notifications" checked={inAppReminders} onCheckedChange={setInAppReminders} />
                   </div>
-                  <Separator />
-                  <h4 className="text-md font-semibold px-4">Granular Controls</h4>
-                  <div className="flex items-center justify-between rounded-lg border p-4">
-                      <div>
-                          <Label>Mentions</Label>
-                          <p className="text-sm text-muted-foreground">When someone @mentions you.</p>
-                      </div>
-                      <Switch />
-                  </div>
-                  <div className="flex items-center justify-between rounded-lg border p-4">
-                      <div>
-                          <Label>Document Shares</Label>
-                          <p className="text-sm text-muted-foreground">When a document is shared with you.</p>
-                      </div>
-                      <Switch defaultChecked />
-                  </div>
-                  <div className="flex items-center justify-between rounded-lg border p-4">
-                      <div>
-                          <Label>Comments</Label>
-                          <p className="text-sm text-muted-foreground">On your documents and replies.</p>
-                      </div>
-                      <Switch defaultChecked/>
-                  </div>
-                  <Separator />
-                  <div className="flex items-center justify-between rounded-lg border p-4">
-                      <div>
+                   <div className="flex items-center justify-between space-x-2 rounded-lg border p-4">
+                      <div className="space-y-0.5">
                           <Label>Digest Frequency</Label>
                           <p className="text-sm text-muted-foreground">How often to receive summary emails.</p>
                       </div>
@@ -378,6 +354,37 @@ export default function SettingsPage() {
                               <SelectItem value="weekly">Weekly</SelectItem>
                           </SelectContent>
                       </Select>
+                  </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader>
+                <CardTitle>Granular Controls</CardTitle>
+                <CardDescription>
+                  Control exactly which notifications you want to receive.
+                </CardDescription>
+              </CardHeader>
+               <CardContent className="grid gap-6">
+                  <div className="flex items-center justify-between space-x-2 rounded-lg border p-4">
+                      <div className="space-y-0.5">
+                          <Label>Mentions</Label>
+                          <p className="text-sm text-muted-foreground">When someone @mentions you.</p>
+                      </div>
+                      <Switch />
+                  </div>
+                  <div className="flex items-center justify-between space-x-2 rounded-lg border p-4">
+                      <div className="space-y-0.5">
+                          <Label>Document Shares</Label>
+                          <p className="text-sm text-muted-foreground">When a document is shared with you.</p>
+                      </div>
+                      <Switch defaultChecked />
+                  </div>
+                  <div className="flex items-center justify-between space-x-2 rounded-lg border p-4">
+                      <div className="space-y-0.5">
+                          <Label>Comments</Label>
+                          <p className="text-sm text-muted-foreground">On your documents and replies.</p>
+                      </div>
+                      <Switch defaultChecked/>
                   </div>
               </CardContent>
             </Card>

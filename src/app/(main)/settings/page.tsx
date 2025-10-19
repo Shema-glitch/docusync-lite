@@ -2,7 +2,7 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -144,29 +144,29 @@ export default function SettingsPage() {
       </div>
        <Tabs defaultValue="profile" className="w-full">
         <div className="overflow-x-auto">
-            <TabsList className="grid w-full grid-cols-2 sm:w-max md:grid-cols-4 lg:grid-cols-8 h-auto rounded-none border-b bg-transparent p-0">
-                <TabsTrigger value="profile" className="flex-1 gap-2 rounded-none border-b-2 border-transparent bg-transparent !shadow-none py-3 font-semibold text-muted-foreground data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:[&>svg]:inline-block [&>svg]:hidden">
+            <TabsList className="inline-grid w-full grid-cols-2 sm:w-max md:grid-cols-4 lg:grid-cols-8 h-auto p-0">
+                <TabsTrigger value="profile" className="flex-1 justify-center gap-2 rounded-none border-b-2 border-transparent bg-transparent !shadow-none py-3 font-semibold text-muted-foreground data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:[&>svg]:inline-block [&>svg]:hidden">
                     <User className='h-4 w-4'/>Profile
                 </TabsTrigger>
-                <TabsTrigger value="appearance" className="flex-1 gap-2 rounded-none border-b-2 border-transparent bg-transparent !shadow-none py-3 font-semibold text-muted-foreground data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:[&>svg]:inline-block [&>svg]:hidden">
+                <TabsTrigger value="appearance" className="flex-1 justify-center gap-2 rounded-none border-b-2 border-transparent bg-transparent !shadow-none py-3 font-semibold text-muted-foreground data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:[&>svg]:inline-block [&>svg]:hidden">
                     <Palette className='h-4 w-4'/>Appearance
                 </TabsTrigger>
-                <TabsTrigger value="notifications" className="flex-1 gap-2 rounded-none border-b-2 border-transparent bg-transparent !shadow-none py-3 font-semibold text-muted-foreground data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:[&>svg]:inline-block [&>svg]:hidden">
+                <TabsTrigger value="notifications" className="flex-1 justify-center gap-2 rounded-none border-b-2 border-transparent bg-transparent !shadow-none py-3 font-semibold text-muted-foreground data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:[&>svg]:inline-block [&>svg]:hidden">
                     <Bell className='h-4 w-4'/>Notifications
                 </TabsTrigger>
-                <TabsTrigger value="accessibility" className="flex-1 gap-2 rounded-none border-b-2 border-transparent bg-transparent !shadow-none py-3 font-semibold text-muted-foreground data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:[&>svg]:inline-block [&>svg]:hidden">
+                <TabsTrigger value="accessibility" className="flex-1 justify-center gap-2 rounded-none border-b-2 border-transparent bg-transparent !shadow-none py-3 font-semibold text-muted-foreground data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:[&>svg]:inline-block [&>svg]:hidden">
                     <Accessibility className='h-4 w-4'/>Accessibility
                 </TabsTrigger>
-                <TabsTrigger value="security" className="flex-1 gap-2 rounded-none border-b-2 border-transparent bg-transparent !shadow-none py-3 font-semibold text-muted-foreground data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:[&>svg]:inline-block [&>svg]:hidden">
+                <TabsTrigger value="security" className="flex-1 justify-center gap-2 rounded-none border-b-2 border-transparent bg-transparent !shadow-none py-3 font-semibold text-muted-foreground data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:[&>svg]:inline-block [&>svg]:hidden">
                     <KeyRound className='h-4 w-4'/>Security
                 </TabsTrigger>
-                <TabsTrigger value="integrations" className="flex-1 gap-2 rounded-none border-b-2 border-transparent bg-transparent !shadow-none py-3 font-semibold text-muted-foreground data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:[&>svg]:inline-block [&>svg]:hidden">
+                <TabsTrigger value="integrations" className="flex-1 justify-center gap-2 rounded-none border-b-2 border-transparent bg-transparent !shadow-none py-3 font-semibold text-muted-foreground data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:[&>svg]:inline-block [&>svg]:hidden">
                     <Cloud className='h-4 w-4'/>Integrations
                 </TabsTrigger>
-                <TabsTrigger value="labs" className="flex-1 gap-2 rounded-none border-b-2 border-transparent bg-transparent !shadow-none py-3 font-semibold text-muted-foreground data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:[&>svg]:inline-block [&>svg]:hidden">
+                <TabsTrigger value="labs" className="flex-1 justify-center gap-2 rounded-none border-b-2 border-transparent bg-transparent !shadow-none py-3 font-semibold text-muted-foreground data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:[&>svg]:inline-block [&>svg]:hidden">
                     <FlaskConical className='h-4 w-4'/>Labs
                 </TabsTrigger>
-                <TabsTrigger value="help" className="flex-1 gap-2 rounded-none border-b-2 border-transparent bg-transparent !shadow-none py-3 font-semibold text-muted-foreground data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:[&>svg]:inline-block [&>svg]:hidden">
+                <TabsTrigger value="help" className="flex-1 justify-center gap-2 rounded-none border-b-2 border-transparent bg-transparent !shadow-none py-3 font-semibold text-muted-foreground data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:[&>svg]:inline-block [&>svg]:hidden">
                     <LifeBuoy className='h-4 w-4'/>Help
                 </TabsTrigger>
             </TabsList>
@@ -610,5 +610,7 @@ export default function SettingsPage() {
     </>
   );
 }
+
+    
 
     

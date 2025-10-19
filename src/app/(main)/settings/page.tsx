@@ -208,12 +208,12 @@ export default function SettingsPage() {
                         <Input id="role" value="Member" readOnly disabled />
                     </div>
                 </div>
-                <div className="flex justify-end">
-                    <Button onClick={handleSaveChanges} disabled={isSaving || !hasChanges}>
-                        {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Save changes'}
-                    </Button>
-                </div>
             </CardContent>
+            <CardFooter className="border-t px-6 py-4">
+                <Button onClick={handleSaveChanges} disabled={isSaving || !hasChanges}>
+                    {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Save changes'}
+                </Button>
+            </CardFooter>
           </Card>
            <Card>
                 <CardHeader>
@@ -586,3 +586,4 @@ export default function SettingsPage() {
     
 
     
+

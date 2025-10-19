@@ -178,8 +178,8 @@ export default function SettingsPage() {
           </TabsList>
         </div>
 
-        <TabsContent value="profile">
-          <motion.div variants={contentVariants} initial="hidden" animate="visible" className="space-y-6">
+        <TabsContent value="profile" className="mt-6">
+          <motion.div variants={contentVariants} initial="hidden" animate="visible" className="space-y-4">
             <Card>
               <CardHeader>
                 <CardTitle>Profile</CardTitle>
@@ -241,8 +241,8 @@ export default function SettingsPage() {
           </motion.div>
         </TabsContent>
 
-        <TabsContent value="appearance">
-          <motion.div variants={contentVariants} initial="hidden" animate="visible" className="space-y-6">
+        <TabsContent value="appearance" className="mt-6">
+          <motion.div variants={contentVariants} initial="hidden" animate="visible" className="space-y-4">
             <Card>
               <CardHeader>
                 <CardTitle>Appearance</CardTitle>
@@ -250,7 +250,7 @@ export default function SettingsPage() {
                   Customize the look and feel of the app.
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-6">
+              <CardContent className="space-y-4">
                   <div className="flex items-center justify-between rounded-lg border p-4">
                       <div>
                           <Label>Theme</Label>
@@ -315,8 +315,8 @@ export default function SettingsPage() {
           </motion.div>
         </TabsContent>
 
-        <TabsContent value="notifications">
-          <motion.div variants={contentVariants} initial="hidden" animate="visible" className="space-y-6">
+        <TabsContent value="notifications" className="mt-6">
+          <motion.div variants={contentVariants} initial="hidden" animate="visible" className="space-y-4">
             <Card>
               <CardHeader>
                 <CardTitle>Notifications</CardTitle>
@@ -324,7 +324,7 @@ export default function SettingsPage() {
                   Manage how you receive notifications from us.
                 </CardDescription>
               </CardHeader>
-              <CardContent className="grid gap-6">
+              <CardContent className="grid gap-4">
                   <div className="flex items-center justify-between space-x-2 rounded-lg border p-4">
                       <div className="space-y-0.5">
                           <Label htmlFor="email-notifications">Email Notifications</Label>
@@ -364,7 +364,7 @@ export default function SettingsPage() {
                   Control exactly which notifications you want to receive.
                 </CardDescription>
               </CardHeader>
-               <CardContent className="grid gap-6">
+               <CardContent className="grid gap-4">
                   <div className="flex items-center justify-between space-x-2 rounded-lg border p-4">
                       <div className="space-y-0.5">
                           <Label>Mentions</Label>
@@ -391,8 +391,8 @@ export default function SettingsPage() {
           </motion.div>
         </TabsContent>
 
-        <TabsContent value="accessibility">
-          <motion.div variants={contentVariants} initial="hidden" animate="visible" className="space-y-6">
+        <TabsContent value="accessibility" className="mt-6">
+          <motion.div variants={contentVariants} initial="hidden" animate="visible" className="space-y-4">
             <Card>
               <CardHeader>
                 <CardTitle>Accessibility</CardTitle>
@@ -400,7 +400,7 @@ export default function SettingsPage() {
                   Make the app more comfortable for your needs.
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-6">
+              <CardContent className="space-y-4">
                   <div className="flex items-center justify-between rounded-lg border p-4">
                       <div>
                           <Label htmlFor="font-size">Font Size</Label>
@@ -437,8 +437,8 @@ export default function SettingsPage() {
           </motion.div>
         </TabsContent>
 
-        <TabsContent value="security">
-          <motion.div variants={contentVariants} initial="hidden" animate="visible" className="space-y-6">
+        <TabsContent value="security" className="mt-6">
+          <motion.div variants={contentVariants} initial="hidden" animate="visible" className="space-y-4">
             <Card>
               <CardHeader>
                 <CardTitle>Security</CardTitle>
@@ -446,7 +446,7 @@ export default function SettingsPage() {
                   Manage your account's security settings.
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-6">
+              <CardContent className="space-y-4">
                   <div className="flex items-center justify-between rounded-lg border p-4">
                       <div>
                           <Label htmlFor="2fa" className='flex items-center gap-2'>
@@ -504,8 +504,8 @@ export default function SettingsPage() {
           </motion.div>
         </TabsContent>
 
-        <TabsContent value="integrations">
-          <motion.div variants={contentVariants} initial="hidden" animate="visible" className="space-y-6">
+        <TabsContent value="integrations" className="mt-6">
+          <motion.div variants={contentVariants} initial="hidden" animate="visible" className="space-y-4">
               <Card>
                   <CardHeader>
                       <CardTitle>Integrations</CardTitle>
@@ -533,8 +533,8 @@ export default function SettingsPage() {
           </motion.div>
         </TabsContent>
 
-        <TabsContent value="labs">
-          <motion.div variants={contentVariants} initial="hidden" animate="visible" className="space-y-6">
+        <TabsContent value="labs" className="mt-6">
+          <motion.div variants={contentVariants} initial="hidden" animate="visible" className="space-y-4">
               <Card>
                   <CardHeader>
                       <CardTitle>Labs</CardTitle>
@@ -560,8 +560,8 @@ export default function SettingsPage() {
           </motion.div>
         </TabsContent>
         
-        <TabsContent value="help">
-          <motion.div variants={contentVariants} initial="hidden" animate="visible" className="space-y-6">
+        <TabsContent value="help" className="mt-6">
+          <motion.div variants={contentVariants} initial="hidden" animate="visible" className="space-y-4">
             <Card>
               <CardHeader>
                 <CardTitle>Help & Support</CardTitle>
@@ -569,7 +569,7 @@ export default function SettingsPage() {
                   Need assistance? Find resources here.
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-6">
+              <CardContent className="space-y-4">
                   <div className="flex items-center justify-between rounded-lg border p-4">
                       <div>
                           <Label>Onboarding Guide</Label>
@@ -611,5 +611,3 @@ export default function SettingsPage() {
     </>
   );
 }
-
-    

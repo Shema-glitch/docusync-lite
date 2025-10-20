@@ -7,11 +7,11 @@ const ACCENT_COLOR_KEY = 'docusync-accent-color';
 const FONT_SIZE_KEY = 'docusync-font-size';
 
 export const accentColors = [
-    { name: 'Orange', class: 'bg-orange-500', value: 'hsl(25 95% 53%)' },
-    { name: 'Blue', class: 'bg-blue-500', value: 'hsl(217 91% 60%)' },
-    { name: 'Green', class: 'bg-green-500', value: 'hsl(142 71% 45%)' },
-    { name: 'Purple', class: 'bg-purple-500', value: 'hsl(258 90% 47%)' },
-    { name: 'Rose', class: 'bg-rose-500', value: 'hsl(347 90% 55%)' },
+    { name: 'Orange', class: 'bg-orange-500', value: '25 95% 53%' }, // Changed to HSL values only
+    { name: 'Blue', class: 'bg-blue-500', value: '217 91% 60%' },   // Changed to HSL values only
+    { name: 'Green', class: 'bg-green-500', value: '142 71% 45%' },  // Changed to HSL values only
+    { name: 'Purple', class: 'bg-purple-500', value: '258 90% 47%' }, // Changed to HSL values only
+    { name: 'Rose', class: 'bg-rose-500', value: '347 90% 55%' },  // Changed to HSL values only
 ];
 
 const DEFAULT_ACCENT_COLOR = accentColors[0].value;
@@ -60,6 +60,7 @@ export function AppearanceProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (isClient) {
+      // This now sets --primary to just the HSL values, e.g., '25 95% 53%'
       document.documentElement.style.setProperty('--primary', accentColor);
     }
   }, [accentColor, isClient]);

@@ -14,13 +14,15 @@ import {
   Trash2,
   Archive,
   Users,
+  LogOut,
+  Heart,
+  User as UserIcon,
 } from 'lucide-react';
 import Link from 'next/link';
 import { UploadButton } from '../upload-button';
 import { useAuth } from '@/hooks/use-auth';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuItem } from '../ui/dropdown-menu';
-import { LogOut, Heart, User as UserIcon } from 'lucide-react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { useState, useEffect } from 'react';
@@ -131,49 +133,50 @@ export function AppHeader() {
         <UploadButton data-onboarding-id="step-1-upload" />
       </div>
       <HeaderSuggestions />
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-        <Button variant="secondary" size="icon" className="rounded-full" data-onboarding-id="step-4-security">
-            <Avatar className="h-8 w-8">
-                <AvatarImage src={user?.avatar} alt={user?.name ?? ''} data-ai-hint="profile picture" />
-                <AvatarFallback>{user?.name?.charAt(0)}</AvatarFallback>
-            </Avatar>
-            <span className="sr-only">Toggle user menu</span>
+      <div className="flex items-center gap-2">
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+            <Button variant="secondary" size="icon" className="rounded-full" data-onboarding-id="step-4-security">
+                <Avatar className="h-8 w-8">
+                    <AvatarImage src={user?.avatar} alt={user?.name ?? ''} data-ai-hint="profile picture" />
+                    <AvatarFallback>{user?.name?.charAt(0)}</AvatarFallback>
+                </Avatar>
+                <span className="sr-only">Toggle user menu</span>
+            </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className='w-56'>
+            <DropdownMenuLabel>
+                <div className="flex flex-col space-y-1">
+                    <p className="text-sm font-medium leading-none">{user?.name}</p>
+                    <p className="text-xs leading-none text-muted-foreground">
+                        {user?.email}
+                    </p>
+                </div>
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem asChild>
+                <Link href={`/profile/${user?.id}`}>
+                    <UserIcon className="mr-2 h-4 w-4" />
+                    <span>View Profile</span>
+                </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+                <Link href="/settings">
+                    <Settings className="mr-2 h-4 w-4" />
+                    <span>Settings</span>
+                </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem>
+                <Heart className="mr-2 h-4 w-4" />
+                <span>Support</span>
+            </DropdownMenuItem>
+            </DropdownMenuContent>
+        </DropdownMenu>
+         <Button variant="ghost" size="icon" onClick={logout} className="h-9 w-9">
+            <LogOut className="h-4 w-4" />
+            <span className="sr-only">Logout</span>
         </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className='w-56'>
-        <DropdownMenuLabel>
-            <div className="flex flex-col space-y-1">
-                <p className="text-sm font-medium leading-none">{user?.name}</p>
-                <p className="text-xs leading-none text-muted-foreground">
-                    {user?.email}
-                </p>
-            </div>
-        </DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem asChild>
-             <Link href={`/profile/${user?.id}`}>
-                <UserIcon className="mr-2 h-4 w-4" />
-                <span>View Profile</span>
-            </Link>
-        </DropdownMenuItem>
-        <DropdownMenuItem asChild>
-            <Link href="/settings">
-                <Settings className="mr-2 h-4 w-4" />
-                <span>Settings</span>
-            </Link>
-        </DropdownMenuItem>
-        <DropdownMenuItem>
-            <Heart className="mr-2 h-4 w-4" />
-            <span>Support</span>
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={logout}>
-            <LogOut className="mr-2 h-4 w-4" />
-            <span>Logout</span>
-        </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+      </div>
     </header>
   );
 }

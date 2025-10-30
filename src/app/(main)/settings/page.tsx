@@ -143,7 +143,84 @@ export default function SettingsPage() {
         <p className="text-muted-foreground">Manage your account settings, preferences, and more.</p>
       </div>
        <Tabs defaultValue="profile" className="w-full">
-        <div className="overflow-x-auto">
+
+       <div className="relative -mx-6 px-6 md:mx-0 md:px-0">
+        <div className="overflow-x-auto md:overflow-visible scrollbar-hide">
+            <TabsList className="inline-flex md:flex md:flex-wrap md:justify-start gap-1 min-w-full md:min-w-0 border-b border-border pb-0 h-auto p-0 bg-transparent">
+            
+            <TabsTrigger 
+                value="profile" 
+                className="group relative inline-flex items-center justify-center gap-2 px-4 py-3 whitespace-nowrap text-sm font-semibold transition-all duration-200 border-b-2 rounded-none bg-transparent shadow-none border-transparent data-[state=active]:border-primary text-muted-foreground data-[state=active]:text-primary hover:text-foreground"
+            >
+                <User className="h-4 w-4 transition-transform duration-200 data-[state=active]:scale-110 group-hover:scale-105" />
+                <span>Profile</span>
+            </TabsTrigger>
+
+            <TabsTrigger 
+                value="appearance" 
+                className="group relative inline-flex items-center justify-center gap-2 px-4 py-3 whitespace-nowrap text-sm font-semibold transition-all duration-200 border-b-2 rounded-none bg-transparent shadow-none border-transparent data-[state=active]:border-primary text-muted-foreground data-[state=active]:text-primary hover:text-foreground"
+            >
+                <Palette className="h-4 w-4 transition-transform duration-200 data-[state=active]:scale-110 group-hover:scale-105" />
+                <span>Appearance</span>
+            </TabsTrigger>
+
+            <TabsTrigger 
+                value="notifications" 
+                className="group relative inline-flex items-center justify-center gap-2 px-4 py-3 whitespace-nowrap text-sm font-semibold transition-all duration-200 border-b-2 rounded-none bg-transparent shadow-none border-transparent data-[state=active]:border-primary text-muted-foreground data-[state=active]:text-primary hover:text-foreground"
+            >
+                <Bell className="h-4 w-4 transition-transform duration-200 data-[state=active]:scale-110 group-hover:scale-105" />
+                <span>Notifications</span>
+            </TabsTrigger>
+
+            <TabsTrigger 
+                value="accessibility" 
+                className="group relative inline-flex items-center justify-center gap-2 px-4 py-3 whitespace-nowrap text-sm font-semibold transition-all duration-200 border-b-2 rounded-none bg-transparent shadow-none border-transparent data-[state=active]:border-primary text-muted-foreground data-[state=active]:text-primary hover:text-foreground"
+            >
+                <Accessibility className="h-4 w-4 transition-transform duration-200 data-[state=active]:scale-110 group-hover:scale-105" />
+                <span>Accessibility</span>
+            </TabsTrigger>
+
+            <TabsTrigger 
+                value="security" 
+                className="group relative inline-flex items-center justify-center gap-2 px-4 py-3 whitespace-nowrap text-sm font-semibold transition-all duration-200 border-b-2 rounded-none bg-transparent shadow-none border-transparent data-[state=active]:border-primary text-muted-foreground data-[state=active]:text-primary hover:text-foreground"
+            >
+                <KeyRound className="h-4 w-4 transition-transform duration-200 data-[state=active]:scale-110 group-hover:scale-105" />
+                <span>Security</span>
+            </TabsTrigger>
+
+            <TabsTrigger 
+                value="integrations" 
+                className="group relative inline-flex items-center justify-center gap-2 px-4 py-3 whitespace-nowrap text-sm font-semibold transition-all duration-200 border-b-2 rounded-none bg-transparent shadow-none border-transparent data-[state=active]:border-primary text-muted-foreground data-[state=active]:text-primary hover:text-foreground"
+            >
+                <Cloud className="h-4 w-4 transition-transform duration-200 data-[state=active]:scale-110 group-hover:scale-105" />
+                <span>Integrations</span>
+            </TabsTrigger>
+
+            <TabsTrigger 
+                value="labs" 
+                className="group relative inline-flex items-center justify-center gap-2 px-4 py-3 whitespace-nowrap text-sm font-semibold transition-all duration-200 border-b-2 rounded-none bg-transparent shadow-none border-transparent data-[state=active]:border-primary text-muted-foreground data-[state=active]:text-primary hover:text-foreground"
+            >
+                <FlaskConical className="h-4 w-4 transition-transform duration-200 data-[state=active]:scale-110 group-hover:scale-105" />
+                <span>Labs</span>
+            </TabsTrigger>
+
+            <TabsTrigger 
+                value="help" 
+                className="group relative inline-flex items-center justify-center gap-2 px-4 py-3 whitespace-nowrap text-sm font-semibold transition-all duration-200 border-b-2 rounded-none bg-transparent shadow-none border-transparent data-[state=active]:border-primary text-muted-foreground data-[state=active]:text-primary hover:text-foreground"
+            >
+                <LifeBuoy className="h-4 w-4 transition-transform duration-200 data-[state=active]:scale-110 group-hover:scale-105" />
+                <span>Help</span>
+            </TabsTrigger>
+
+            </TabsList>
+        </div>
+        
+        {/* Scroll fade gradient on right (mobile only) */}
+        <div className="md:hidden absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-background to-transparent pointer-events-none" />
+        </div>
+
+
+        {/* <div className="overflow-x-auto">
             <TabsList className="inline-grid w-full grid-cols-2 sm:w-max md:grid-cols-4 lg:grid-cols-8 h-auto p-0">
                 <TabsTrigger value="profile" className="flex-1 justify-center gap-2 rounded-none border-b-2 border-transparent bg-transparent !shadow-none py-3 font-semibold text-muted-foreground data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:[&>svg]:inline-block [&>svg]:hidden">
                     <User className='h-4 w-4'/>Profile
@@ -170,7 +247,7 @@ export default function SettingsPage() {
                     <LifeBuoy className='h-4 w-4'/>Help
                 </TabsTrigger>
             </TabsList>
-        </div>
+        </div> */}
 
 
         <TabsContent value="profile" className="mt-6">

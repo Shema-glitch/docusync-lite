@@ -198,26 +198,12 @@ export function AppSidebar() {
                                 <p className="text-xs text-muted-foreground truncate">View Profile</p>
                             </div>
                         </Link>
-                         <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="icon" className="h-8 w-8">
-                                    <MoreHorizontal className="h-4 w-4"/>
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" side="top" className="w-48">
-                                 <DropdownMenuItem asChild>
-                                    <Link href="/settings">
-                                        <Settings className="mr-2 h-4 w-4" />
-                                        <span>Settings</span>
-                                    </Link>
-                                </DropdownMenuItem>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem onClick={logout}>
-                                    <LogOut className="mr-2 h-4 w-4" />
-                                    <span>Logout</span>
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
+                        <Link href="/settings" passHref>
+                            <Button variant="ghost" size="icon" className="h-8 w-8">
+                                <Settings className="h-4 w-4"/>
+                                <span className="sr-only">Settings</span>
+                            </Button>
+                        </Link>
                    </div>
                 </div>
             </div>
